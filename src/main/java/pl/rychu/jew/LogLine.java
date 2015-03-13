@@ -44,27 +44,27 @@ public class LogLine {
 	}
 
 
-	protected long getFilePos() {
+	public long getFilePos() {
 		return filePos;
 	}
 
-	protected LogLineType getLogLineType() {
+	public LogLineType getLogLineType() {
 		return logLineType;
 	}
 
-	protected long getTimestamp() {
+	public long getTimestamp() {
 		return timestamp;
 	}
 
-	protected String getLevel() {
+	public String getLevel() {
 		return level;
 	}
 
-	protected String getClassName() {
+	public String getClassName() {
 		return className;
 	}
 
-	protected String getThreadName() {
+	public String getThreadName() {
 		return threadName;
 	}
 
