@@ -1,35 +1,44 @@
 package pl.rychu.jew.gui;
 
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.LayoutManager;
+import javax.swing.AbstractListModel;
+import javax.swing.JList;
 
-import javax.swing.JLabel;
-import javax.swing.JPanel;
+import pl.rychu.jew.LogFileAccess;
+import pl.rychu.jew.LogLine;
 
-public class LogViewPanel extends JPanel {
+public class LogViewPanel extends JList<LogLine> {
 
 	private static final long serialVersionUID = -6731368974272464443L;
 
 	// ---------
 
-	public LogViewPanel() {
-		super(true);
+	public LogViewPanel(final LogFileAccess logFileAccess) {
+		super(new ListModelLog(logFileAccess));
+	}
 
-		setPreferredSize(new Dimension(500, 270));
+	// ------
 
-		{
-			LayoutManager layoutMan = getLayout();
-			if (layoutMan instanceof FlowLayout) {
-				FlowLayout flowLayout = (FlowLayout)layoutMan;
-				flowLayout.setAlignment(FlowLayout.LEFT);
-			}
+	private static class ListModelLog extends AbstractListModel<LogLine> {
+
+		private static final long serialVersionUID = 5990060914470736065L;
+
+		private final LogFileAccess logFileAccess;
+
+		public ListModelLog(final LogFileAccess logFileAccess) {
+			this.logFileAccess = logFileAccess;
 		}
 
-		for (int i=0; i<10; i++) {
-			final JLabel label = new JLabel("line "+i);
-			label.setPreferredSize(new Dimension(500, 15));
-			add(label);
+		@Override
+		public int getSize() {
+			final int result = (int)logFileAccess.size();
+			System.out.println("size: "+result);
+			return result;
+		}
+
+		@Override
+		public LogLine getElementAt(final int index) {
+			System.out.println("access to "+index);
+			return logFileAccess.get(index);
 		}
 	}
 
