@@ -14,6 +14,8 @@ public class LogViewPanel extends JList<LogLine> {
 
 	public LogViewPanel(final LogFileAccess logFileAccess) {
 		super(new ListModelLog(logFileAccess));
+		setFixedCellWidth(600);
+		setFixedCellHeight(14);
 	}
 
 	// ------

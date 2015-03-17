@@ -1,6 +1,9 @@
 package pl.rychu.jew.gui;
 
+import java.awt.Dimension;
+
 import javax.swing.JFrame;
+import javax.swing.JScrollPane;
 
 import pl.rychu.jew.LogFileAccess;
 
@@ -17,7 +20,10 @@ public class GuiMain {
 		final JFrame mainFrame = new JFrame("jew");
 
 		final LogViewPanel logViewPanel = new LogViewPanel(logFileAccess);
-		mainFrame.add(logViewPanel);
+
+		final JScrollPane scrollPane = new JScrollPane(logViewPanel);
+		scrollPane.setPreferredSize(new Dimension(600, 600));
+		mainFrame.add(scrollPane);
 
 		mainFrame.pack();
 		mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
