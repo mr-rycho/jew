@@ -82,7 +82,6 @@ public class LogFileAccess {
 					while (true) {
 						final int br = fileChannel.read(byteBuffer);
 						if (br < 0) {
-							System.out.println("eof"); // TODO gtfo
 							break;
 						}
 						result += br;
