@@ -1,6 +1,9 @@
 package pl.rychu.jew.gui;
 
+import java.awt.Component;
+
 import javax.swing.AbstractListModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 
 import pl.rychu.jew.LogFileAccess;
@@ -16,6 +19,7 @@ public class LogViewPanel extends JList<LogLine> {
 		super(new ListModelLog(logFileAccess));
 		setFixedCellWidth(600);
 		setFixedCellHeight(14);
+		setCellRenderer(new CellRenderer());
 	}
 
 	// ------
@@ -41,6 +45,30 @@ public class LogViewPanel extends JList<LogLine> {
 		public LogLine getElementAt(final int index) {
 			System.out.println("access to "+index);
 			return logFileAccess.get(index);
+		}
+
+	}
+
+	// ------
+
+	private static class CellRenderer extends DefaultListCellRenderer {
+		private static final long serialVersionUID = 7313136726313412175L;
+
+		@Override
+    public Component getListCellRendererComponent(final JList<?> list
+     , final Object value, final int index, final boolean isSelected
+     , final boolean cellHasFocus) {
+			final LogLine logLine = (LogLine)value;
+			final String logLineStr = getRenderedString(logLine);
+			return super.getListCellRendererComponent(list, logLineStr, index
+			 , isSelected, cellHasFocus);
+		}
+
+		private String getRenderedString(final LogLine logLine) {
+			return logLine.getTimestamp()
+			 +" / "+logLine.getLevel()
+			 +" / "+"["+logLine.getClassName()+"]"
+			 +" / "+"("+logLine.getThreadName()+")";
 		}
 	}
 
