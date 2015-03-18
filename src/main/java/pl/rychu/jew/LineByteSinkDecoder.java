@@ -43,6 +43,7 @@ public class LineByteSinkDecoder implements LineByteSink {
 	@Override
 	public void lineBreak(final long offset) {
 		byteBuffer.flip();
+		final int length = byteBuffer.position();
 		charBuffer.clear();
 		final CoderResult coderResult = decoder.decode(byteBuffer, charBuffer, true);
 		if (coderResult.isError() || coderResult.isMalformed()
@@ -55,7 +56,7 @@ public class LineByteSinkDecoder implements LineByteSink {
 		}
 
 		final String line = new String(charBuffer.array(), 0, charBuffer.position());
-		linePosSink.put(line, offset);
+		linePosSink.put(line, offset, length);
 		byteBuffer.clear();
 	}
 

@@ -27,9 +27,9 @@ public class LineDecodersChain implements LineDecoder {
 	// -----------
 
 	@Override
-	public LogLine decode(final long filePos, final String line) {
+	public LogLine decode(final long filePos, final String line, final int length) {
 		for (final LineDecoder decoder: decoders) {
-			final LogLine candidate = decoder.decode(filePos, line);
+			final LogLine candidate = decoder.decode(filePos, line, length);
 			if (candidate != null) {
 				return candidate;
 			}

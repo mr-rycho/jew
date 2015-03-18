@@ -20,7 +20,7 @@ public class LineDecoderStd implements LineDecoder {
 	// -----------------
 
 	@Override
-	public LogLine decode(final long filePos, final String line) {
+	public LogLine decode(final long filePos, final String line, final int length) {
 		final Matcher matcherStd = PATTERN_STD.matcher(line);
 		if (matcherStd.matches()) {
 			final String levelRaw = matcherStd.group(2);
@@ -30,7 +30,8 @@ public class LineDecoderStd implements LineDecoder {
 			final String level = LogElemsCache.getOrPutLevel(levelRaw);
 			final String classname = LogElemsCache.getOrPutLogger(classnameRaw);
 			final String threadName = LogElemsCache.getOrPutThread(threadRaw);
-			return LogLine.createStandard(filePos, 0L, level, classname, threadName);
+			return LogLine.createStandard(filePos, length, 0L, level
+			 , classname, threadName);
 		} else {
 			return null;
 		}

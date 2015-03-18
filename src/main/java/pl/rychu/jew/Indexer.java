@@ -20,8 +20,8 @@ public class Indexer implements LinePosSink {
 	}
 
 	@Override
-	public void put(String line, long filePos) {
-		final LogLine logLine = lineDecoder.decode(filePos, line);
+	public void put(String line, long filePos, int length) {
+		final LogLine logLine = lineDecoder.decode(filePos, line, length);
 		index.add(logLine);
 		final LogLineType logLineType = logLine.getLogLineType();
 		typeCounter[logLineType.ordinal()]++;

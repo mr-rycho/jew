@@ -13,11 +13,12 @@ public class LineDecoderStack implements LineDecoder {
 	// -----------
 
 	@Override
-	public LogLine decode(final long filePos, final String line) {
+	public LogLine decode(final long filePos, final String line, final int length) {
 		final Matcher matcherStack = PATTERN_STACK.matcher(line);
 		if (matcherStack.matches()) {
 			final String classname = matcherStack.group(1);
-			return LogLine.createStack(filePos, LogElemsCache.getOrPutLogger(classname));
+			return LogLine.createStack(filePos, length
+			 , LogElemsCache.getOrPutLogger(classname));
 		} else {
 			return null;
 		}

@@ -56,15 +56,15 @@ public class LineByteSinkDecoderTest {
 		// correct utf8
 		result.add($());
 		result.add($(buf(0x41)));
-		result.add($(buf(0x41), 0, buf(0x42), "A", 0));
-		result.add($(buf(0x41), 0, buf(0x42), 2, "A", 0, "B", 2));
-		result.add($(buf(0x41), 0, buf(0x42), 3, "A", 0, "B", 3));
-		result.add($(buf(0x41, 0xc4, 0x85), 0, buf(0x42), 4, "Aą", 0, "B", 4));
-		result.add($(buf(0x41), buf(0xc4, 0x85), 0, buf(0x42), 4, "Aą", 0, "B", 4));
-		result.add($(buf(0x41, 0xc4), buf(0x85), 0, buf(0x42), 4, "Aą", 0, "B", 4));
+		result.add($(buf(0x41), 0, buf(0x42), "A", 0, 1));
+		result.add($(buf(0x41), 0, buf(0x42), 2, "A", 0, 1, "B", 2, 1));
+		result.add($(buf(0x41), 0, buf(0x42), 3, "A", 0, 1, "B", 3, 1));
+		result.add($(buf(0x41, 0xc4, 0x85), 0, buf(0x42), 4, "Aą", 0, 3, "B", 4, 1));
+		result.add($(buf(0x41), buf(0xc4, 0x85), 0, buf(0x42), 4, "Aą", 0, 3, "B", 4, 1));
+		result.add($(buf(0x41, 0xc4), buf(0x85), 0, buf(0x42), 4, "Aą", 0, 3, "B", 4, 1));
 
 		for (int charCode=0x00; charCode<0x40; charCode++) {
-			result.add($(buf(charCode), 0, buf(0x42), ""+((char)charCode), 0));
+			result.add($(buf(charCode), 0, buf(0x42), ""+((char)charCode), 0, 1));
 			// yip, the LineByteSinkDecoder does not know that 0x0a is some
 			// special character and if it's in the middle of the string it simply
 			// decodes it.
@@ -72,10 +72,10 @@ public class LineByteSinkDecoderTest {
 
 		// malformed
 		for (int charCode=0x80; charCode<0x100; charCode++) {
-			result.add($(buf(charCode), 0, buf(0x41), 2, "?", 0, "A", 2));
-			result.add($(buf(0x41), buf(charCode), 0, buf(0x41), 2, "A?", 0, "A", 2));
-			result.add($(buf(charCode), buf(0x41), 0, buf(0x41), 2, "?A", 0, "A", 2));
-			result.add($(buf(0x61, charCode, 0x41), 0, buf(0x41), 2, "a?A", 0, "A", 2));
+			result.add($(buf(charCode), 0, buf(0x41), 2, "?", 0, 1, "A", 2, 1));
+			result.add($(buf(0x41), buf(charCode), 0, buf(0x41), 2, "A?", 0, 2, "A", 2, 1));
+			result.add($(buf(charCode), buf(0x41), 0, buf(0x41), 2, "?A", 0, 2, "A", 2, 1));
+			result.add($(buf(0x61, charCode, 0x41), 0, buf(0x41), 2, "a?A", 0, 3, "A", 2, 1));
 		}
 
 		return result;
@@ -141,15 +141,16 @@ public class LineByteSinkDecoderTest {
 
 	private static List<StringPosPair> toLines(final Object[] objs) {
 		final int lenTwo = objs.length;
-		if ((lenTwo % 2) != 0) {
-			throw new IllegalArgumentException("number of args must be even");
+		if ((lenTwo % 3) != 0) {
+			throw new IllegalArgumentException("number of args must be 3 div");
 		}
-		final int len = lenTwo / 2;
+		final int len = lenTwo / 3;
 		final List<StringPosPair> result = new ArrayList<>(len);
 		for (int i=0; i<len; i++) {
-			final String line = (String)objs[i*2];
-			final Number pos = (Number)objs[i*2+1];
-			result.add(new StringPosPair(line, pos.longValue()));
+			final String line = (String)objs[i*3];
+			final Number pos = (Number)objs[i*3+1];
+			final Number lilen = (Number)objs[i*3+2];
+			result.add(new StringPosPair(line, pos.longValue(), lilen.intValue()));
 		}
 
 		return result;
@@ -179,11 +180,13 @@ public class LineByteSinkDecoderTest {
 	public static class StringPosPair {
 		private final String string;
 		private final long pos;
+		private final int length;
 
-		public StringPosPair(String string, long pos) {
+		public StringPosPair(String string, long pos, int length) {
 			super();
 			this.string = string;
 			this.pos = pos;
+			this.length = length;
 		}
 
 		protected String getString() {
@@ -194,9 +197,14 @@ public class LineByteSinkDecoderTest {
 			return pos;
 		}
 
+		protected int getLength() {
+			return length;
+		}
+
 		@Override
 		public String toString() {
-			return "StringPosPair [string=" + string + ", pos=" + pos + "]";
+			return "StringPosPair [string="+string+", pos="+pos
+			 +", length="+length+"]";
 		}
 
 		@Override
@@ -234,8 +242,8 @@ public class LineByteSinkDecoderTest {
 		}
 
 		@Override
-		public void put(String line, long filePos) {
-			final StringPosPair spp = new StringPosPair(line, filePos);
+		public void put(String line, long filePos, int length) {
+			final StringPosPair spp = new StringPosPair(line, filePos, length);
 			list.add(spp);
 		}
 
