@@ -8,8 +8,9 @@ import javax.swing.JList;
 
 import pl.rychu.jew.LogFileAccess;
 import pl.rychu.jew.LogLine;
+import pl.rychu.jew.LogLineFull;
 
-public class LogViewPanel extends JList<LogLine> {
+public class LogViewPanel extends JList<LogLineFull> {
 
 	private static final long serialVersionUID = -6731368974272464443L;
 
@@ -24,7 +25,7 @@ public class LogViewPanel extends JList<LogLine> {
 
 	// ------
 
-	private static class ListModelLog extends AbstractListModel<LogLine> {
+	private static class ListModelLog extends AbstractListModel<LogLineFull> {
 
 		private static final long serialVersionUID = 5990060914470736065L;
 
@@ -42,9 +43,9 @@ public class LogViewPanel extends JList<LogLine> {
 		}
 
 		@Override
-		public LogLine getElementAt(final int index) {
+		public LogLineFull getElementAt(final int index) {
 			System.out.println("access to "+index);
-			return logFileAccess.get(index);
+			return new LogLineFull(logFileAccess.get(index), "??");
 		}
 
 	}
@@ -58,7 +59,8 @@ public class LogViewPanel extends JList<LogLine> {
     public Component getListCellRendererComponent(final JList<?> list
      , final Object value, final int index, final boolean isSelected
      , final boolean cellHasFocus) {
-			final LogLine logLine = (LogLine)value;
+			final LogLineFull logLineFull = (LogLineFull)value;
+			final LogLine logLine = logLineFull.getLogLine();
 			final String logLineStr = getRenderedString(logLine);
 			return super.getListCellRendererComponent(list, logLineStr, index
 			 , isSelected, cellHasFocus);
