@@ -96,18 +96,6 @@ public class LineByteSinkDecoderTest {
 			final List<StringPosPair> resultLines = (List<StringPosPair>)params[1];
 
 			result.add($(events, resultLines));
-			/*
-			final int blen = bytes.length;
-			for (int bp=0; bp<=blen; bp++) {
-				final ByteBuffer buf1 = ByteBuffer.allocate(bp);
-				buf1.put(bytes, 0, bp);
-				buf1.flip();
-				final ByteBuffer buf2 = ByteBuffer.allocate(blen-bp);
-				buf2.put(bytes, bp, blen-bp);
-				buf2.flip();
-				result.add($(Arrays.asList(buf1, buf2), resultLines));
-			}
-			*/
 		}
 
 		return result;
