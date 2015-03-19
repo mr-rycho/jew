@@ -42,8 +42,8 @@ public class LineByteSinkDecoder implements LineByteSink {
 
 	@Override
 	public void lineBreak(final long offset) {
-		byteBuffer.flip();
 		final int length = byteBuffer.position();
+		byteBuffer.flip();
 		charBuffer.clear();
 		final CoderResult coderResult = decoder.decode(byteBuffer, charBuffer, true);
 		if (coderResult.isError() || coderResult.isMalformed()

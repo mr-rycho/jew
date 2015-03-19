@@ -2,7 +2,11 @@ package pl.rychu.jew;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CodingErrorAction;
 import java.nio.file.FileSystems;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
@@ -12,25 +16,32 @@ import pl.rychu.jew.GrowingList;
 import pl.rychu.jew.LogLine;
 import pl.rychu.jew.linedec.LineDecoder;
 
+
+
 public class LogFileAccess {
 
 	private final String pathStr;
 
 	private final GrowingList<LogLine> index = new GrowingListLocked<>(1024);
 
-	private final LineDecoder lineTypeRecognizer
-	 = LineDecodersChainFactory.getLineDecodersChain();
+	private volatile FileChannel fileChannel;
 
-	private final LinePosSink indexer = new Indexer(lineTypeRecognizer, index);
+	private ByteBuffer byteBuffer = ByteBuffer.allocate(1000);
 
-	final LineByteSink lineByteSink = new LineByteSinkDecoder(indexer, "UTF-8");
+	private CharBuffer charBuffer = CharBuffer.allocate(1000);
 
-	final LineDividerUtf8 lineDivider = new LineDividerUtf8(lineByteSink);
+	private final CharsetDecoder decoder;
 
 	// ------------------
 
 	public LogFileAccess(final String pathStr) {
 		this.pathStr = pathStr;
+
+		final Charset charset = Charset.forName("UTF-8");
+		decoder = charset.newDecoder();
+		decoder.onMalformedInput(CodingErrorAction.REPLACE);
+		decoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
+		decoder.replaceWith("?");
 
 		new Thread(new LogFileReader()).start();
 	}
@@ -43,13 +54,61 @@ public class LogFileAccess {
 		return index.get(pos);
 	}
 
+	public LogLineFull getFull(final long pos) {
+		final FileChannel fc = fileChannel;
+		if (fc == null) {
+			return null;
+		}
+
+		// TODO apply cache here
+
+		final LogLine logLine = index.get(pos);
+		final long linePos = logLine.getFilePos();
+		final int lineLen = logLine.getLength();
+		byteBuffer.clear();
+		charBuffer.clear();
+		if (byteBuffer.remaining() < lineLen) {
+			byteBuffer = ByteBuffer.allocate(lineLen);
+			charBuffer = CharBuffer.allocate(lineLen);
+		}
+
+		byteBuffer.position(byteBuffer.limit() - lineLen);
+		final int mark = byteBuffer.position();
+		try {
+			while (byteBuffer.hasRemaining()) {
+				final int br = fc.read(byteBuffer,linePos+byteBuffer.position()-mark);
+				if (br < 0) {
+					return null;
+				}
+			}
+		} catch (IOException e) {
+			return null;
+		}
+
+		decoder.reset();
+		byteBuffer.position(mark);
+		decoder.decode(byteBuffer, charBuffer, true);
+
+		final String line = new String(charBuffer.array(), 0, charBuffer.position());
+		return new LogLineFull(logLine, line);
+	}
+
 	// ==================
 
 	private class LogFileReader implements Runnable {
 
-		private FileChannel fileChannel;
-
 		private final ByteBuffer byteBuffer = ByteBuffer.allocate(100_000);
+
+		private final LineDecoder lineTypeRecognizer
+		 = LineDecodersChainFactory.getLineDecodersChain();
+
+		private final LinePosSink indexer = new Indexer(lineTypeRecognizer, index);
+
+		private final LineByteSink lineByteSink
+		 = new LineByteSinkDecoder(indexer, "UTF-8");
+
+		private final LineDividerUtf8 lineDivider
+		 = new LineDividerUtf8(lineByteSink);
 
 		// --------
 

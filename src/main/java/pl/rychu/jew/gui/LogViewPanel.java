@@ -38,14 +38,12 @@ public class LogViewPanel extends JList<LogLineFull> {
 		@Override
 		public int getSize() {
 			final int result = (int)logFileAccess.size();
-			System.out.println("size: "+result);
 			return result;
 		}
 
 		@Override
 		public LogLineFull getElementAt(final int index) {
-			System.out.println("access to "+index);
-			return new LogLineFull(logFileAccess.get(index), "??");
+			return logFileAccess.getFull(index);
 		}
 
 	}
@@ -60,10 +58,17 @@ public class LogViewPanel extends JList<LogLineFull> {
      , final Object value, final int index, final boolean isSelected
      , final boolean cellHasFocus) {
 			final LogLineFull logLineFull = (LogLineFull)value;
-			final LogLine logLine = logLineFull.getLogLine();
-			final String logLineStr = getRenderedString(logLine);
+			final String logLineStr = getRenderedString(logLineFull);
 			return super.getListCellRendererComponent(list, logLineStr, index
 			 , isSelected, cellHasFocus);
+		}
+
+		private String getRenderedString(final LogLineFull logLineFull) {
+			if (logLineFull == null) {
+				return "~";
+			} else {
+				return logLineFull.getFullText();
+			}
 		}
 
 		private String getRenderedString(final LogLine logLine) {
