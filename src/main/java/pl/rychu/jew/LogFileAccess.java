@@ -23,7 +23,7 @@ public class LogFileAccess {
 
 	private final String pathStr;
 
-	private final GrowingList<LogLine> index = new GrowingListLocked<>(1024);
+	private final GrowingList<LogLine> index = GrowingListLocked.create(1024);
 
 	private volatile FileChannel fileChannel;
 

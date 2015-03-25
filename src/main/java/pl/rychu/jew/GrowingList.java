@@ -12,20 +12,36 @@ public class GrowingList<T> {
 
 	private final List<Object[]> listOfArrays = new ArrayList<Object[]>();
 
-	private int currentListIndex = 0;
-	private int currentArrayIndex = 0;
+	private int currentListIndex;
+	private int currentArrayIndex;
 
 	private final CopyOnWriteArrayList<IndexListener> listeners
 	 = new CopyOnWriteArrayList<>();
 
 	// -----------
 
-	public GrowingList(final int arraySize) {
+	protected GrowingList(final int arraySize) {
 		final int power = getPower(arraySize);
 
 		this.arraySizePower = power;
 		this.arraySize = arraySize;
 		this.arrayOffMask = arraySize - 1;
+	}
+
+	public static <T> GrowingList<T> create(final int arraySize) {
+		final GrowingList<T> result = new GrowingList<>(arraySize);
+
+		result.init();
+
+		return result;
+	}
+
+	// -----------
+
+	protected void init() {
+		listOfArrays.clear();
+		currentListIndex = 0;
+		currentArrayIndex = 0;
 	}
 
 	// -----------
@@ -47,6 +63,14 @@ public class GrowingList<T> {
 
 		for (final IndexListener li: listeners) {
 			li.lineAdded();
+		}
+	}
+
+	public void clear() {
+		init();
+
+		for (final IndexListener li: listeners) {
+			li.indexWasReset();
 		}
 	}
 

@@ -10,8 +10,16 @@ public class GrowingListLocked<T> extends GrowingList<T> {
 
 	// ---------------
 
-	public GrowingListLocked(int arraySize) {
+	protected GrowingListLocked(final int arraySize) {
 		super(arraySize);
+	}
+
+	public static <T> GrowingListLocked<T> create(final int arraySize) {
+		final GrowingListLocked<T> result = new GrowingListLocked<T>(arraySize);
+
+		result.init();
+
+		return result;
 	}
 
 	// ---------------
@@ -21,6 +29,16 @@ public class GrowingListLocked<T> extends GrowingList<T> {
 		writeLock.lock();
 		try {
 			super.add(value);
+		} finally {
+			writeLock.unlock();
+		}
+	}
+
+	public void clear() {
+		final Lock writeLock = rwLock.writeLock();
+		writeLock.lock();
+		try {
+			super.clear();
 		} finally {
 			writeLock.unlock();
 		}
