@@ -5,8 +5,10 @@ import java.awt.Component;
 import javax.swing.AbstractListModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
+import javax.swing.SwingUtilities;
 
 import pl.rychu.jew.LogFileAccess;
+import pl.rychu.jew.LogFileListener;
 import pl.rychu.jew.LogLine;
 import pl.rychu.jew.LogLineFull;
 
@@ -25,7 +27,8 @@ public class LogViewPanel extends JList<LogLineFull> {
 
 	// ------
 
-	private static class ListModelLog extends AbstractListModel<LogLineFull> {
+	private static class ListModelLog extends AbstractListModel<LogLineFull>
+	 implements LogFileListener {
 
 		private static final long serialVersionUID = 5990060914470736065L;
 
@@ -44,6 +47,27 @@ public class LogViewPanel extends JList<LogLineFull> {
 		@Override
 		public LogLineFull getElementAt(final int index) {
 			return logFileAccess.getFull(index);
+		}
+
+		@Override
+		public void linesAdded() {
+			final int size = (int)logFileAccess.size();
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					fireIntervalAdded(this, size-1, size-1);
+				}
+			});
+		}
+
+		@Override
+		public void fileWasReset() {
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					fireIntervalRemoved(this, 0, Integer.MAX_VALUE-1);
+				}
+			});
 		}
 
 	}

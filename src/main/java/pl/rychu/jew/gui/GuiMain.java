@@ -13,7 +13,7 @@ public class GuiMain {
 
 	public static void main(final String... args) throws InterruptedException {
 		final LogFileAccess logFileAccess
-		 = new LogFileAccess("/home/rycho/Pulpit/server.log");
+		 = LogFileAccess.create("/home/rycho/Pulpit/server.log");
 
 		Thread.sleep(1000L);
 

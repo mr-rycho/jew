@@ -11,6 +11,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import pl.rychu.jew.GrowingList;
 import pl.rychu.jew.LogLine;
@@ -32,9 +33,12 @@ public class LogFileAccess {
 
 	private final CharsetDecoder decoder;
 
+	private final CopyOnWriteArrayList<LogFileListener> listeners
+	 = new CopyOnWriteArrayList<>();
+
 	// ------------------
 
-	public LogFileAccess(final String pathStr) {
+	private LogFileAccess(final String pathStr) {
 		this.pathStr = pathStr;
 
 		final Charset charset = Charset.forName("UTF-8");
@@ -45,6 +49,26 @@ public class LogFileAccess {
 
 		new Thread(new LogFileReader()).start();
 	}
+
+	public static LogFileAccess create(final String pathStr) {
+		final LogFileAccess result = new LogFileAccess(pathStr);
+
+		result.index.addListener(result.new Listener());
+
+		return result;
+	}
+
+	// ---
+
+	public void addLogFileListener(final LogFileListener l) {
+		listeners.add(l);
+	}
+
+	public void removeLogFileListener(final LogFileListener l) {
+		listeners.remove(l);
+	}
+
+	// ---
 
 	public long size() {
 		return index.size();
@@ -91,6 +115,24 @@ public class LogFileAccess {
 
 		final String line = new String(charBuffer.array(), 0, charBuffer.position());
 		return new LogLineFull(logLine, line);
+	}
+
+	// ==================
+
+	private class Listener implements IndexListener {
+		@Override
+		public void lineAdded() {
+			for (final LogFileListener li: listeners) {
+				li.linesAdded();
+			}
+		}
+
+		@Override
+		public void indexWasReset() {
+			for (final LogFileListener li: listeners) {
+				li.fileWasReset();
+			}
+		}
 	}
 
 	// ==================

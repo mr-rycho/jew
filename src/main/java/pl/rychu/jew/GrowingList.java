@@ -2,6 +2,7 @@ package pl.rychu.jew;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class GrowingList<T> {
 
@@ -13,6 +14,9 @@ public class GrowingList<T> {
 
 	private int currentListIndex = 0;
 	private int currentArrayIndex = 0;
+
+	private final CopyOnWriteArrayList<IndexListener> listeners
+	 = new CopyOnWriteArrayList<>();
 
 	// -----------
 
@@ -40,6 +44,10 @@ public class GrowingList<T> {
 			currentArrayIndex = 0;
 			currentListIndex++;
 		}
+
+		for (final IndexListener li: listeners) {
+			li.lineAdded();
+		}
 	}
 
 	public T get(final long index) {
@@ -53,6 +61,16 @@ public class GrowingList<T> {
 
 	public long size() {
 		return ((long)arraySize) * currentListIndex + currentArrayIndex;
+	}
+
+	// -----------
+
+	public void addListener(final IndexListener l) {
+		listeners.add(l);
+	}
+
+	public void removeListener(final IndexListener l) {
+		listeners.remove(l);
 	}
 
 	// -----------
