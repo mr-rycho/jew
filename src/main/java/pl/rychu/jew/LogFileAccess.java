@@ -13,8 +13,9 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import pl.rychu.jew.GrowingList;
 import pl.rychu.jew.LogLine;
+import pl.rychu.jew.gl.GrowingList;
+import pl.rychu.jew.gl.GrowingListLocked;
 import pl.rychu.jew.linedec.LineDecoder;
 
 

@@ -1,4 +1,4 @@
-package pl.rychu.jew;
+package pl.rychu.jew.gl;
 
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;

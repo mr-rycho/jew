@@ -1,8 +1,10 @@
-package pl.rychu.jew;
+package pl.rychu.jew.gl;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+
+import pl.rychu.jew.IndexListener;
 
 public class GrowingList<T> {
 

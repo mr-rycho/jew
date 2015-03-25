@@ -1,4 +1,4 @@
-package pl.rychu.jew;
+package pl.rychu.jew.gl;
 
 import static junitparams.JUnitParamsRunner.$;
 import static org.fest.assertions.Assertions.assertThat;
@@ -13,6 +13,8 @@ import junitparams.Parameters;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import pl.rychu.jew.gl.GrowingList;
 
 @RunWith(JUnitParamsRunner.class)
 public class GrowingListTest {

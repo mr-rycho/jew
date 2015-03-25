@@ -3,6 +3,7 @@ package pl.rychu.jew;
 import java.util.Arrays;
 
 import pl.rychu.jew.LogLine.LogLineType;
+import pl.rychu.jew.gl.GrowingList;
 import pl.rychu.jew.linedec.LineDecoder;
 
 public class Indexer implements LinePosSink {

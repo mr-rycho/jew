@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import pl.rychu.jew.LogLine.LogLineType;
+import pl.rychu.jew.gl.GrowingList;
+import pl.rychu.jew.gl.GrowingListLocked;
 import pl.rychu.jew.linedec.LineDecoder;
 import pl.rychu.jew.linedec.LogElemsCache;
 
@@ -25,7 +27,7 @@ public class ComboRunner {
 
 	public static void main(String... args) {
 
-		final GrowingList<LogLine> index = new GrowingListLocked<>(1_024);
+		final GrowingList<LogLine> index = GrowingListLocked.create(1_024);
 
 		final LineDecoder lineDecoder = LineDecodersChainFactory.getLineDecodersChain();
 
