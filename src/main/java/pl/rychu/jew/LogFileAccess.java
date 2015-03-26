@@ -155,21 +155,16 @@ public class LogFileAccess {
 
 		// --------
 
-		private void tryOpen() {
-			final Path path = FileSystems.getDefault().getPath(pathStr);
-			try {
-				fileChannel = FileChannel.open(path, StandardOpenOption.READ);
-			} catch (NoSuchFileException e) {
-				fileChannel = null;
-			} catch (IOException e) {
-				e.printStackTrace();
-				fileChannel = null;
-			}
-		}
-
-		private void checkAndOpen() {
-			if (fileChannel == null) {
-				tryOpen();
+		@Override
+		public void run() {
+			while (true) {
+				read();
+				try {
+					Thread.sleep(250);
+				} catch (InterruptedException e) {
+					System.out.println("shutting down");
+					break;
+				}
 			}
 		}
 
@@ -198,16 +193,21 @@ public class LogFileAccess {
 			}
 		}
 
-		@Override
-		public void run() {
-			while (true) {
-				read();
-				try {
-					Thread.sleep(250);
-				} catch (InterruptedException e) {
-					System.out.println("shutting down");
-					break;
-				}
+		private void checkAndOpen() {
+			if (fileChannel == null) {
+				tryOpen();
+			}
+		}
+
+		private void tryOpen() {
+			final Path path = FileSystems.getDefault().getPath(pathStr);
+			try {
+				fileChannel = FileChannel.open(path, StandardOpenOption.READ);
+			} catch (NoSuchFileException e) {
+				fileChannel = null;
+			} catch (IOException e) {
+				e.printStackTrace();
+				fileChannel = null;
 			}
 		}
 
