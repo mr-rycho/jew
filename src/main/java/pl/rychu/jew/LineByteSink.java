@@ -10,4 +10,6 @@ public interface LineByteSink {
 
 	void lineBreak(long offset);
 
+	void reset();
+
 }

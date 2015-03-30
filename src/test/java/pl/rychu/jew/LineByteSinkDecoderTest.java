@@ -235,6 +235,10 @@ public class LineByteSinkDecoderTest {
 			list.add(spp);
 		}
 
+		@Override
+		public void reset() {
+			list.clear();
+		}
 	}
 
 }

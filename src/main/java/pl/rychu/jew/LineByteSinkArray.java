@@ -29,6 +29,11 @@ public class LineByteSinkArray implements LineByteSink {
 		list.add(LineByteSinkEvent.getNewlineEvent(offset));
 	}
 
+	@Override
+	public void reset() {
+		list.add(LineByteSinkEvent.getResetEvent());
+	}
+
 	// ============
 
 	public static class LineByteSinkEvent {
@@ -67,12 +72,20 @@ public class LineByteSinkArray implements LineByteSink {
 			return new LineByteSinkEvent(null, offset);
 		}
 
+		public static LineByteSinkEvent getResetEvent() {
+			return new LineByteSinkEvent(null, -1L);
+		}
+
 		public boolean isBytesEvent() {
 			return bytes != null;
 		}
 
 		public boolean isNewlineEvent() {
-			return bytes == null;
+			return bytes==null && offset>=0L;
+		}
+
+		public boolean isResetEvent() {
+			return bytes==null && offset<0L;
 		}
 
 		public byte[] getBytes() {
@@ -85,6 +98,9 @@ public class LineByteSinkArray implements LineByteSink {
 		public long getOffset() {
 			if (bytes != null) {
 				throw new IllegalStateException("this is a bytes event");
+			}
+			if (offset < 0) {
+				throw new IllegalStateException("this is a reset event");
 			}
 			return offset;
 		}
@@ -101,8 +117,10 @@ public class LineByteSinkArray implements LineByteSink {
 				}
 				sb.append("]");
 				return sb.toString();
-			} else {
+			} else if (offset >= 0) {
 				return "nl["+offset+"]";
+			} else {
+				return "rs[]";
 			}
 		}
 

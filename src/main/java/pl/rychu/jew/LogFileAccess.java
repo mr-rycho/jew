@@ -234,7 +234,8 @@ public class LogFileAccess {
 					log.debug("new fk = {}", fk);
 					fileChannel = null;
 					fileKey = null;
-					index.clear();
+					byteBuffer.clear();
+					lineDivider.reset();
 					log.debug("list cleared");
 				}
 				prevFileSize = fs;

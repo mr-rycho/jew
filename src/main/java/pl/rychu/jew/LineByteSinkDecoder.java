@@ -60,6 +60,14 @@ public class LineByteSinkDecoder implements LineByteSink {
 		byteBuffer.clear();
 	}
 
+	@Override
+	public void reset() {
+		byteBuffer.clear();
+		charBuffer.clear();
+		decoder.reset();
+		linePosSink.reset();
+	}
+
 	// -------------------
 
 	private void prepareBuffers(final int bytesToAdd) {

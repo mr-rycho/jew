@@ -28,6 +28,11 @@ public class Indexer implements LinePosSink {
 		typeCounter[logLineType.ordinal()]++;
 	}
 
+	@Override
+	public void reset() {
+		index.clear();
+	}
+
 	public long[] getTypeCounts() {
 		return Arrays.copyOf(typeCounter, typeCounter.length);
 	}

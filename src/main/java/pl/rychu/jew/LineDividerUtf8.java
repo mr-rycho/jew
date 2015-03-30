@@ -46,4 +46,11 @@ public class LineDividerUtf8 {
 		}
 	}
 
+	public void reset() {
+		currentLinePos = 0L;
+		currentPos = 0L;
+		skipCrLf = false;
+		lineByteSink.reset();
+	}
+
 }
