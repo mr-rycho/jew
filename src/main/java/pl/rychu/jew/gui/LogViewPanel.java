@@ -7,6 +7,9 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import javax.swing.SwingUtilities;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import pl.rychu.jew.LogFileAccess;
 import pl.rychu.jew.LogFileListener;
 import pl.rychu.jew.LogLine;
@@ -16,10 +19,12 @@ public class LogViewPanel extends JList<LogLineFull> {
 
 	private static final long serialVersionUID = -6731368974272464443L;
 
+	private static final Logger log = LoggerFactory.getLogger(LogViewPanel.class);
+
 	// ---------
 
 	public LogViewPanel(final LogFileAccess logFileAccess) {
-		super(new ListModelLog(logFileAccess));
+		super(ListModelLog.create(logFileAccess));
 		setFixedCellWidth(600);
 		setFixedCellHeight(14);
 		setCellRenderer(new CellRenderer());
@@ -34,8 +39,16 @@ public class LogViewPanel extends JList<LogLineFull> {
 
 		private final LogFileAccess logFileAccess;
 
-		public ListModelLog(final LogFileAccess logFileAccess) {
+		private ListModelLog(final LogFileAccess logFileAccess) {
 			this.logFileAccess = logFileAccess;
+		}
+
+		public static ListModelLog create(final LogFileAccess logFileAccess) {
+			final ListModelLog result = new ListModelLog(logFileAccess);
+
+			logFileAccess.addLogFileListener(result);
+
+			return result;
 		}
 
 		@Override
@@ -46,7 +59,8 @@ public class LogViewPanel extends JList<LogLineFull> {
 
 		@Override
 		public LogLineFull getElementAt(final int index) {
-			return logFileAccess.getFull(index);
+			final LogLineFull fullLine = logFileAccess.getFull(index);
+			return fullLine;
 		}
 
 		@Override
@@ -62,10 +76,13 @@ public class LogViewPanel extends JList<LogLineFull> {
 
 		@Override
 		public void fileWasReset() {
+			log.debug("index clear, sched removal");
 			SwingUtilities.invokeLater(new Runnable() {
 				@Override
 				public void run() {
-					fireIntervalRemoved(this, 0, Integer.MAX_VALUE-1);
+					log.debug("removing");
+					fireIntervalRemoved(this, 0, Integer.MAX_VALUE-2);
+					log.debug("removed");
 				}
 			});
 		}
@@ -93,13 +110,6 @@ public class LogViewPanel extends JList<LogLineFull> {
 			} else {
 				return logLineFull.getFullText();
 			}
-		}
-
-		private String getRenderedString(final LogLine logLine) {
-			return logLine.getTimestamp()
-			 +" / "+logLine.getLevel()
-			 +" / "+"["+logLine.getClassName()+"]"
-			 +" / "+"("+logLine.getThreadName()+")";
 		}
 	}
 

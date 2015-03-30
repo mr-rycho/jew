@@ -8,12 +8,17 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CodingErrorAction;
 import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import pl.rychu.jew.LogLine;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import pl.rychu.jew.gl.GrowingList;
 import pl.rychu.jew.gl.GrowingListLocked;
 import pl.rychu.jew.linedec.LineDecoder;
@@ -22,7 +27,9 @@ import pl.rychu.jew.linedec.LineDecoder;
 
 public class LogFileAccess {
 
-	private final String pathStr;
+	static final Logger log = LoggerFactory.getLogger(LogFileAccess.class);
+
+	final String pathStr;
 
 	private final GrowingList<LogLine> index = GrowingListLocked.create(1024);
 
@@ -87,7 +94,10 @@ public class LogFileAccess {
 
 		// TODO apply cache here
 
-		final LogLine logLine = index.get(pos);
+		final LogLine logLine = getOrNull(pos);
+		if (logLine == null) {
+			return null;
+		}
 		final long linePos = logLine.getFilePos();
 		final int lineLen = logLine.getLength();
 		byteBuffer.clear();
@@ -101,7 +111,7 @@ public class LogFileAccess {
 		final int mark = byteBuffer.position();
 		try {
 			while (byteBuffer.hasRemaining()) {
-				final int br = fc.read(byteBuffer,linePos+byteBuffer.position()-mark);
+				final int br = fc.read(byteBuffer, linePos + byteBuffer.position() - mark);
 				if (br < 0) {
 					return null;
 				}
@@ -116,6 +126,14 @@ public class LogFileAccess {
 
 		final String line = new String(charBuffer.array(), 0, charBuffer.position());
 		return new LogLineFull(logLine, line);
+	}
+
+	private LogLine getOrNull(final long pos) {
+		try {
+			return index.get(pos);
+		} catch (IndexOutOfBoundsException e) {
+			return null;
+		}
 	}
 
 	// ==================
@@ -153,6 +171,16 @@ public class LogFileAccess {
 		private final LineDividerUtf8 lineDivider
 		 = new LineDividerUtf8(lineByteSink);
 
+		private final Path path;
+
+		private Object fileKey;
+
+		private Long prevFileSize;
+
+		private LogFileReader() {
+			this.path = FileSystems.getDefault().getPath(pathStr);
+		}
+
 		// --------
 
 		@Override
@@ -162,13 +190,15 @@ public class LogFileAccess {
 				try {
 					Thread.sleep(250);
 				} catch (InterruptedException e) {
-					System.out.println("shutting down");
+					log.info("shutting down");
 					break;
 				}
 			}
 		}
 
 		public long read() {
+			checkAndClose();
+
 			checkAndOpen();
 
 			if (fileChannel == null) {
@@ -193,6 +223,24 @@ public class LogFileAccess {
 			}
 		}
 
+		private void checkAndClose() {
+			if (fileChannel != null) {
+				final BasicFileAttributes attrs = readAttributes();
+				final Object fk = attrs!=null ? attrs.fileKey() : null;
+				final Long fs = attrs!=null ? attrs.size() : null;
+				if (fk==null || !fk.equals(fileKey) || fs==null
+				 || (prevFileSize!=null && fs<prevFileSize)) {
+					log.debug("old fk = {}", fileKey);
+					log.debug("new fk = {}", fk);
+					fileChannel = null;
+					fileKey = null;
+					index.clear();
+					log.debug("list cleared");
+				}
+				prevFileSize = fs;
+			}
+		}
+
 		private void checkAndOpen() {
 			if (fileChannel == null) {
 				tryOpen();
@@ -200,14 +248,24 @@ public class LogFileAccess {
 		}
 
 		private void tryOpen() {
-			final Path path = FileSystems.getDefault().getPath(pathStr);
 			try {
 				fileChannel = FileChannel.open(path, StandardOpenOption.READ);
+				fileKey = readAttributes().fileKey();
+				log.debug("new file key is {}", fileKey);
 			} catch (NoSuchFileException e) {
 				fileChannel = null;
 			} catch (IOException e) {
-				e.printStackTrace();
+				log.error("IOException", e);
 				fileChannel = null;
+			}
+		}
+
+		private BasicFileAttributes readAttributes() {
+			try {
+				return Files.readAttributes(path
+				 , BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
+			} catch (IOException e) {
+				return null;
 			}
 		}
 
