@@ -12,6 +12,7 @@ import pl.rychu.jew.LogFileAccess;
 public class GuiMain {
 
 	public static void main(final String... args) throws InterruptedException {
+		// TODO invoke later
 		final LogFileAccess logFileAccess
 		 = LogFileAccess.create("/home/rycho/Pulpit/server.log");
 
@@ -19,7 +20,7 @@ public class GuiMain {
 
 		final JFrame mainFrame = new JFrame("jew");
 
-		final LogViewPanel logViewPanel = new LogViewPanel(logFileAccess);
+		final LogViewPanel logViewPanel = LogViewPanel.create(logFileAccess);
 
 		final JScrollPane scrollPane = new JScrollPane(logViewPanel);
 		scrollPane.setPreferredSize(new Dimension(600, 600));

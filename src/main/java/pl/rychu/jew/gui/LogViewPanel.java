@@ -5,6 +5,7 @@ import java.awt.Component;
 import javax.swing.AbstractListModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 
 import org.slf4j.Logger;
@@ -12,8 +13,9 @@ import org.slf4j.LoggerFactory;
 
 import pl.rychu.jew.LogFileAccess;
 import pl.rychu.jew.LogFileListener;
-import pl.rychu.jew.LogLine;
 import pl.rychu.jew.LogLineFull;
+
+
 
 public class LogViewPanel extends JList<LogLineFull> {
 
@@ -23,14 +25,21 @@ public class LogViewPanel extends JList<LogLineFull> {
 
 	// ---------
 
-	public LogViewPanel(final LogFileAccess logFileAccess) {
-		super(ListModelLog.create(logFileAccess));
-		setFixedCellWidth(600);
-		setFixedCellHeight(14);
-		setCellRenderer(new CellRenderer());
+	public static LogViewPanel create(final LogFileAccess logFileAccess) {
+		final LogViewPanel result = new LogViewPanel();
+		result.setFixedCellWidth(600);
+		result.setFixedCellHeight(14);
+		result.setCellRenderer(new CellRenderer());
+		result.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+		final ListModelLog model = ListModelLog.create(logFileAccess, result);
+
+		result.setModel(model);
+
+		return result;
 	}
 
-	// ------
+	// ==================================
 
 	private static class ListModelLog extends AbstractListModel<LogLineFull>
 	 implements LogFileListener {
@@ -39,12 +48,17 @@ public class LogViewPanel extends JList<LogLineFull> {
 
 		private final LogFileAccess logFileAccess;
 
-		private ListModelLog(final LogFileAccess logFileAccess) {
+		private final LogViewPanel logViewPanel;
+
+		private ListModelLog(final LogFileAccess logFileAccess
+		 , final LogViewPanel logViewPanel) {
 			this.logFileAccess = logFileAccess;
+			this.logViewPanel = logViewPanel;
 		}
 
-		public static ListModelLog create(final LogFileAccess logFileAccess) {
-			final ListModelLog result = new ListModelLog(logFileAccess);
+		public static ListModelLog create(final LogFileAccess logFileAccess
+		 , final LogViewPanel logViewPanel) {
+			final ListModelLog result = new ListModelLog(logFileAccess, logViewPanel);
 
 			logFileAccess.addLogFileListener(result);
 
@@ -53,18 +67,17 @@ public class LogViewPanel extends JList<LogLineFull> {
 
 		@Override
 		public int getSize() {
-			final int result = (int)logFileAccess.size();
-			return result;
+			return (int)logFileAccess.size();
 		}
 
 		@Override
 		public LogLineFull getElementAt(final int index) {
-			final LogLineFull fullLine = logFileAccess.getFull(index);
-			return fullLine;
+			return logFileAccess.getFull(index);
 		}
 
 		@Override
 		public void linesAdded() {
+			// TODO cumulative
 			final int size = (int)logFileAccess.size();
 			SwingUtilities.invokeLater(new Runnable() {
 				@Override
@@ -81,7 +94,8 @@ public class LogViewPanel extends JList<LogLineFull> {
 				@Override
 				public void run() {
 					log.debug("removing");
-					fireIntervalRemoved(this, 0, Integer.MAX_VALUE-2);
+					logViewPanel.ensureIndexIsVisible(0);
+					fireIntervalRemoved(this, 0, Integer.MAX_VALUE>>1);
 					log.debug("removed");
 				}
 			});
