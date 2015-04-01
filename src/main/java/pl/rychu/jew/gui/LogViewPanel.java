@@ -8,7 +8,10 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
+import org.hamcrest.core.IsSame;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,6 +40,13 @@ public class LogViewPanel extends JList<LogLineFull> {
 		final ListModelLog model = ListModelLog.create(logFileAccess, result, infoPanel);
 
 		result.setModel(model);
+		result.addListSelectionListener(new ListSelectionListener() {
+			@Override
+			public void valueChanged(final ListSelectionEvent e) {
+				final int firstIndex = result.getSelectedIndex();
+				infoPanel.setCurrentLine(firstIndex);
+			}
+		});
 
 		return result;
 	}

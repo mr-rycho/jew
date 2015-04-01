@@ -11,6 +11,7 @@ public class InfoPanel extends JPanel {
 
 	// ---------------
 
+	private final JLabel currentLine;
 	private final JLabel lineCountLabel;
 
 	// ---------------
@@ -18,9 +19,16 @@ public class InfoPanel extends JPanel {
 	public InfoPanel() {
 		super(true);
 
-		lineCountLabel = new JLabel("#");
+		currentLine = new JLabel("#");
+		this.add(currentLine);
 
+		lineCountLabel = new JLabel("#");
 		this.add(lineCountLabel);
+	}
+
+	public void setCurrentLine(final int number) {
+		final String numStr = number < 0 ? "-" : Integer.toString(number+1);
+		currentLine.setText(numStr);
 	}
 
 	public void setLineCount(final int count) {
