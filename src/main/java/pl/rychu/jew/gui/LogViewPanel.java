@@ -1,6 +1,7 @@
 package pl.rychu.jew.gui;
 
 import java.awt.Component;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.swing.AbstractListModel;
 import javax.swing.DefaultListCellRenderer;
@@ -50,6 +51,12 @@ public class LogViewPanel extends JList<LogLineFull> {
 
 		private final LogViewPanel logViewPanel;
 
+		private final AtomicBoolean mustNotifyReset = new AtomicBoolean(false);
+
+		private final AtomicBoolean mustNotifyInsert = new AtomicBoolean(false);
+
+		// ------------------
+
 		private ListModelLog(final LogFileAccess logFileAccess
 		 , final LogViewPanel logViewPanel) {
 			this.logFileAccess = logFileAccess;
@@ -61,6 +68,8 @@ public class LogViewPanel extends JList<LogLineFull> {
 			final ListModelLog result = new ListModelLog(logFileAccess, logViewPanel);
 
 			logFileAccess.addLogFileListener(result);
+
+			new Thread(result.new ModNotifier()).start();
 
 			return result;
 		}
@@ -77,28 +86,55 @@ public class LogViewPanel extends JList<LogLineFull> {
 
 		@Override
 		public void linesAdded() {
-			// TODO cumulative
-			final int size = (int)logFileAccess.size();
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					fireIntervalAdded(this, size-1, size-1);
-				}
-			});
+			mustNotifyInsert.set(true);
 		}
 
 		@Override
 		public void fileWasReset() {
-			log.debug("index clear, sched removal");
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					log.debug("removing");
-					logViewPanel.ensureIndexIsVisible(0);
-					fireIntervalRemoved(this, 0, Integer.MAX_VALUE>>1);
-					log.debug("removed");
+			mustNotifyReset.set(true);
+		}
+
+		// ------
+
+		private class ModNotifier implements Runnable {
+
+			private final Logger log = LoggerFactory.getLogger(ModNotifier.class);
+
+			@Override
+			public void run() {
+				while (!Thread.interrupted()) {
+					if (mustNotifyReset.getAndSet(false)) {
+						log.debug("scheduling file reset");
+						SwingUtilities.invokeLater(new Runnable() {
+							@Override
+							public void run() {
+								log.debug("removing");
+								logViewPanel.ensureIndexIsVisible(0);
+								fireIntervalRemoved(this, 0, Integer.MAX_VALUE>>1);
+								log.debug("removed");
+							}
+						});
+					}
+
+					if (mustNotifyInsert.getAndSet(false)) {
+						final int size = (int)logFileAccess.size();
+						SwingUtilities.invokeLater(new Runnable() {
+							@Override
+							public void run() {
+								fireIntervalAdded(this, size-1, size-1);
+							}
+						});
+					}
+
+					try {
+						Thread.sleep(250);
+					} catch (InterruptedException e) {
+						break;
+					}
 				}
-			});
+
+				log.debug("quitting gracefully");
+			}
 		}
 
 	}
