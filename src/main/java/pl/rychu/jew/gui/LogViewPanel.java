@@ -26,14 +26,15 @@ public class LogViewPanel extends JList<LogLineFull> {
 
 	// ---------
 
-	public static LogViewPanel create(final LogFileAccess logFileAccess) {
+	public static LogViewPanel create(final LogFileAccess logFileAccess
+	 , final InfoPanel infoPanel) {
 		final LogViewPanel result = new LogViewPanel();
 		result.setFixedCellWidth(600);
 		result.setFixedCellHeight(14);
 		result.setCellRenderer(new CellRenderer());
 		result.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-		final ListModelLog model = ListModelLog.create(logFileAccess, result);
+		final ListModelLog model = ListModelLog.create(logFileAccess, result, infoPanel);
 
 		result.setModel(model);
 
@@ -64,12 +65,12 @@ public class LogViewPanel extends JList<LogLineFull> {
 		}
 
 		public static ListModelLog create(final LogFileAccess logFileAccess
-		 , final LogViewPanel logViewPanel) {
+		 , final LogViewPanel logViewPanel, final InfoPanel infoPanel) {
 			final ListModelLog result = new ListModelLog(logFileAccess, logViewPanel);
 
 			logFileAccess.addLogFileListener(result);
 
-			new Thread(result.new ModNotifier()).start();
+			new Thread(result.new ModNotifier(infoPanel)).start();
 
 			return result;
 		}
@@ -100,6 +101,16 @@ public class LogViewPanel extends JList<LogLineFull> {
 
 			private final Logger log = LoggerFactory.getLogger(ModNotifier.class);
 
+			private final InfoPanel infoPanel;
+
+			// -------
+
+			ModNotifier(final InfoPanel infoPanel) {
+				this.infoPanel = infoPanel;
+			}
+
+			// -------
+
 			@Override
 			public void run() {
 				while (!Thread.interrupted()) {
@@ -112,6 +123,7 @@ public class LogViewPanel extends JList<LogLineFull> {
 								logViewPanel.ensureIndexIsVisible(0);
 								fireIntervalRemoved(this, 0, Integer.MAX_VALUE>>1);
 								log.debug("removed");
+								infoPanel.setLineCount(0);
 							}
 						});
 					}
@@ -122,6 +134,7 @@ public class LogViewPanel extends JList<LogLineFull> {
 							@Override
 							public void run() {
 								fireIntervalAdded(this, size-1, size-1);
+								infoPanel.setLineCount(size);
 							}
 						});
 					}

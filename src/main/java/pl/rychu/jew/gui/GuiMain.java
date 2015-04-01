@@ -4,7 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 
@@ -25,14 +24,14 @@ public class GuiMain {
 
 				mainFrame.setLayout(new BorderLayout());
 
-				final LogViewPanel logViewPanel = LogViewPanel.create(logFileAccess);
+				final InfoPanel infoPanel = new InfoPanel();
+				mainFrame.add(infoPanel, BorderLayout.NORTH);
+
+				final LogViewPanel logViewPanel = LogViewPanel.create(logFileAccess, infoPanel);
 
 				final JScrollPane scrollPane = new JScrollPane(logViewPanel);
 				scrollPane.setPreferredSize(new Dimension(700, 600));
 				mainFrame.add(scrollPane, BorderLayout.CENTER);
-
-				final JLabel labelOne = new JLabel("test");
-				mainFrame.add(labelOne, BorderLayout.NORTH);
 
 				mainFrame.pack();
 				mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
