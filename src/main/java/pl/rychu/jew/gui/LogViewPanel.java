@@ -22,7 +22,7 @@ import pl.rychu.jew.LogLineFull;
 
 
 
-public class LogViewPanel extends JList<LogLineFull> {
+public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListener {
 
 	private static final long serialVersionUID = -6731368974272464443L;
 
@@ -52,6 +52,14 @@ public class LogViewPanel extends JList<LogLineFull> {
 		return result;
 	}
 
+	@Override
+	public void linesAdded(int newSize) {}
+
+	@Override
+	public void listReset() {
+		ensureIndexIsVisible(0);
+	}
+
 	// ==================================
 
 	private static class ListModelLog extends AbstractListModel<LogLineFull>
@@ -60,8 +68,6 @@ public class LogViewPanel extends JList<LogLineFull> {
 		private static final long serialVersionUID = 5990060914470736065L;
 
 		private final LogFileAccess logFileAccess;
-
-		private final LogViewPanel logViewPanel;
 
 		private final AtomicBoolean mustNotifyReset = new AtomicBoolean(false);
 
@@ -72,19 +78,18 @@ public class LogViewPanel extends JList<LogLineFull> {
 
 		// ------------------
 
-		private ListModelLog(final LogFileAccess logFileAccess
-		 , final LogViewPanel logViewPanel) {
+		private ListModelLog(final LogFileAccess logFileAccess) {
 			this.logFileAccess = logFileAccess;
-			this.logViewPanel = logViewPanel;
 		}
 
 		public static ListModelLog create(final LogFileAccess logFileAccess
 		 , final LogViewPanel logViewPanel, final InfoPanel infoPanel) {
-			final ListModelLog result = new ListModelLog(logFileAccess, logViewPanel);
+			final ListModelLog result = new ListModelLog(logFileAccess);
 
 			logFileAccess.addLogFileListener(result);
 
 			result.addCyclicModelListener(infoPanel);
+			result.addCyclicModelListener(logViewPanel);
 
 			new Thread(result.new ModNotifier()).start();
 
@@ -141,10 +146,7 @@ public class LogViewPanel extends JList<LogLineFull> {
 						SwingUtilities.invokeLater(new Runnable() {
 							@Override
 							public void run() {
-								log.debug("removing");
-								logViewPanel.ensureIndexIsVisible(0);
 								fireIntervalRemoved(this, 0, Integer.MAX_VALUE>>1);
-								log.debug("removed");
 								for (final CyclicModelListener listener: listeners) {
 									listener.listReset();
 								}
