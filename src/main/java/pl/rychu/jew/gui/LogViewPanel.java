@@ -1,6 +1,8 @@
 package pl.rychu.jew.gui;
 
 import java.awt.Component;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.swing.AbstractListModel;
@@ -65,6 +67,9 @@ public class LogViewPanel extends JList<LogLineFull> {
 
 		private final AtomicBoolean mustNotifyInsert = new AtomicBoolean(false);
 
+		private final List<CyclicModelListener> listeners
+		 = new CopyOnWriteArrayList<>();
+
 		// ------------------
 
 		private ListModelLog(final LogFileAccess logFileAccess
@@ -79,9 +84,19 @@ public class LogViewPanel extends JList<LogLineFull> {
 
 			logFileAccess.addLogFileListener(result);
 
-			new Thread(result.new ModNotifier(infoPanel)).start();
+			result.addCyclicModelListener(infoPanel);
+
+			new Thread(result.new ModNotifier()).start();
 
 			return result;
+		}
+
+		public void addCyclicModelListener(final CyclicModelListener lsn) {
+			listeners.add(lsn);
+		}
+
+		public void removeCyclicModelListener(final CyclicModelListener lsn) {
+			listeners.remove(lsn);
 		}
 
 		@Override
@@ -110,12 +125,10 @@ public class LogViewPanel extends JList<LogLineFull> {
 
 			private final Logger log = LoggerFactory.getLogger(ModNotifier.class);
 
-			private final InfoPanel infoPanel;
-
 			// -------
 
-			ModNotifier(final InfoPanel infoPanel) {
-				this.infoPanel = infoPanel;
+			ModNotifier() {
+				super();
 			}
 
 			// -------
@@ -132,7 +145,9 @@ public class LogViewPanel extends JList<LogLineFull> {
 								logViewPanel.ensureIndexIsVisible(0);
 								fireIntervalRemoved(this, 0, Integer.MAX_VALUE>>1);
 								log.debug("removed");
-								infoPanel.setLineCount(0);
+								for (final CyclicModelListener listener: listeners) {
+									listener.listReset();
+								}
 							}
 						});
 					}
@@ -143,7 +158,9 @@ public class LogViewPanel extends JList<LogLineFull> {
 							@Override
 							public void run() {
 								fireIntervalAdded(this, size-1, size-1);
-								infoPanel.setLineCount(size);
+								for (final CyclicModelListener listener: listeners) {
+									listener.linesAdded(size);
+								}
 							}
 						});
 					}

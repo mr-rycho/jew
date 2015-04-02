@@ -5,7 +5,7 @@ import javax.swing.JPanel;
 
 
 
-public class InfoPanel extends JPanel {
+public class InfoPanel extends JPanel implements CyclicModelListener {
 
 	private static final long serialVersionUID = 5701049831143954538L;
 
@@ -26,12 +26,22 @@ public class InfoPanel extends JPanel {
 		this.add(lineCountLabel);
 	}
 
+	@Override
+	public void linesAdded(int newSize) {
+		setLineCount(newSize);
+	}
+
+	@Override
+	public void listReset() {
+		setLineCount(0);
+	}
+
 	public void setCurrentLine(final int number) {
 		final String numStr = number < 0 ? "-" : Integer.toString(number+1);
 		currentLine.setText(numStr);
 	}
 
-	public void setLineCount(final int count) {
+	private void setLineCount(final int count) {
 		lineCountLabel.setText(Integer.toString(count));
 	}
 
