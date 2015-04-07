@@ -11,13 +11,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import pl.rychu.jew.LogFileAccess;
-import pl.rychu.jew.LogFileListener;
+import pl.rychu.jew.LogListener;
 import pl.rychu.jew.LogLineFull;
 
 
 
 public class ListModelLog extends AbstractListModel<LogLineFull>
- implements LogFileListener {
+ implements LogListener {
 
 	private static final long serialVersionUID = 5990060914470736065L;
 

@@ -41,7 +41,7 @@ public class LogFileAccess {
 
 	private final CharsetDecoder decoder;
 
-	private final CopyOnWriteArrayList<LogFileListener> listeners
+	private final CopyOnWriteArrayList<LogListener> listeners
 	 = new CopyOnWriteArrayList<>();
 
 	// ------------------
@@ -68,11 +68,11 @@ public class LogFileAccess {
 
 	// ---
 
-	public void addLogFileListener(final LogFileListener l) {
+	public void addLogFileListener(final LogListener l) {
 		listeners.add(l);
 	}
 
-	public void removeLogFileListener(final LogFileListener l) {
+	public void removeLogFileListener(final LogListener l) {
 		listeners.remove(l);
 	}
 
@@ -141,14 +141,14 @@ public class LogFileAccess {
 	private class Listener implements IndexListener {
 		@Override
 		public void lineAdded() {
-			for (final LogFileListener li: listeners) {
+			for (final LogListener li: listeners) {
 				li.linesAdded();
 			}
 		}
 
 		@Override
 		public void indexWasReset() {
-			for (final LogFileListener li: listeners) {
+			for (final LogListener li: listeners) {
 				li.fileWasReset();
 			}
 		}

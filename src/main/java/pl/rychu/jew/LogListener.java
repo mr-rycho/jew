@@ -1,6 +1,6 @@
 package pl.rychu.jew;
 
-public interface LogFileListener {
+public interface LogListener {
 
 	void linesAdded();
 
