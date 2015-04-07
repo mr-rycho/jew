@@ -29,6 +29,8 @@ public class GuiMain {
 
 				final LogViewPanel logViewPanel = LogViewPanel.create(logFileAccess, infoPanel);
 
+				logViewPanel.addListSelectionListener(infoPanel);
+
 				final JScrollPane scrollPane = new JScrollPane(logViewPanel);
 				scrollPane.setPreferredSize(new Dimension(700, 600));
 				mainFrame.add(scrollPane, BorderLayout.CENTER);

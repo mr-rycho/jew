@@ -2,10 +2,13 @@ package pl.rychu.jew.gui;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 
 
-public class InfoPanel extends JPanel implements CyclicModelListener {
+public class InfoPanel extends JPanel implements CyclicModelListener
+ , ListSelectionListener {
 
 	private static final long serialVersionUID = 5701049831143954538L;
 
@@ -26,6 +29,8 @@ public class InfoPanel extends JPanel implements CyclicModelListener {
 		this.add(lineCountLabel);
 	}
 
+	// --------------
+
 	@Override
 	public void linesAdded(int newSize) {
 		setLineCount(newSize);
@@ -36,7 +41,19 @@ public class InfoPanel extends JPanel implements CyclicModelListener {
 		setLineCount(0);
 	}
 
-	public void setCurrentLine(final int number) {
+	@Override
+	public void valueChanged(final ListSelectionEvent e) {
+		final Object sourceObj = e.getSource();
+		if (sourceObj instanceof LogViewPanel) {
+			final LogViewPanel panel = (LogViewPanel)sourceObj;
+			final int firstIndex = panel.getSelectedIndex();
+			setCurrentLine(firstIndex);
+		}
+	}
+
+	// --------------
+
+	private void setCurrentLine(final int number) {
 		final String numStr = number < 0 ? "-" : Integer.toString(number+1);
 		currentLine.setText(numStr);
 	}
