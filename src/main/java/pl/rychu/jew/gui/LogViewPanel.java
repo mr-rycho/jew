@@ -6,7 +6,6 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import javax.swing.ListSelectionModel;
 
-import pl.rychu.jew.LogFileAccess;
 import pl.rychu.jew.LogLineFull;
 
 
@@ -17,15 +16,12 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 
 	// ---------
 
-	public static LogViewPanel create(final LogFileAccess logFileAccess
-	 , final InfoPanel infoPanel) {
+	public static LogViewPanel create(final ListModelLog model) {
 		final LogViewPanel result = new LogViewPanel();
 		result.setFixedCellWidth(600);
 		result.setFixedCellHeight(14);
 		result.setCellRenderer(new CellRenderer());
 		result.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
-		final ListModelLog model = ListModelLog.create(logFileAccess, result, infoPanel);
 
 		result.setModel(model);
 

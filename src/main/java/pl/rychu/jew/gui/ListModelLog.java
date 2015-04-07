@@ -36,14 +36,10 @@ public class ListModelLog extends AbstractListModel<LogLineFull>
 		this.logFileAccess = logFileAccess;
 	}
 
-	public static ListModelLog create(final LogFileAccess logFileAccess
-	 , final LogViewPanel logViewPanel, final InfoPanel infoPanel) {
+	public static ListModelLog create(final LogFileAccess logFileAccess) {
 		final ListModelLog result = new ListModelLog(logFileAccess);
 
 		logFileAccess.addLogFileListener(result);
-
-		result.addCyclicModelListener(infoPanel);
-		result.addCyclicModelListener(logViewPanel);
 
 		new Thread(result.new ModNotifier()).start();
 

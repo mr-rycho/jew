@@ -27,9 +27,13 @@ public class GuiMain {
 				final InfoPanel infoPanel = new InfoPanel();
 				mainFrame.add(infoPanel, BorderLayout.NORTH);
 
-				final LogViewPanel logViewPanel = LogViewPanel.create(logFileAccess, infoPanel);
+				final ListModelLog model = ListModelLog.create(logFileAccess);
+
+				final LogViewPanel logViewPanel = LogViewPanel.create(model);
 
 				logViewPanel.addListSelectionListener(infoPanel);
+				model.addCyclicModelListener(infoPanel);
+				model.addCyclicModelListener(logViewPanel);
 
 				final JScrollPane scrollPane = new JScrollPane(logViewPanel);
 				scrollPane.setPreferredSize(new Dimension(700, 600));
