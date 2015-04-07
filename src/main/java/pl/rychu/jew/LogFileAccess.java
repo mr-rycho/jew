@@ -68,11 +68,11 @@ public class LogFileAccess {
 
 	// ---
 
-	public void addLogFileListener(final LogListener l) {
+	public void addLogListener(final LogListener l) {
 		listeners.add(l);
 	}
 
-	public void removeLogFileListener(final LogListener l) {
+	public void removeLogListener(final LogListener l) {
 		listeners.remove(l);
 	}
 

@@ -39,7 +39,7 @@ public class ListModelLog extends AbstractListModel<LogLineFull>
 	public static ListModelLog create(final LogFileAccess logFileAccess) {
 		final ListModelLog result = new ListModelLog(logFileAccess);
 
-		logFileAccess.addLogFileListener(result);
+		logFileAccess.addLogListener(result);
 
 		new Thread(result.new ModNotifier()).start();
 
