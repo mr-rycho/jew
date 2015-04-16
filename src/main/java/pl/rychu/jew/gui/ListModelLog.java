@@ -10,7 +10,7 @@ import javax.swing.SwingUtilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import pl.rychu.jew.LogFileAccess;
+import pl.rychu.jew.LogAccess;
 import pl.rychu.jew.LogListener;
 import pl.rychu.jew.LogLineFull;
 
@@ -21,7 +21,7 @@ public class ListModelLog extends AbstractListModel<LogLineFull>
 
 	private static final long serialVersionUID = 5990060914470736065L;
 
-	private final LogFileAccess logFileAccess;
+	private final LogAccess logAccess;
 
 	private final AtomicBoolean mustNotifyReset = new AtomicBoolean(false);
 
@@ -32,14 +32,14 @@ public class ListModelLog extends AbstractListModel<LogLineFull>
 
 	// ------------------
 
-	private ListModelLog(final LogFileAccess logFileAccess) {
-		this.logFileAccess = logFileAccess;
+	private ListModelLog(final LogAccess logAccess) {
+		this.logAccess = logAccess;
 	}
 
-	public static ListModelLog create(final LogFileAccess logFileAccess) {
-		final ListModelLog result = new ListModelLog(logFileAccess);
+	public static ListModelLog create(final LogAccess logAccess) {
+		final ListModelLog result = new ListModelLog(logAccess);
 
-		logFileAccess.addLogListener(result);
+		logAccess.addLogListener(result);
 
 		new Thread(result.new ModNotifier()).start();
 
@@ -56,12 +56,12 @@ public class ListModelLog extends AbstractListModel<LogLineFull>
 
 	@Override
 	public int getSize() {
-		return (int)logFileAccess.size();
+		return (int)logAccess.size();
 	}
 
 	@Override
 	public LogLineFull getElementAt(final int index) {
-		return logFileAccess.getFull(index);
+		return logAccess.getFull(index);
 	}
 
 	@Override
@@ -105,7 +105,7 @@ public class ListModelLog extends AbstractListModel<LogLineFull>
 				}
 
 				if (mustNotifyInsert.getAndSet(false)) {
-					final int size = (int)logFileAccess.size();
+					final int size = (int)logAccess.size();
 					SwingUtilities.invokeLater(new Runnable() {
 						@Override
 						public void run() {

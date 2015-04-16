@@ -7,6 +7,7 @@ import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 
+import pl.rychu.jew.LogAccess;
 import pl.rychu.jew.LogFileAccess;
 
 
@@ -17,7 +18,7 @@ public class GuiMain {
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				final LogFileAccess logFileAccess
+				final LogAccess logFileAccess
 				 = LogFileAccess.create("/home/rycho/Pulpit/server.log");
 
 				final JFrame mainFrame = new JFrame("jew");

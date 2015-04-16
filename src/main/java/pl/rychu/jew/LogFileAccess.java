@@ -25,7 +25,7 @@ import pl.rychu.jew.linedec.LineDecoder;
 
 
 
-public class LogFileAccess {
+public class LogFileAccess implements LogAccess {
 
 	static final Logger log = LoggerFactory.getLogger(LogFileAccess.class);
 
@@ -58,7 +58,7 @@ public class LogFileAccess {
 		new Thread(new LogFileReader()).start();
 	}
 
-	public static LogFileAccess create(final String pathStr) {
+	public static LogAccess create(final String pathStr) {
 		final LogFileAccess result = new LogFileAccess(pathStr);
 
 		result.index.addListener(result.new Listener());
@@ -68,24 +68,29 @@ public class LogFileAccess {
 
 	// ---
 
+	@Override
 	public void addLogListener(final LogListener l) {
 		listeners.add(l);
 	}
 
+	@Override
 	public void removeLogListener(final LogListener l) {
 		listeners.remove(l);
 	}
 
 	// ---
 
+	@Override
 	public long size() {
 		return index.size();
 	}
 
+	@Override
 	public LogLine get(final long pos) {
 		return index.get(pos);
 	}
 
+	@Override
 	public LogLineFull getFull(final long pos) {
 		final FileChannel fc = fileChannel;
 		if (fc == null) {
