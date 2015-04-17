@@ -2,12 +2,17 @@ package pl.rychu.jew;
 
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import pl.rychu.jew.gl.GrowingList;
 import pl.rychu.jew.gl.GrowingListLocked;
 
 
 
 public class LogAccessFilter implements LogAccess {
+
+	private static final Logger log = LoggerFactory.getLogger(LogAccessFilter.class);
 
 	private final LogAccess source;
 
@@ -25,10 +30,7 @@ public class LogAccessFilter implements LogAccess {
 	public static LogAccess create(final LogAccess source) {
 		final LogAccessFilter result = new LogAccessFilter(source);
 
-		if (Math.abs(0) == 0) {
-			throw new IllegalStateException("this class is not finished yet"
-			 +" and likely to be abandoned");
-		}
+		new Thread(result.new SourceReader()).start();
 
 		return result;
 	}
@@ -70,9 +72,9 @@ public class LogAccessFilter implements LogAccess {
 		public void run() {
 			while (!Thread.interrupted()) {
 				try {
-
+					process();
 				} catch (RuntimeException e) {
-					//
+					clearIndexAndNotify();
 				}
 
 				try {
@@ -85,7 +87,41 @@ public class LogAccessFilter implements LogAccess {
 
 		private void process() {
 			final long size = source.size();
-			// not finished ;P
+			if (size != prevSize) {
+				if (size < prevSize) {
+					clearIndexAndNotify();
+				}
+				for (long i=prevSize; i<size; i++) {
+					// final LogLine logLine = source.get(i);
+					if (Math.random() < 0.2) {
+						addToIndexAndNotify(i);
+					}
+				}
+				prevSize = size;
+			}
+		}
+
+		private void clearIndexAndNotify() {
+			index.clear();
+			prevSize = 0;
+			for (final LogListener li: listeners) {
+				try {
+					li.fileWasReset();
+				} catch (RuntimeException e) {
+					log.error("swollowing error", e);
+				}
+			}
+		}
+
+		private void addToIndexAndNotify(final long lineNum) {
+			index.add((int)lineNum);
+			for (final LogListener li: listeners) {
+				try {
+					li.linesAdded();
+				} catch (RuntimeException e) {
+					log.error("swollowing error", e);
+				}
+			}
 		}
 
 	}

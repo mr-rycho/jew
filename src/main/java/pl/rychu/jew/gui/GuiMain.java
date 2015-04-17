@@ -8,6 +8,7 @@ import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 
 import pl.rychu.jew.LogAccess;
+import pl.rychu.jew.LogAccessFilter;
 import pl.rychu.jew.LogFileAccess;
 
 
@@ -20,6 +21,7 @@ public class GuiMain {
 			public void run() {
 				final LogAccess logFileAccess
 				 = LogFileAccess.create("/home/rycho/Pulpit/server.log");
+				final LogAccess logAccessFilter = LogAccessFilter.create(logFileAccess);
 
 				final JFrame mainFrame = new JFrame("jew");
 
@@ -28,7 +30,7 @@ public class GuiMain {
 				final InfoPanel infoPanel = new InfoPanel();
 				mainFrame.add(infoPanel, BorderLayout.NORTH);
 
-				final ListModelLog model = ListModelLog.create(logFileAccess);
+				final ListModelLog model = ListModelLog.create(logAccessFilter);
 
 				final LogViewPanel logViewPanel = LogViewPanel.create(model);
 
