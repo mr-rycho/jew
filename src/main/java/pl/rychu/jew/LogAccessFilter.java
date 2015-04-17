@@ -5,6 +5,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import pl.rychu.jew.filter.LogLineFilter;
 import pl.rychu.jew.gl.GrowingList;
 import pl.rychu.jew.gl.GrowingListLocked;
 
@@ -16,6 +17,8 @@ public class LogAccessFilter implements LogAccess {
 
 	private final LogAccess source;
 
+	private final LogLineFilter filter;
+
 	private final CopyOnWriteArrayList<LogListener> listeners
 	 = new CopyOnWriteArrayList<>();
 
@@ -23,12 +26,13 @@ public class LogAccessFilter implements LogAccess {
 
 	// --------------
 
-	private LogAccessFilter(final LogAccess source) {
+	private LogAccessFilter(final LogAccess source, final LogLineFilter filter) {
 		this.source = source;
+		this.filter = filter;
 	}
 
-	public static LogAccess create(final LogAccess source) {
-		final LogAccessFilter result = new LogAccessFilter(source);
+	public static LogAccess create(final LogAccess source, final LogLineFilter filter) {
+		final LogAccessFilter result = new LogAccessFilter(source, filter);
 
 		new Thread(result.new SourceReader()).start();
 
@@ -92,8 +96,11 @@ public class LogAccessFilter implements LogAccess {
 					clearIndexAndNotify();
 				}
 				for (long i=prevSize; i<size; i++) {
-					// final LogLine logLine = source.get(i);
-					if (Math.random() < 0.2) {
+					final boolean applies
+					 = filter.needsFullLine()
+					 ? filter.apply(source.getFull(i))
+					 : filter.apply(source.get(i));
+					if (applies) {
 						addToIndexAndNotify(i);
 					}
 				}

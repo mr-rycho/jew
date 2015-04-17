@@ -10,6 +10,7 @@ import javax.swing.SwingUtilities;
 import pl.rychu.jew.LogAccess;
 import pl.rychu.jew.LogAccessFilter;
 import pl.rychu.jew.LogFileAccess;
+import pl.rychu.jew.filter.LogLineThreadFilter;
 
 
 
@@ -21,7 +22,8 @@ public class GuiMain {
 			public void run() {
 				final LogAccess logFileAccess
 				 = LogFileAccess.create("/home/rycho/Pulpit/server.log");
-				final LogAccess logAccessFilter = LogAccessFilter.create(logFileAccess);
+				final LogAccess logAccessFilter = LogAccessFilter.create(logFileAccess
+				 , new LogLineThreadFilter("EJB default - 2"));
 
 				final JFrame mainFrame = new JFrame("jew");
 
