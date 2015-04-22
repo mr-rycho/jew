@@ -63,7 +63,7 @@ public class ComboRunner {
 			e.printStackTrace();
 		}
 
-		System.out.println("index: "+index.size());
+		System.out.println("index: "+index.size(index.getVersion()));
 		final long t1 = System.currentTimeMillis();
 		System.out.println("time: "+(t1-t0)+"ms");
 
@@ -79,9 +79,9 @@ public class ComboRunner {
 			 = "Thread-1 (HornetQ-client-global-threads-1332939477)";
 			final List<LogLine> lines4 = new ArrayList<>(1000);
 			final long t3 = System.currentTimeMillis();
-			final long indexSize = index.size();
+			final long indexSize = index.size(index.getVersion());
 			for (long i=0L; i<indexSize; i++) {
-				final LogLine logLine = index.get(i);
+				final LogLine logLine = index.get(i, index.getVersion());
 				if (logLine.getLogLineType() == LogLineType.STANDARD) {
 					if (logLine.getThreadName().equals(threadname)) {
 						lines4.add(logLine);

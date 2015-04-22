@@ -2,14 +2,12 @@ package pl.rychu.jew;
 
 public interface LogAccess {
 
-	public void addLogListener(LogListener l);
+	public int getVersion();
 
-	public void removeLogListener(LogListener l);
+	public long size(int version);
 
-	public long size();
+	public LogLine get(long pos, int version);
 
-	public LogLine get(long pos);
-
-	public LogLineFull getFull(long pos);
+	public LogLineFull getFull(long pos, int version);
 
 }

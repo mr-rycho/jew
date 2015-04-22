@@ -1,9 +1,6 @@
 package pl.rychu.jew;
 
-import java.util.concurrent.CopyOnWriteArrayList;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import pl.rychu.jew.filter.LogLineFilter;
 import pl.rychu.jew.gl.GrowingList;
@@ -13,14 +10,11 @@ import pl.rychu.jew.gl.GrowingListLocked;
 
 public class LogAccessFilter implements LogAccess {
 
-	private static final Logger log = LoggerFactory.getLogger(LogAccessFilter.class);
-
 	private final LogAccess source;
 
-	private final LogLineFilter filter;
+	private AtomicInteger sourceVersion = new AtomicInteger();
 
-	private final CopyOnWriteArrayList<LogListener> listeners
-	 = new CopyOnWriteArrayList<>();
+	private final LogLineFilter filter;
 
 	private final GrowingList<Integer> index = GrowingListLocked.create(1024);
 
@@ -42,28 +36,23 @@ public class LogAccessFilter implements LogAccess {
 	// -------------
 
 	@Override
-	public void addLogListener(LogListener l) {
-		listeners.add(l);
+	public int getVersion() {
+		return index.getVersion();
 	}
 
 	@Override
-	public void removeLogListener(LogListener l) {
-		listeners.remove(l);
+	public long size(final int version) {
+		return index.size(version);
 	}
 
 	@Override
-	public long size() {
-		return index.size();
+	public LogLine get(final long pos, final int version) {
+		return source.get(index.get(pos, version), sourceVersion.get());
 	}
 
 	@Override
-	public LogLine get(long pos) {
-		return source.get(index.get(pos));
-	}
-
-	@Override
-	public LogLineFull getFull(long pos) {
-		return source.getFull(index.get(pos));
+	public LogLineFull getFull(final long pos, final int version) {
+		return source.getFull(index.get(pos, version), sourceVersion.get());
 	}
 
 	// ========================
@@ -78,7 +67,8 @@ public class LogAccessFilter implements LogAccess {
 				try {
 					process();
 				} catch (RuntimeException e) {
-					clearIndexAndNotify();
+					index.clear();
+					sourceVersion.set(source.getVersion());
 				}
 
 				try {
@@ -90,44 +80,19 @@ public class LogAccessFilter implements LogAccess {
 		}
 
 		private void process() {
-			final long size = source.size();
+			final int version = sourceVersion.get();
+			final long size = source.size(version);
 			if (size != prevSize) {
-				if (size < prevSize) {
-					clearIndexAndNotify();
-				}
 				for (long i=prevSize; i<size; i++) {
 					final boolean applies
 					 = filter.needsFullLine()
-					 ? filter.apply(source.getFull(i))
-					 : filter.apply(source.get(i));
+					 ? filter.apply(source.getFull(i, version))
+					 : filter.apply(source.get(i, version));
 					if (applies) {
-						addToIndexAndNotify(i);
+						index.add((int)i);
 					}
 				}
 				prevSize = size;
-			}
-		}
-
-		private void clearIndexAndNotify() {
-			index.clear();
-			prevSize = 0;
-			for (final LogListener li: listeners) {
-				try {
-					li.fileWasReset();
-				} catch (RuntimeException e) {
-					log.error("swollowing error", e);
-				}
-			}
-		}
-
-		private void addToIndexAndNotify(final long lineNum) {
-			index.add((int)lineNum);
-			for (final LogListener li: listeners) {
-				try {
-					li.linesAdded();
-				} catch (RuntimeException e) {
-					log.error("swollowing error", e);
-				}
 			}
 		}
 

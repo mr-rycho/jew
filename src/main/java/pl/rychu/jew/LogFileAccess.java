@@ -14,7 +14,6 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,9 +40,6 @@ public class LogFileAccess implements LogAccess {
 
 	private final CharsetDecoder decoder;
 
-	private final CopyOnWriteArrayList<LogListener> listeners
-	 = new CopyOnWriteArrayList<>();
-
 	// ------------------
 
 	private LogFileAccess(final String pathStr) {
@@ -61,37 +57,28 @@ public class LogFileAccess implements LogAccess {
 	public static LogAccess create(final String pathStr) {
 		final LogFileAccess result = new LogFileAccess(pathStr);
 
-		result.index.addListener(result.new Listener());
-
 		return result;
 	}
 
 	// ---
 
 	@Override
-	public void addLogListener(final LogListener l) {
-		listeners.add(l);
+	public int getVersion() {
+		return index.getVersion();
 	}
 
 	@Override
-	public void removeLogListener(final LogListener l) {
-		listeners.remove(l);
-	}
-
-	// ---
-
-	@Override
-	public long size() {
-		return index.size();
+	public long size(final int version) {
+		return index.size(version);
 	}
 
 	@Override
-	public LogLine get(final long pos) {
-		return index.get(pos);
+	public LogLine get(final long pos, final int version) {
+		return index.get(pos, version);
 	}
 
 	@Override
-	public LogLineFull getFull(final long pos) {
+	public LogLineFull getFull(final long pos, final int version) {
 		final FileChannel fc = fileChannel;
 		if (fc == null) {
 			return null;
@@ -99,7 +86,7 @@ public class LogFileAccess implements LogAccess {
 
 		// TODO apply cache here
 
-		final LogLine logLine = getOrNull(pos);
+		final LogLine logLine = getOrNull(pos, version);
 		if (logLine == null) {
 			return null;
 		}
@@ -133,29 +120,11 @@ public class LogFileAccess implements LogAccess {
 		return new LogLineFull(logLine, line);
 	}
 
-	private LogLine getOrNull(final long pos) {
+	private LogLine getOrNull(final long pos, final int version) {
 		try {
-			return index.get(pos);
+			return index.get(pos, version);
 		} catch (IndexOutOfBoundsException e) {
 			return null;
-		}
-	}
-
-	// ==================
-
-	private class Listener implements IndexListener {
-		@Override
-		public void lineAdded() {
-			for (final LogListener li: listeners) {
-				li.linesAdded();
-			}
-		}
-
-		@Override
-		public void indexWasReset() {
-			for (final LogListener li: listeners) {
-				li.fileWasReset();
-			}
 		}
 	}
 

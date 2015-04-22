@@ -2,9 +2,6 @@ package pl.rychu.jew.gl;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-
-import pl.rychu.jew.IndexListener;
 
 public class GrowingList<T> {
 
@@ -16,9 +13,7 @@ public class GrowingList<T> {
 
 	private int currentListIndex;
 	private int currentArrayIndex;
-
-	private final CopyOnWriteArrayList<IndexListener> listeners
-	 = new CopyOnWriteArrayList<>();
+	private int currentVersion;
 
 	// -----------
 
@@ -28,6 +23,7 @@ public class GrowingList<T> {
 		this.arraySizePower = power;
 		this.arraySize = arraySize;
 		this.arrayOffMask = arraySize - 1;
+		this.currentVersion = 0;
 	}
 
 	public static <T> GrowingList<T> create(final int arraySize) {
@@ -62,21 +58,24 @@ public class GrowingList<T> {
 			currentArrayIndex = 0;
 			currentListIndex++;
 		}
-
-		for (final IndexListener li: listeners) {
-			li.lineAdded();
-		}
 	}
 
 	public void clear() {
 		init();
 
-		for (final IndexListener li: listeners) {
-			li.indexWasReset();
-		}
+		currentVersion++;
 	}
 
-	public T get(final long index) {
+	// ----------
+
+	public int getVersion() {
+		return currentVersion;
+	}
+
+	public T get(final long index, final int version) {
+		if (version != currentVersion) {
+			throw new IllegalStateException("bad version");
+		}
 		final int listIndex = (int)(index >> arraySizePower);
 		final int arrayIndex = (int)(index & arrayOffMask);
 
@@ -85,18 +84,11 @@ public class GrowingList<T> {
 		return result;
 	}
 
-	public long size() {
+	public long size(final int version) {
+		if (version != currentVersion) {
+			throw new IllegalStateException("bad version");
+		}
 		return ((long)arraySize) * currentListIndex + currentArrayIndex;
-	}
-
-	// -----------
-
-	public void addListener(final IndexListener l) {
-		listeners.add(l);
-	}
-
-	public void removeListener(final IndexListener l) {
-		listeners.remove(l);
 	}
 
 	// -----------

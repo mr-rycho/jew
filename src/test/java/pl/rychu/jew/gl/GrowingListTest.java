@@ -32,10 +32,11 @@ public class GrowingListTest {
 		}
 
 		// then
-		assertThat(growingList.size()).isEqualTo(sizeToInsert);
+		final int ver = 0;
+		assertThat(growingList.size(ver)).isEqualTo(sizeToInsert);
 		for (int i=0; i<sizeToInsert; i++) {
 			final String str = ""+((char)48+i);
-			assertThat(growingList.get(i)).isEqualTo(str);
+			assertThat(growingList.get(i, ver)).isEqualTo(str);
 		}
 	}
 

@@ -44,21 +44,23 @@ public class GrowingListLocked<T> extends GrowingList<T> {
 		}
 	}
 
-	public T get(final long index) {
+	// ----------
+
+	public T get(final long index, final int version) {
 		final Lock readLock = rwLock.readLock();
 		readLock.lock();
 		try {
-			return super.get(index);
+			return super.get(index, version);
 		} finally {
 			readLock.unlock();
 		}
 	}
 
-	public long size() {
+	public long size(final int version) {
 		final Lock readLock = rwLock.readLock();
 		readLock.lock();
 		try {
-			return super.size();
+			return super.size(version);
 		} finally {
 			readLock.unlock();
 		}
