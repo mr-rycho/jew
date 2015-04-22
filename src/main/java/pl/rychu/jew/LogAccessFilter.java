@@ -66,10 +66,7 @@ public class LogAccessFilter implements LogAccess {
 			while (!Thread.interrupted()) {
 				try {
 					process();
-				} catch (RuntimeException e) {
-					index.clear();
-					sourceVersion.set(source.getVersion());
-				}
+				} catch (RuntimeException e) {}
 
 				try {
 					Thread.sleep(250);
@@ -80,19 +77,24 @@ public class LogAccessFilter implements LogAccess {
 		}
 
 		private void process() {
-			final int version = sourceVersion.get();
-			final long size = source.size(version);
-			if (size != prevSize) {
-				for (long i=prevSize; i<size; i++) {
-					final boolean applies
-					 = filter.needsFullLine()
-					 ? filter.apply(source.getFull(i, version))
-					 : filter.apply(source.get(i, version));
-					if (applies) {
-						index.add((int)i);
+			final int version = source.getVersion();
+			if (version != sourceVersion.get()) {
+				index.clear();
+				sourceVersion.set(version);
+			} else {
+				final long size = source.size(version);
+				if (size != prevSize) {
+					for (long i=prevSize; i<size; i++) {
+						final boolean applies
+						 = filter.needsFullLine()
+						 ? filter.apply(source.getFull(i, version))
+						 : filter.apply(source.get(i, version));
+						if (applies) {
+							index.add((int)i);
+						}
 					}
+					prevSize = size;
 				}
-				prevSize = size;
 			}
 		}
 
