@@ -72,9 +72,9 @@ public class GrowingList<T> {
 		return currentVersion;
 	}
 
-	public T get(final long index, final int version) {
+	public T get(final long index, final int version) throws BadVersionException {
 		if (version != currentVersion) {
-			throw new IllegalStateException("bad version");
+			throw new BadVersionException();
 		}
 		final int listIndex = (int)(index >> arraySizePower);
 		final int arrayIndex = (int)(index & arrayOffMask);
@@ -84,9 +84,9 @@ public class GrowingList<T> {
 		return result;
 	}
 
-	public long size(final int version) {
+	public long size(final int version) throws BadVersionException {
 		if (version != currentVersion) {
-			throw new IllegalStateException("bad version");
+			throw new BadVersionException();
 		}
 		return ((long)arraySize) * currentListIndex + currentArrayIndex;
 	}

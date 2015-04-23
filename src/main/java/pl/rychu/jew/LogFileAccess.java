@@ -18,6 +18,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import pl.rychu.jew.gl.BadVersionException;
 import pl.rychu.jew.gl.GrowingList;
 import pl.rychu.jew.gl.GrowingListLocked;
 import pl.rychu.jew.linedec.LineDecoder;
@@ -68,17 +69,17 @@ public class LogFileAccess implements LogAccess {
 	}
 
 	@Override
-	public long size(final int version) {
+	public long size(final int version) throws BadVersionException {
 		return index.size(version);
 	}
 
 	@Override
-	public LogLine get(final long pos, final int version) {
+	public LogLine get(final long pos, final int version) throws BadVersionException {
 		return index.get(pos, version);
 	}
 
 	@Override
-	public LogLineFull getFull(final long pos, final int version) {
+	public LogLineFull getFull(final long pos, final int version) throws BadVersionException {
 		final FileChannel fc = fileChannel;
 		if (fc == null) {
 			return null;
@@ -120,7 +121,7 @@ public class LogFileAccess implements LogAccess {
 		return new LogLineFull(logLine, line);
 	}
 
-	private LogLine getOrNull(final long pos, final int version) {
+	private LogLine getOrNull(final long pos, final int version) throws BadVersionException {
 		try {
 			return index.get(pos, version);
 		} catch (IndexOutOfBoundsException e) {

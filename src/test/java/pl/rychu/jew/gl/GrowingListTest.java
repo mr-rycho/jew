@@ -21,7 +21,7 @@ public class GrowingListTest {
 
 	@Test
 	@Parameters
-	public void shouldRetainElements(final int sizeToInsert) {
+	public void shouldRetainElements(final int sizeToInsert) throws BadVersionException {
 		// given
 		final GrowingList<String> growingList = new GrowingList<String>(32);
 

@@ -46,7 +46,7 @@ public class GrowingListLocked<T> extends GrowingList<T> {
 
 	// ----------
 
-	public T get(final long index, final int version) {
+	public T get(final long index, final int version) throws BadVersionException {
 		final Lock readLock = rwLock.readLock();
 		readLock.lock();
 		try {
@@ -56,7 +56,7 @@ public class GrowingListLocked<T> extends GrowingList<T> {
 		}
 	}
 
-	public long size(final int version) {
+	public long size(final int version) throws BadVersionException {
 		final Lock readLock = rwLock.readLock();
 		readLock.lock();
 		try {

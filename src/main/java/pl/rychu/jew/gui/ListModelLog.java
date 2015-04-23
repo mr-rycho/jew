@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import pl.rychu.jew.LogAccess;
 import pl.rychu.jew.LogLineFull;
+import pl.rychu.jew.gl.BadVersionException;
 
 
 
@@ -52,12 +53,20 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 
 	@Override
 	public int getSize() {
-		return (int)logAccess.size(sourceVersion.get());
+		try {
+			return (int)logAccess.size(sourceVersion.get());
+		} catch (BadVersionException e) {
+			return 0;
+		}
 	}
 
 	@Override
 	public LogLineFull getElementAt(final int index) {
-		return logAccess.getFull(index, sourceVersion.get());
+		try {
+			return logAccess.getFull(index, sourceVersion.get());
+		} catch (BadVersionException e) {
+			return null;
+		}
 	}
 
 	// ------
@@ -80,7 +89,11 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 				try {
 					process();
 				} catch (RuntimeException e) {
+					log.error("error during processing", e);
+				} catch (BadVersionException e) {
+					// ignore; version reset will be handled in next cycle
 				}
+
 				try {
 					Thread.sleep(250);
 				} catch (InterruptedException e) {
@@ -91,20 +104,19 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 			log.debug("quitting gracefully");
 		}
 
-		private void process() {
+		private void process() throws BadVersionException {
 			final int version = logAccess.getVersion();
 			if (version != sourceVersion.get()) {
 				scheduleFileResetNotification();
 				sourceVersion.set(version);
 				sourceSize = 0;
-			} else {
-				final int newSize = (int)logAccess.size(version);
-				if (newSize != sourceSize) {
-					if (newSize > sourceSize) {
-						scheduleFileGrowNotification(sourceSize, newSize);
-					}
-					sourceSize = newSize;
+			}
+			final int newSize = (int)logAccess.size(version);
+			if (newSize != sourceSize) {
+				if (newSize > sourceSize) {
+					scheduleFileGrowNotification(sourceSize, newSize);
 				}
+				sourceSize = newSize;
 			}
 		}
 
