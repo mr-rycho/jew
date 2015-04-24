@@ -66,7 +66,7 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 		}
 		this.logAccess = logAccess;
 		sourceSize = 0;
-		sourceVersion.set(0);
+		sourceVersion.set(-1);
 		modNotifierThread = new Thread(new ModNotifier());
 		modNotifierThread.start();
 	}
