@@ -29,6 +29,8 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 	private final List<CyclicModelListener> listeners
 	 = new CopyOnWriteArrayList<>();
 
+	private Thread modNotifierThread;
+
 	// ------------------
 
 	private ListModelLog(final LogAccess logAccess) {
@@ -38,7 +40,8 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 	public static ListModelLog create(final LogAccess logAccess) {
 		final ListModelLog result = new ListModelLog(logAccess);
 
-		new Thread(result.new ModNotifier()).start();
+		result.modNotifierThread = new Thread(result.new ModNotifier());
+		result.modNotifierThread.start();
 
 		return result;
 	}
@@ -50,6 +53,13 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 	public void removeCyclicModelListener(final CyclicModelListener lsn) {
 		listeners.remove(lsn);
 	}
+
+	public void dispose() {
+		modNotifierThread.interrupt();
+		modNotifierThread = null;
+	}
+
+	// -----------
 
 	@Override
 	public int getSize() {

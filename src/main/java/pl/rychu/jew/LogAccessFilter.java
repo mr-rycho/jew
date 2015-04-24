@@ -23,6 +23,9 @@ public class LogAccessFilter implements LogAccess {
 
 	private final DoubleList<Integer> index = DoubleList.create(1024);
 
+	private Thread threadForward;
+	private Thread threadBackward;
+
 	// --------------
 
 	private LogAccessFilter(final LogAccess source, final LogLineFilter filter) {
@@ -34,10 +37,19 @@ public class LogAccessFilter implements LogAccess {
 	 , final long startLine) {
 		final LogAccessFilter result = new LogAccessFilter(source, filter);
 
-		new Thread(result.new SourceReaderForward(startLine)).start();
-		new Thread(result.new SourceReaderBackward(startLine)).start();
+		result.threadForward = new Thread(result.new SourceReaderForward(startLine));
+		result.threadForward.start();
+		result.threadBackward = new Thread(result.new SourceReaderBackward(startLine));
+		result.threadBackward.start();
 
 		return result;
+	}
+
+	public void dispose() {
+		threadForward.interrupt();
+		threadForward = null;
+		threadBackward.interrupt();
+		threadBackward = null;
 	}
 
 	// -------------
