@@ -7,8 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import pl.rychu.jew.filter.LogLineFilter;
 import pl.rychu.jew.gl.BadVersionException;
-import pl.rychu.jew.gl.GrowingList;
-import pl.rychu.jew.gl.GrowingListLocked;
+import pl.rychu.jew.gl.DoubleList;
 
 
 
@@ -22,7 +21,7 @@ public class LogAccessFilter implements LogAccess {
 
 	private final LogLineFilter filter;
 
-	private final GrowingList<Integer> index = GrowingListLocked.create(1024);
+	private final DoubleList<Integer> index = DoubleList.create(1024);
 
 	// --------------
 
@@ -31,10 +30,12 @@ public class LogAccessFilter implements LogAccess {
 		this.filter = filter;
 	}
 
-	public static LogAccess create(final LogAccess source, final LogLineFilter filter) {
+	public static LogAccess create(final LogAccess source, final LogLineFilter filter
+	 , final long startLine) {
 		final LogAccessFilter result = new LogAccessFilter(source, filter);
 
-		new Thread(result.new SourceReader()).start();
+		new Thread(result.new SourceReaderForward(startLine)).start();
+		new Thread(result.new SourceReaderBackward(startLine)).start();
 
 		return result;
 	}
@@ -63,9 +64,13 @@ public class LogAccessFilter implements LogAccess {
 
 	// ========================
 
-	private class SourceReader implements Runnable {
+	private class SourceReaderForward implements Runnable {
 
-		private long prevSize = 0;
+		private long prevSize;
+
+		SourceReaderForward(final long startLine) {
+			prevSize = startLine;
+		}
 
 		@Override
 		public void run() {
@@ -101,10 +106,49 @@ public class LogAccessFilter implements LogAccess {
 					 ? filter.apply(source.getFull(i, version))
 					 : filter.apply(source.get(i, version));
 					if (applies) {
-						index.add((int)i);
+						index.addForward((int)i);
 					}
 				}
 				prevSize = size;
+			}
+		}
+
+	}
+
+	// ---------
+
+	private class SourceReaderBackward implements Runnable {
+
+		private long startSize;
+
+		SourceReaderBackward(final long startLine) {
+			startSize = startLine;
+		}
+
+		@Override
+		public void run() {
+			try {
+				process();
+			} catch (RuntimeException e) {
+				log.error("error during processing", e);
+			} catch (BadVersionException e) {
+				// ignore; version reset will be handled in next cycle
+			}
+		}
+
+		private void process() throws BadVersionException {
+			final int version = source.getVersion();
+			if (version != sourceVersion.get()) {
+				return;
+			}
+			for (long i=startSize-1; i>=0; i--) {
+				final boolean applies
+				 = filter.needsFullLine()
+				 ? filter.apply(source.getFull(i, version))
+				 : filter.apply(source.get(i, version));
+				if (applies) {
+					index.addBackward((int)i);
+				}
 			}
 		}
 

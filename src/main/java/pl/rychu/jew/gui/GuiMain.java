@@ -23,7 +23,7 @@ public class GuiMain {
 				final LogAccess logFileAccess
 				 = LogFileAccess.create("/home/rycho/Pulpit/server.log");
 				final LogAccess logAccessFilter = LogAccessFilter.create(logFileAccess
-				 , new LogLineThreadFilter("EJB default - 2"));
+				 , new LogLineThreadFilter("EJB default - 2"), 0);
 
 				final JFrame mainFrame = new JFrame("jew");
 
