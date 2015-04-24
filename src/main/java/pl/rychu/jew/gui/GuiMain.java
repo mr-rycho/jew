@@ -45,6 +45,16 @@ public class GuiMain {
 
 				final ListModelLog model = ListModelLog.create(logAccessFilter);
 
+				final LogViewPanel logViewPanel = LogViewPanel.create(model);
+
+				logViewPanel.addListSelectionListener(infoPanel);
+				model.addCyclicModelListener(infoPanel);
+				model.addCyclicModelListener(logViewPanel);
+
+				final JScrollPane scrollPane = new JScrollPane(logViewPanel);
+				scrollPane.setPreferredSize(new Dimension(700, 600));
+				mainFrame.add(scrollPane, BorderLayout.CENTER);
+
 				JButton testButton = new JButton("switch models");
 				topPanel.add(testButton, BorderLayout.WEST);
 				testButton.addActionListener(new ActionListener() {
@@ -64,16 +74,6 @@ public class GuiMain {
 						}
 					}
 				});
-
-				final LogViewPanel logViewPanel = LogViewPanel.create(model);
-
-				logViewPanel.addListSelectionListener(infoPanel);
-				model.addCyclicModelListener(infoPanel);
-				model.addCyclicModelListener(logViewPanel);
-
-				final JScrollPane scrollPane = new JScrollPane(logViewPanel);
-				scrollPane.setPreferredSize(new Dimension(700, 600));
-				mainFrame.add(scrollPane, BorderLayout.CENTER);
 
 				mainFrame.pack();
 				mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
