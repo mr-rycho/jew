@@ -20,7 +20,9 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 
 	private static final long serialVersionUID = 5990060914470736065L;
 
-	private final LogAccess logAccess;
+	private static final Logger log = LoggerFactory.getLogger(ListModelLog.class);
+
+	private LogAccess logAccess;
 
 	private int sourceSize = 0;
 
@@ -33,15 +35,12 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 
 	// ------------------
 
-	private ListModelLog(final LogAccess logAccess) {
-		this.logAccess = logAccess;
-	}
+	private ListModelLog() {}
 
 	public static ListModelLog create(final LogAccess logAccess) {
-		final ListModelLog result = new ListModelLog(logAccess);
+		final ListModelLog result = new ListModelLog();
 
-		result.modNotifierThread = new Thread(result.new ModNotifier());
-		result.modNotifierThread.start();
+		result.setLogAccess(logAccess);
 
 		return result;
 	}
@@ -54,9 +53,26 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 		listeners.remove(lsn);
 	}
 
-	public void dispose() {
-		modNotifierThread.interrupt();
-		modNotifierThread = null;
+	public void setLogAccess(final LogAccess logAccess) {
+		if (modNotifierThread != null) {
+			modNotifierThread.interrupt();
+			try {
+				modNotifierThread.join();
+			} catch (InterruptedException e) {
+				log.error("Interrupted", e);
+				return;
+			}
+			modNotifierThread = null;
+		}
+		this.logAccess = logAccess;
+		sourceSize = 0;
+		sourceVersion.set(0);
+		modNotifierThread = new Thread(new ModNotifier());
+		modNotifierThread.start();
+	}
+
+	public LogAccess getLogAccess() {
+		return logAccess;
 	}
 
 	// -----------

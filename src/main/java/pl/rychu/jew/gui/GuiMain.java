@@ -2,7 +2,11 @@ package pl.rychu.jew.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -37,7 +41,29 @@ public class GuiMain {
 				final InfoPanel infoPanel = new InfoPanel();
 				topPanel.add(infoPanel, BorderLayout.CENTER);
 
+				final AtomicBoolean testModel = new AtomicBoolean();
+
 				final ListModelLog model = ListModelLog.create(logAccessFilter);
+
+				JButton testButton = new JButton("switch models");
+				topPanel.add(testButton, BorderLayout.WEST);
+				testButton.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						final boolean oldM = testModel.get();
+						final boolean newM = !oldM;
+						testModel.set(newM);
+						if (newM) {
+							final LogAccess oldLogAccess = model.getLogAccess();
+							model.setLogAccess(logFileAccess);
+							((LogAccessFilter)oldLogAccess).dispose();
+						} else {
+							final LogAccess logAccessFilter = LogAccessFilter.create(logFileAccess
+							 , new LogLineThreadFilter("EJB default - 2"), 0);
+							model.setLogAccess(logAccessFilter);
+						}
+					}
+				});
 
 				final LogViewPanel logViewPanel = LogViewPanel.create(model);
 
