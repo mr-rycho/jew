@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 
@@ -29,8 +30,12 @@ public class GuiMain {
 
 				mainFrame.setLayout(new BorderLayout());
 
+				final JPanel topPanel = new JPanel();
+				topPanel.setLayout(new BorderLayout());
+				mainFrame.add(topPanel, BorderLayout.NORTH);
+
 				final InfoPanel infoPanel = new InfoPanel();
-				mainFrame.add(infoPanel, BorderLayout.NORTH);
+				topPanel.add(infoPanel, BorderLayout.CENTER);
 
 				final ListModelLog model = ListModelLog.create(logAccessFilter);
 
