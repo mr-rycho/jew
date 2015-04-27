@@ -112,7 +112,7 @@ public class LogAccessFilter implements LogAccess {
 			}
 			final long size = source.size(version);
 			if (size != prevSize) {
-				for (long i=prevSize; i<size; i++) {
+				for (long i=prevSize; i<size && !Thread.interrupted(); i++) {
 					final boolean applies
 					 = filter.needsFullLine()
 					 ? filter.apply(source.getFull(i, version))
