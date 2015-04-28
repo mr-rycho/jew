@@ -4,12 +4,14 @@ import pl.rychu.jew.gl.BadVersionException;
 
 public interface LogAccess {
 
-	public int getVersion();
+	int getVersion();
 
-	public long size(int version) throws BadVersionException;
+	long sizeF(int version) throws BadVersionException;
 
-	public LogLine get(long pos, int version) throws BadVersionException;
+	long sizeB(int version) throws BadVersionException;
 
-	public LogLineFull getFull(long pos, int version) throws BadVersionException;
+	LogLine get(long pos, int version) throws BadVersionException;
+
+	LogLineFull getFull(long pos, int version) throws BadVersionException;
 
 }
