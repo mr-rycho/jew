@@ -14,6 +14,8 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,22 +37,13 @@ public class LogFileAccess implements LogAccess {
 
 	private volatile FileChannel fileChannel;
 
-	private ByteBuffer byteBuffer = ByteBuffer.allocate(1000);
-
-	private CharBuffer charBuffer = CharBuffer.allocate(1000);
-
-	private final CharsetDecoder decoder;
+	private final Queue<LineReaderDecoder> readerPool
+	 = new ConcurrentLinkedQueue<>();
 
 	// ------------------
 
 	private LogFileAccess(final String pathStr) {
 		this.pathStr = pathStr;
-
-		final Charset charset = Charset.forName("UTF-8");
-		decoder = charset.newDecoder();
-		decoder.onMalformedInput(CodingErrorAction.REPLACE);
-		decoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
-		decoder.replaceWith("?");
 
 		new Thread(new LogFileReader()).start();
 	}
@@ -96,34 +89,17 @@ public class LogFileAccess implements LogAccess {
 		if (logLine == null) {
 			return null;
 		}
-		final long linePos = logLine.getFilePos();
-		final int lineLen = logLine.getLength();
-		byteBuffer.clear();
-		charBuffer.clear();
-		if (byteBuffer.remaining() < lineLen) {
-			byteBuffer = ByteBuffer.allocate(lineLen);
-			charBuffer = CharBuffer.allocate(lineLen);
-		}
 
-		byteBuffer.position(byteBuffer.limit() - lineLen);
-		final int mark = byteBuffer.position();
+		LineReaderDecoder lineReadDec = readerPool.poll();
+		if (lineReadDec == null) {
+			log.debug("allocate decoder");
+			lineReadDec = new LineReaderDecoder();
+		}
 		try {
-			while (byteBuffer.hasRemaining()) {
-				final int br = fc.read(byteBuffer, linePos + byteBuffer.position() - mark);
-				if (br < 0) {
-					return null;
-				}
-			}
-		} catch (IOException e) {
-			return null;
+			return lineReadDec.readFull(fc, logLine);
+		} finally {
+			readerPool.add(lineReadDec);
 		}
-
-		decoder.reset();
-		byteBuffer.position(mark);
-		decoder.decode(byteBuffer, charBuffer, true);
-
-		final String line = new String(charBuffer.array(), 0, charBuffer.position());
-		return new LogLineFull(logLine, line);
 	}
 
 	private LogLine getOrNull(final long pos, final int version) throws BadVersionException {
@@ -252,4 +228,51 @@ public class LogFileAccess implements LogAccess {
 
 	}
 
+	// =========================
+
+	private static class LineReaderDecoder {
+
+		private ByteBuffer byteBuffer = ByteBuffer.allocate(1000);
+		private CharBuffer charBuffer = CharBuffer.allocate(1000);
+		private final CharsetDecoder decoder;
+
+		LineReaderDecoder() {
+			final Charset charset = Charset.forName("UTF-8");
+			decoder = charset.newDecoder();
+			decoder.onMalformedInput(CodingErrorAction.REPLACE);
+			decoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
+			decoder.replaceWith("?");
+		}
+
+		LogLineFull readFull(final FileChannel fc, final LogLine logLine) {
+			final long linePos = logLine.getFilePos();
+			final int lineLen = logLine.getLength();
+			byteBuffer.clear();
+			charBuffer.clear();
+			if (byteBuffer.remaining() < lineLen) {
+				byteBuffer = ByteBuffer.allocate(lineLen);
+				charBuffer = CharBuffer.allocate(lineLen);
+			}
+
+			byteBuffer.position(byteBuffer.limit() - lineLen);
+			final int mark = byteBuffer.position();
+			try {
+				while (byteBuffer.hasRemaining()) {
+					final int br = fc.read(byteBuffer, linePos + byteBuffer.position() - mark);
+					if (br < 0) {
+						return null;
+					}
+				}
+			} catch (IOException e) {
+				return null;
+			}
+
+			decoder.reset();
+			byteBuffer.position(mark);
+			decoder.decode(byteBuffer, charBuffer, true);
+
+			final String line = new String(charBuffer.array(), 0, charBuffer.position());
+			return new LogLineFull(logLine, line);
+		}
+	}
 }
