@@ -149,7 +149,7 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 			}
 			final int newSizeB = (int)logAccess.sizeB(version);
 			if (newSizeB != sourceSizeB) {
-				if (newSizeB < sourceSizeB) {
+				if (newSizeB > sourceSizeB) {
 					scheduleFileGrowNotificationB(sourceSizeB, newSizeB);
 				}
 				sourceSizeB = newSizeB;
@@ -157,7 +157,6 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 		}
 
 		private void scheduleFileResetNotification() {
-			log.debug("scheduling file reset");
 			SwingUtilities.invokeLater(new Runnable() {
 				@Override
 				public void run() {
@@ -178,7 +177,7 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 					sourceSizeFSw = newSizeF;
 					fireIntervalAdded(this, oldSizeF, newSizeF-1);
 					for (final CyclicModelListener listener: listeners) {
-						listener.linesAdded(sourceSizeFSw+sourceSizeBSw);
+						listener.linesAddedEnd(newSizeF-oldSizeF, sourceSizeBSw+sourceSizeFSw);
 					}
 				}
 			});
@@ -191,7 +190,7 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 					sourceSizeBSw = newSizeB;
 					fireIntervalAdded(this, 0, newSizeB-oldSizeB-1);
 					for (final CyclicModelListener listener: listeners) {
-						listener.linesAdded(sourceSizeFSw+sourceSizeBSw);
+						listener.linesAddedStart(newSizeB-oldSizeB, sourceSizeBSw+sourceSizeFSw);
 					}
 				}
 			});

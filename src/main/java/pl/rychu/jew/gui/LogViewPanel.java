@@ -29,7 +29,17 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 	}
 
 	@Override
-	public void linesAdded(int newSize) {}
+	public void linesAddedStart(int numberOfLinesAdded, final long total) {
+		final int lastVisibleIndex = getLastVisibleIndex();
+		if (lastVisibleIndex >= 0) {
+			ensureIndexIsVisible(lastVisibleIndex + numberOfLinesAdded);
+		} else {
+			ensureIndexIsVisible(numberOfLinesAdded - 1);
+		}
+	}
+
+	@Override
+	public void linesAddedEnd(int numberOfLinesAdded, final long total) {}
 
 	@Override
 	public void listReset() {

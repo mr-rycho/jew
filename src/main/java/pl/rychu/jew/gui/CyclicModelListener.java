@@ -2,7 +2,9 @@ package pl.rychu.jew.gui;
 
 public interface CyclicModelListener {
 
-	void linesAdded(int newSize);
+	void linesAddedStart(int numberOfLinesAdded, long totalLines);
+
+	void linesAddedEnd(int numberOfLinesAdded, long totalLines);
 
 	void listReset();
 

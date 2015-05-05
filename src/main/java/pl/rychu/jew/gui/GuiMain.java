@@ -12,6 +12,9 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import pl.rychu.jew.LogAccess;
 import pl.rychu.jew.LogAccessFilter;
 import pl.rychu.jew.LogFileAccess;
@@ -20,6 +23,9 @@ import pl.rychu.jew.filter.LogLineThreadFilter;
 
 
 public class GuiMain {
+
+	private static final Logger log = LoggerFactory.getLogger(GuiMain.class);
+
 
 	public static void main(final String... args) throws InterruptedException {
 		SwingUtilities.invokeLater(new Runnable() {
@@ -68,8 +74,10 @@ public class GuiMain {
 							model.setLogAccess(logFileAccess);
 							((LogAccessFilter)oldLogAccess).dispose();
 						} else {
+							final int view = getView(logViewPanel);
+							log.debug("switching to filter with view = {}", view);
 							final LogAccess logAccessFilter = LogAccessFilter.create(logFileAccess
-							 , new LogLineThreadFilter("EJB default - 2"), 0);
+							 , new LogLineThreadFilter("EJB default - 2"), view);
 							model.setLogAccess(logAccessFilter);
 						}
 					}
@@ -81,6 +89,14 @@ public class GuiMain {
 				mainFrame.setVisible(true);
 			}
 		});
+	}
+
+	private static int getView(final LogViewPanel logViewPanel) {
+		final int selectedIndex = logViewPanel.getSelectedIndex();
+		if (selectedIndex >= 0) {
+			return selectedIndex;
+		}
+		return logViewPanel.getFirstVisibleIndex();
 	}
 
 }

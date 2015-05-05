@@ -104,6 +104,7 @@ public class LogAccessFilter implements LogAccess {
 				} catch (RuntimeException e) {
 					log.error("error during processing", e);
 				} catch (BadVersionException e) {
+					log.debug("bad version");
 					// ignore; version reset will be handled in next cycle
 				}
 
@@ -113,11 +114,13 @@ public class LogAccessFilter implements LogAccess {
 					break;
 				}
 			}
+
 		}
 
 		private void process() throws BadVersionException {
 			final int version = source.getVersion();
 			if (version != sourceVersion.get()) {
+				log.debug("clearing by F");
 				indexF.clear();
 				indexB.clear();
 				sourceVersion.set(version);
@@ -147,17 +150,20 @@ public class LogAccessFilter implements LogAccess {
 		private long prevSizeB;
 
 		SourceReaderBackward(final long startLine) {
+			log.debug("start line: {}", startLine);
 			prevSizeB = startLine;
 		}
 
 		@Override
 		public void run() {
+			log.debug("running");
 			while (!Thread.interrupted()) {
 				try {
 					process();
 				} catch (RuntimeException e) {
 					log.error("error during processing", e);
 				} catch (BadVersionException e) {
+					log.debug("bad version");
 					// ignore; version reset will be handled in next cycle
 				}
 
@@ -167,11 +173,14 @@ public class LogAccessFilter implements LogAccess {
 					break;
 				}
 			}
+
+			log.debug("quit");
 		}
 
 		private void process() throws BadVersionException {
 			final int version = source.getVersion();
 			if (version != sourceVersion.get()) {
+				log.debug("clearing by B");
 				indexF.clear();
 				indexB.clear();
 				sourceVersion.set(version);
