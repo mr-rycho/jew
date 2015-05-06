@@ -113,12 +113,14 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 
 		@Override
 		public void run() {
+			log.debug("running");
 			while (!Thread.interrupted()) {
 				try {
 					process();
 				} catch (RuntimeException e) {
 					log.error("error during processing", e);
 				} catch (BadVersionException e) {
+					log.debug("bad version");
 					// ignore; version reset will be handled in next cycle
 				}
 
@@ -134,7 +136,9 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 
 		private void process() throws BadVersionException {
 			final int version = logAccess.getVersion();
-			if (version != sourceVersion.get()) {
+			final int oldVersion = sourceVersion.get();
+			if (version != oldVersion) {
+				log.debug("schedule reset; {} != {}", version, oldVersion);
 				scheduleFileResetNotification();
 				sourceVersion.set(version);
 				sourceSizeF = 0;
@@ -160,12 +164,14 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 			SwingUtilities.invokeLater(new Runnable() {
 				@Override
 				public void run() {
+					log.debug("reset start");
 					sourceSizeFSw = 0;
 					sourceSizeBSw = 0;
 					fireIntervalRemoved(this, 0, Integer.MAX_VALUE>>1);
 					for (final CyclicModelListener listener: listeners) {
 						listener.listReset();
 					}
+					log.debug("reset end");
 				}
 			});
 		}
