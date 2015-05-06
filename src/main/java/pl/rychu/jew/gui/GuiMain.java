@@ -18,7 +18,9 @@ import org.slf4j.LoggerFactory;
 import pl.rychu.jew.LogAccess;
 import pl.rychu.jew.LogAccessFilter;
 import pl.rychu.jew.LogFileAccess;
+import pl.rychu.jew.LogLine;
 import pl.rychu.jew.filter.LogLineThreadFilter;
+import pl.rychu.jew.gl.BadVersionException;
 
 
 
@@ -76,9 +78,23 @@ public class GuiMain {
 						} else {
 							final int view = getView(logViewPanel);
 							log.debug("switching to filter with view = {}", view);
+							final int version = logFileAccess.getVersion();
+							String threadName = "EJB default - 2";
+							try {
+								final LogLine logLine = logFileAccess.get(view, version);
+								threadName = logLine.getThreadName();
+							} catch (BadVersionException e1) {
+								log.error("bad version exception", e1);
+								return;
+							}
+							if (threadName==null || threadName.isEmpty()) {
+								return;
+							}
 							final LogAccess logAccessFilter = LogAccessFilter.create(logFileAccess
-							 , new LogLineThreadFilter("EJB default - 2"), view);
+							 , new LogLineThreadFilter(threadName), view);
+							log.debug("switching model");
 							model.setLogAccess(logAccessFilter);
+							log.debug("model switched");
 						}
 					}
 				});
