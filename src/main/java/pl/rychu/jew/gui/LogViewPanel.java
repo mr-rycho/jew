@@ -6,6 +6,9 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import javax.swing.ListSelectionModel;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import pl.rychu.jew.LogLineFull;
 
 
@@ -13,6 +16,8 @@ import pl.rychu.jew.LogLineFull;
 public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListener {
 
 	private static final long serialVersionUID = -6731368974272464443L;
+
+	private static final Logger log = LoggerFactory.getLogger(LogViewPanel.class);
 
 	// ---------
 
@@ -31,10 +36,26 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 	@Override
 	public void linesAddedStart(int numberOfLinesAdded, final long total) {
 		final int lastVisibleIndex = getLastVisibleIndex();
-		if (lastVisibleIndex >= 0) {
-			ensureIndexIsVisible(lastVisibleIndex + numberOfLinesAdded);
-		} else {
-			ensureIndexIsVisible(numberOfLinesAdded - 1);
+		final int index
+		 = lastVisibleIndex >= 0
+		 ? lastVisibleIndex + numberOfLinesAdded
+		 : numberOfLinesAdded - 1;
+
+		ensureIndexIsVisible(index);
+
+		final int newFirstVisibleIndex = getFirstVisibleIndex();
+		final int newLastVisibleIndex = getLastVisibleIndex();
+		log.debug("new visible indexes: {}-{}", newFirstVisibleIndex
+		 , newLastVisibleIndex);
+		if (newFirstVisibleIndex<0 || newLastVisibleIndex<0
+		 || index<newFirstVisibleIndex || index>newLastVisibleIndex) {
+			log.debug("trying to scroll again because {} != ({}, {})", index
+			 , newFirstVisibleIndex, newLastVisibleIndex);
+			ensureIndexIsVisible(index);
+			final int newestFirstVisibleIndex = getFirstVisibleIndex();
+			final int newestLastVisibleIndex = getLastVisibleIndex();
+			log.debug("newest visible indexes: {}-{}", newestFirstVisibleIndex
+			 , newestLastVisibleIndex);
 		}
 	}
 
