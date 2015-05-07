@@ -60,7 +60,7 @@ public class GuiMain {
 				model.addCyclicModelListener(logViewPanel);
 
 				final JScrollPane scrollPane = new JScrollPane(logViewPanel);
-				scrollPane.setPreferredSize(new Dimension(700, 600));
+				scrollPane.setPreferredSize(new Dimension(900, 600));
 				mainFrame.add(scrollPane, BorderLayout.CENTER);
 
 				JButton testButton = new JButton("switch models");
