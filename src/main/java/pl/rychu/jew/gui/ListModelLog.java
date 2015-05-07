@@ -79,17 +79,33 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 
 	// -----------
 
+	private int prevSize = -1;
+
 	@Override
 	public int getSize() {
-		return sourceSizeFSw + sourceSizeBSw;
+		final int result = sourceSizeFSw + sourceSizeBSw;
+		if (result != prevSize) {
+			log.debug("size={} ({}+{})", result, sourceSizeBSw, sourceSizeFSw);
+			prevSize = result;
+		}
+		return result;
 	}
 
 	@Override
 	public LogLineFull getElementAt(final int index) {
 		final int logAccessIndex = index - sourceSizeBSw;
+		final int sourcev = sourceVersion.get();
 		try {
-			return logAccess.getFull(logAccessIndex, sourceVersion.get());
+			return logAccess.getFull(logAccessIndex, sourcev);
 		} catch (BadVersionException e) {
+			return null;
+		} catch (IndexOutOfBoundsException e) {
+			log.error("index out of bound ({}-{} = {})"
+			 , index, sourceSizeBSw, logAccessIndex);
+			log.debug("size={} ({}+{})", sourceSizeBSw+sourceSizeFSw
+			 , sourceSizeBSw, sourceSizeFSw);
+			log.debug("source version: {}", sourcev);
+			log.error("index out of bound", e);
 			return null;
 		}
 	}
@@ -139,10 +155,10 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 			final int oldVersion = sourceVersion.get();
 			if (version != oldVersion) {
 				log.debug("schedule reset; {} != {}", version, oldVersion);
-				scheduleFileResetNotification();
-				sourceVersion.set(version);
+				scheduleFileResetNotification(version);
 				sourceSizeF = 0;
 				sourceSizeB = 0;
+				return;
 			}
 			final int newSizeF = (int)logAccess.sizeF(version);
 			if (newSizeF != sourceSizeF) {
@@ -160,13 +176,14 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 			}
 		}
 
-		private void scheduleFileResetNotification() {
+		private void scheduleFileResetNotification(final int newVersion) {
 			SwingUtilities.invokeLater(new Runnable() {
 				@Override
 				public void run() {
-					log.debug("reset start");
+					log.debug("reset start; new version is {}", newVersion);
 					sourceSizeFSw = 0;
 					sourceSizeBSw = 0;
+					sourceVersion.set(newVersion);
 					fireIntervalRemoved(this, 0, Integer.MAX_VALUE>>1);
 					for (final CyclicModelListener listener: listeners) {
 						listener.listReset();
