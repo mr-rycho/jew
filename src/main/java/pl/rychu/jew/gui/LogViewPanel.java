@@ -33,13 +33,36 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		return result;
 	}
 
+	// ---------
+
+	private int prevSize = 0;
+
 	@Override
 	public void linesAddedStart(int numberOfLinesAdded, final long total) {
+		scrollForward(numberOfLinesAdded);
+		prevSize = (int)total;
+	}
+
+	@Override
+	public void linesAddedEnd(int numberOfLinesAdded, final long total) {
+		if (prevSize == 0) {
+			setSelectedIndex(0);
+		}
+		prevSize = (int)total;
+	}
+
+	@Override
+	public void listReset() {
+		ensureIndexIsVisible(0);
+		prevSize = 0;
+	}
+
+	private void scrollForward(final int linesToScroll) {
 		final int lastVisibleIndex = getLastVisibleIndex();
 		final int index
 		 = lastVisibleIndex >= 0
-		 ? lastVisibleIndex + numberOfLinesAdded
-		 : numberOfLinesAdded - 1;
+		 ? lastVisibleIndex + linesToScroll
+		 : linesToScroll - 1;
 
 		ensureIndexIsVisible(index);
 
@@ -57,14 +80,6 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 			log.debug("newest visible indexes: {}-{}", newestFirstVisibleIndex
 			 , newestLastVisibleIndex);
 		}
-	}
-
-	@Override
-	public void linesAddedEnd(int numberOfLinesAdded, final long total) {}
-
-	@Override
-	public void listReset() {
-		ensureIndexIsVisible(0);
 	}
 
 	// ==================
