@@ -198,7 +198,7 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 				@Override
 				public void run() {
 					sourceSizeFSw = newSizeF;
-					fireIntervalAdded(this, oldSizeF, newSizeF-1);
+					fireIntervalAdded(this, sourceSizeBSw+oldSizeF, sourceSizeBSw+newSizeF-1);
 					for (final CyclicModelListener listener: listeners) {
 						listener.linesAddedEnd(newSizeF-oldSizeF, sourceSizeBSw+sourceSizeFSw);
 					}
