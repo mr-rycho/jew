@@ -4,18 +4,18 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-public class GrowingListLocked<T> extends GrowingList<T> {
+public class GrowingListVerLocked<T> extends GrowingListVer<T> {
 
 	private final ReadWriteLock rwLock = new ReentrantReadWriteLock();
 
 	// ---------------
 
-	protected GrowingListLocked(final int arraySize) {
+	protected GrowingListVerLocked(final int arraySize) {
 		super(arraySize);
 	}
 
-	public static <T> GrowingListLocked<T> create(final int arraySize) {
-		final GrowingListLocked<T> result = new GrowingListLocked<T>(arraySize);
+	public static <T> GrowingListVerLocked<T> create(final int arraySize) {
+		final GrowingListVerLocked<T> result = new GrowingListVerLocked<T>(arraySize);
 
 		result.init();
 

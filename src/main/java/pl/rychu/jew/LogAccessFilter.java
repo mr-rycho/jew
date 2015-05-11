@@ -7,8 +7,8 @@ import org.slf4j.LoggerFactory;
 
 import pl.rychu.jew.filter.LogLineFilter;
 import pl.rychu.jew.gl.BadVersionException;
-import pl.rychu.jew.gl.GrowingList;
-import pl.rychu.jew.gl.GrowingListLocked;
+import pl.rychu.jew.gl.GrowingListVer;
+import pl.rychu.jew.gl.GrowingListVerLocked;
 
 
 
@@ -22,9 +22,9 @@ public class LogAccessFilter implements LogAccess {
 
 	private final LogLineFilter filter;
 
-	private final GrowingList<Integer> indexF = GrowingListLocked.create(1024);
+	private final GrowingListVer<Integer> indexF = GrowingListVerLocked.create(1024);
 
-	private final GrowingList<Integer> indexB = GrowingListLocked.create(1024);
+	private final GrowingListVer<Integer> indexB = GrowingListVerLocked.create(1024);
 
 	private Thread readerThread;
 

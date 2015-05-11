@@ -3,7 +3,7 @@ package pl.rychu.jew.gl;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GrowingList<T> {
+public class GrowingListVer<T> {
 
 	private final int arraySizePower;
 	private final int arraySize;
@@ -17,7 +17,7 @@ public class GrowingList<T> {
 
 	// -----------
 
-	protected GrowingList(final int arraySize) {
+	protected GrowingListVer(final int arraySize) {
 		final int power = getPower(arraySize);
 
 		this.arraySizePower = power;
@@ -26,8 +26,8 @@ public class GrowingList<T> {
 		this.currentVersion = 0;
 	}
 
-	public static <T> GrowingList<T> create(final int arraySize) {
-		final GrowingList<T> result = new GrowingList<>(arraySize);
+	public static <T> GrowingListVer<T> create(final int arraySize) {
+		final GrowingListVer<T> result = new GrowingListVer<>(arraySize);
 
 		result.init();
 

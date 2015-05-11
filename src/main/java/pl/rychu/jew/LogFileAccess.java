@@ -21,8 +21,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import pl.rychu.jew.gl.BadVersionException;
-import pl.rychu.jew.gl.GrowingList;
-import pl.rychu.jew.gl.GrowingListLocked;
+import pl.rychu.jew.gl.GrowingListVer;
+import pl.rychu.jew.gl.GrowingListVerLocked;
 import pl.rychu.jew.linedec.LineDecoder;
 
 
@@ -33,7 +33,7 @@ public class LogFileAccess implements LogAccess {
 
 	final String pathStr;
 
-	private final GrowingList<LogLine> index = GrowingListLocked.create(1024);
+	private final GrowingListVer<LogLine> index = GrowingListVerLocked.create(1024);
 
 	private volatile FileChannel fileChannel;
 

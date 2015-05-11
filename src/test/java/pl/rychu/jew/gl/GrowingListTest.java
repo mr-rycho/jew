@@ -14,7 +14,7 @@ import junitparams.Parameters;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import pl.rychu.jew.gl.GrowingList;
+import pl.rychu.jew.gl.GrowingListVer;
 
 @RunWith(JUnitParamsRunner.class)
 public class GrowingListTest {
@@ -23,7 +23,7 @@ public class GrowingListTest {
 	@Parameters
 	public void shouldRetainElements(final int sizeToInsert) throws BadVersionException {
 		// given
-		final GrowingList<String> growingList = new GrowingList<String>(32);
+		final GrowingListVer<String> growingList = new GrowingListVer<String>(32);
 
 		// when
 		for (int i=0; i<sizeToInsert; i++) {
@@ -75,7 +75,7 @@ public class GrowingListTest {
 
 	private boolean allowsCreatingGrowingList(final int size) {
 		try {
-			new GrowingList<String>(size);
+			new GrowingListVer<String>(size);
 			return true;
 		} catch (Exception e) {
 			return false;

@@ -7,17 +7,17 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class DoubleList<T> {
 
-	private final GrowingList<T> forwardList;
+	private final GrowingListVer<T> forwardList;
 
-	private final GrowingList<T> backwardList;
+	private final GrowingListVer<T> backwardList;
 
 	private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
 	// --------
 
 	protected DoubleList(final int arraySize) {
-		forwardList = GrowingList.create(arraySize);
-		backwardList = GrowingList.create(arraySize);
+		forwardList = GrowingListVer.create(arraySize);
+		backwardList = GrowingListVer.create(arraySize);
 	}
 
 	public static <T> DoubleList<T> create(final int arraySize) {

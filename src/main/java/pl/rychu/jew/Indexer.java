@@ -3,19 +3,19 @@ package pl.rychu.jew;
 import java.util.Arrays;
 
 import pl.rychu.jew.LogLine.LogLineType;
-import pl.rychu.jew.gl.GrowingList;
+import pl.rychu.jew.gl.GrowingListVer;
 import pl.rychu.jew.linedec.LineDecoder;
 
 public class Indexer implements LinePosSink {
 
-	private final GrowingList<LogLine> index;
+	private final GrowingListVer<LogLine> index;
 
 	private final LineDecoder lineDecoder;
 
 	private final long[] typeCounter = new long[LogLineType.values().length];
 
 	public Indexer(final LineDecoder lineDecoder
-	 , final GrowingList<LogLine> index) {
+	 , final GrowingListVer<LogLine> index) {
 		this.lineDecoder = lineDecoder;
 		this.index = index;
 	}
