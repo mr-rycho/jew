@@ -17,8 +17,6 @@ public class GrowingListVerLocked<T> extends GrowingListVer<T> {
 	public static <T> GrowingListVerLocked<T> create(final int arraySize) {
 		final GrowingListVerLocked<T> result = new GrowingListVerLocked<T>(arraySize);
 
-		result.init();
-
 		return result;
 	}
 
