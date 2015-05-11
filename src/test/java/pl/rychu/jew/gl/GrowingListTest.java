@@ -14,7 +14,7 @@ import junitparams.Parameters;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import pl.rychu.jew.gl.GrowingListVer;
+
 
 @RunWith(JUnitParamsRunner.class)
 public class GrowingListTest {
@@ -23,7 +23,7 @@ public class GrowingListTest {
 	@Parameters
 	public void shouldRetainElements(final int sizeToInsert) throws BadVersionException {
 		// given
-		final GrowingListVer<String> growingList = new GrowingListVer<String>(32);
+		final GrowingList<String> growingList = new GrowingList<String>(32);
 
 		// when
 		for (int i=0; i<sizeToInsert; i++) {
@@ -32,11 +32,10 @@ public class GrowingListTest {
 		}
 
 		// then
-		final int ver = 0;
-		assertThat(growingList.size(ver)).isEqualTo(sizeToInsert);
+		assertThat(growingList.size()).isEqualTo(sizeToInsert);
 		for (int i=0; i<sizeToInsert; i++) {
 			final String str = ""+((char)48+i);
-			assertThat(growingList.get(i, ver)).isEqualTo(str);
+			assertThat(growingList.get(i)).isEqualTo(str);
 		}
 	}
 
@@ -75,7 +74,7 @@ public class GrowingListTest {
 
 	private boolean allowsCreatingGrowingList(final int size) {
 		try {
-			new GrowingListVer<String>(size);
+			new GrowingList<String>(size);
 			return true;
 		} catch (Exception e) {
 			return false;
