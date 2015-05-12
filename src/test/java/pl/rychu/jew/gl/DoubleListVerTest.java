@@ -21,6 +21,10 @@ import org.junit.runner.RunWith;
 @RunWith(JUnitParamsRunner.class)
 public class DoubleListVerTest {
 
+	protected DoubleListVer<Integer> createList() {
+		return DoubleListVerSimple.create(4);
+	}
+
 	@Test
 	@Parameters
 	public void shouldReturnCorrectSize(
@@ -127,7 +131,7 @@ public class DoubleListVerTest {
 
 	private DoubleListVer<Integer> createList(final long seed) {
 		final Random random = new Random(seed);
-		final DoubleListVer<Integer> result = DoubleListVerSimple.create(4);
+		final DoubleListVer<Integer> result = createList();
 		final int iters = 5 + random.nextInt(16);
 		for (int itern=0; itern<iters; itern++) {
 			for (int i=0; i<10; i++) {
