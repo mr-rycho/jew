@@ -7,8 +7,9 @@ import org.slf4j.LoggerFactory;
 
 import pl.rychu.jew.filter.LogLineFilter;
 import pl.rychu.jew.gl.BadVersionException;
-import pl.rychu.jew.gl.GrowingListVer;
-import pl.rychu.jew.gl.GrowingListVerLocked;
+import pl.rychu.jew.gl.DoubleListVer;
+import pl.rychu.jew.gl.DoubleListVerLocked;
+import pl.rychu.jew.gl.DoubleListVerSimple;
 
 
 
@@ -22,9 +23,7 @@ public class LogAccessFilter implements LogAccess {
 
 	private final LogLineFilter filter;
 
-	private final GrowingListVer<Integer> indexF = GrowingListVerLocked.create(1024);
-
-	private final GrowingListVer<Integer> indexB = GrowingListVerLocked.create(1024);
+	private final DoubleListVer<Integer> index = DoubleListVerLocked.create(DoubleListVerSimple.create(1024));
 
 	private Thread readerThread;
 
@@ -54,31 +53,27 @@ public class LogAccessFilter implements LogAccess {
 
 	@Override
 	public int getVersion() {
-		return indexF.getVersion();
+		return index.getVersion();
 	}
 
 	@Override
 	public long sizeF(final int version) throws BadVersionException {
-		return indexF.size(version);
+		return index.sizeF(version);
 	}
 
 	@Override
 	public long sizeB(final int version) throws BadVersionException {
-		return indexB.size(version);
+		return index.sizeB(version);
 	}
 
 	@Override
 	public LogLine get(final long pos, final int version) throws BadVersionException {
-		return source.get(getSourceIndex(pos, version), sourceVersion.get());
+		return source.get(index.get(pos, version), sourceVersion.get());
 	}
 
 	@Override
 	public LogLineFull getFull(final long pos, final int version) throws BadVersionException {
-		return source.getFull(getSourceIndex(pos, version), sourceVersion.get());
-	}
-
-	private int getSourceIndex(final long pos, final int version) throws BadVersionException {
-		return pos>=0 ? indexF.get(pos, version) : indexB.get((-pos)-1, version);
+		return source.getFull(index.get(pos, version), sourceVersion.get());
 	}
 
 	// ========================
@@ -118,8 +113,7 @@ public class LogAccessFilter implements LogAccess {
 			final int version = source.getVersion();
 			if (version != sourceVersion.get()) {
 				log.debug("clearing");
-				indexB.clear();
-				indexF.clear();
+				index.clear();
 				sourceVersion.set(version);
 				prevMaxIndexF = 0L;
 				prevMinIndexB = 0L;
@@ -142,7 +136,7 @@ public class LogAccessFilter implements LogAccess {
 						 ? filter.apply(source.getFull(i, version))
 						 : filter.apply(source.get(i, version));
 						if (applies) {
-							indexF.add((int)i);
+							index.addForward((int)i);
 						}
 					}
 					prevMaxIndexF = maxF;
@@ -156,7 +150,7 @@ public class LogAccessFilter implements LogAccess {
 						 ? filter.apply(source.getFull(i, version))
 						 : filter.apply(source.get(i, version));
 						if (applies) {
-							indexB.add((int)i);
+							index.addBackward((int)i);
 						}
 					}
 					prevMinIndexB = minB;
