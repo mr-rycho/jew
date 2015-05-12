@@ -27,9 +27,9 @@ import pl.rychu.jew.linedec.LineDecoder;
 
 
 
-public class LogFileAccess implements LogAccess {
+public class LogAccessFile implements LogAccess {
 
-	static final Logger log = LoggerFactory.getLogger(LogFileAccess.class);
+	static final Logger log = LoggerFactory.getLogger(LogAccessFile.class);
 
 	final String pathStr;
 
@@ -42,14 +42,14 @@ public class LogFileAccess implements LogAccess {
 
 	// ------------------
 
-	private LogFileAccess(final String pathStr) {
+	private LogAccessFile(final String pathStr) {
 		this.pathStr = pathStr;
 
 		new Thread(new LogFileReader()).start();
 	}
 
 	public static LogAccess create(final String pathStr) {
-		final LogFileAccess result = new LogFileAccess(pathStr);
+		final LogAccessFile result = new LogAccessFile(pathStr);
 
 		return result;
 	}

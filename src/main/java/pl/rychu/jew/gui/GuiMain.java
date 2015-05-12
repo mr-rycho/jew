@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import pl.rychu.jew.LogAccess;
 import pl.rychu.jew.LogAccessFilter;
-import pl.rychu.jew.LogFileAccess;
+import pl.rychu.jew.LogAccessFile;
 import pl.rychu.jew.LogLine;
 import pl.rychu.jew.filter.LogLineThreadFilter;
 import pl.rychu.jew.gl.BadVersionException;
@@ -34,7 +34,7 @@ public class GuiMain {
 			@Override
 			public void run() {
 				final LogAccess logFileAccess
-				 = LogFileAccess.create("/home/rycho/Pulpit/server.log");
+				 = LogAccessFile.create("/home/rycho/Pulpit/server.log");
 				final LogAccess logAccessFilter = LogAccessFilter.create(logFileAccess
 				 , new LogLineThreadFilter("EJB default - 2"), 0);
 
