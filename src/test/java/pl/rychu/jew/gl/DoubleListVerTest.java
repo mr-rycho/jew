@@ -1,7 +1,7 @@
 package pl.rychu.jew.gl;
 
-import static org.fest.assertions.Assertions.*;
 import static junitparams.JUnitParamsRunner.$;
+import static org.fest.assertions.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,7 +28,8 @@ public class DoubleListVerTest {
 	 , final long expectedSizeB, final long expectedSizeF)
 	 throws BadVersionException {
 		// given
-		final DoubleListVer<Integer> doubleListVer = DoubleListVer.create(4);
+		final DoubleListVer<Integer> doubleListVer
+		 = createList(expectedSizeB+expectedSizeF+insertEvents.size());
 
 		// when
 		applyEvents(doubleListVer, insertEvents);
@@ -58,8 +59,8 @@ public class DoubleListVerTest {
 	public void shouldReturnCorrectElementsDespiteInsertOrder(final long seed)
 	 throws BadVersionException {
 		// given
-		final DoubleListVer<Integer> doubleListVer = DoubleListVer.create(4);
 		final Random random = new Random(seed);
+		final DoubleListVer<Integer> doubleListVer = createList(random.nextLong());
 		final List<Collection<Integer>> evts = getInsertEvents(random.nextLong());
 
 		// when
@@ -123,6 +124,20 @@ public class DoubleListVerTest {
 	}
 
 	// -------------------------------
+
+	private DoubleListVer<Integer> createList(final long seed) {
+		final Random random = new Random(seed);
+		final DoubleListVer<Integer> result = DoubleListVer.create(4);
+		final int iters = 5 + random.nextInt(16);
+		for (int itern=0; itern<iters; itern++) {
+			for (int i=0; i<10; i++) {
+				result.addForward(random.nextInt());
+				result.addBackward(random.nextInt());
+			}
+			result.clear();
+		}
+		return result;
+	}
 
 	private <T> void applyEvents(final DoubleListVer<T> doubleListVer
 	 , final Collection<InsertEvent<T>> events) {
