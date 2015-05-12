@@ -127,7 +127,7 @@ public class DoubleListVerTest {
 
 	private DoubleListVer<Integer> createList(final long seed) {
 		final Random random = new Random(seed);
-		final DoubleListVer<Integer> result = DoubleListVer.create(4);
+		final DoubleListVer<Integer> result = DoubleListVerSimple.create(4);
 		final int iters = 5 + random.nextInt(16);
 		for (int itern=0; itern<iters; itern++) {
 			for (int i=0; i<10; i++) {
