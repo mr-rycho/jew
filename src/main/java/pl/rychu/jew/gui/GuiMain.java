@@ -33,10 +33,10 @@ public class GuiMain {
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				final LogAccess logFileAccess
+				final LogAccess logAccessFile
 				 = LogAccessFile.create("/home/rycho/Pulpit/server.log");
 				final LogAccess logAccessFilter = LogAccessFilter.create(
-				 logFileAccess, logFileAccess.getVersion()
+				 logAccessFile, logAccessFile.getVersion()
 				 , new LogLineThreadFilter("EJB default - 2"), 0);
 
 				final JFrame mainFrame = new JFrame("jew");
@@ -74,15 +74,15 @@ public class GuiMain {
 						testModel.set(newM);
 						if (newM) {
 							final LogAccess oldLogAccess = model.getLogAccess();
-							model.setLogAccess(logFileAccess);
+							model.setLogAccess(logAccessFile);
 							oldLogAccess.dispose();
 						} else {
 							final int view = getView(logViewPanel);
 							log.debug("switching to filter with view = {}", view);
-							final int version = logFileAccess.getVersion();
+							final int version = logAccessFile.getVersion();
 							String threadName = "EJB default - 2";
 							try {
-								final LogLine logLine = logFileAccess.get(view, version);
+								final LogLine logLine = logAccessFile.get(view, version);
 								threadName = logLine.getThreadName();
 							} catch (BadVersionException e1) {
 								log.error("bad version exception", e1);
@@ -92,7 +92,7 @@ public class GuiMain {
 								return;
 							}
 							final LogAccess logAccessFilter = LogAccessFilter.create(
-							 logFileAccess, version
+							 logAccessFile, version
 							 , new LogLineThreadFilter(threadName), view);
 							log.debug("switching model");
 							model.setLogAccess(logAccessFilter);
