@@ -19,7 +19,7 @@ public class LogAccessFilter implements LogAccess {
 
 	private final LogAccess source;
 
-	private AtomicInteger sourceVersion = new AtomicInteger();
+	private final AtomicInteger sourceVersion = new AtomicInteger();
 
 	private final LogLineFilter filter;
 
@@ -29,14 +29,16 @@ public class LogAccessFilter implements LogAccess {
 
 	// --------------
 
-	private LogAccessFilter(final LogAccess source, final LogLineFilter filter) {
+	private LogAccessFilter(final LogAccess source, final int version
+	 , final LogLineFilter filter) {
 		this.source = source;
+		sourceVersion.set(version);
 		this.filter = filter;
 	}
 
-	public static LogAccess create(final LogAccess source, final LogLineFilter filter
-	 , final long startLine) {
-		final LogAccessFilter result = new LogAccessFilter(source, filter);
+	public static LogAccess create(final LogAccess source, final int version
+	 , final LogLineFilter filter, final long startLine) {
+		final LogAccessFilter result = new LogAccessFilter(source, version, filter);
 
 		result.readerThread = new Thread(result.new SourceReaderMultiway(startLine));
 		result.readerThread.start();

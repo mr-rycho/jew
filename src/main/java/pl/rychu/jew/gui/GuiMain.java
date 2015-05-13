@@ -35,7 +35,8 @@ public class GuiMain {
 			public void run() {
 				final LogAccess logFileAccess
 				 = LogAccessFile.create("/home/rycho/Pulpit/server.log");
-				final LogAccess logAccessFilter = LogAccessFilter.create(logFileAccess
+				final LogAccess logAccessFilter = LogAccessFilter.create(
+				 logFileAccess, logFileAccess.getVersion()
 				 , new LogLineThreadFilter("EJB default - 2"), 0);
 
 				final JFrame mainFrame = new JFrame("jew");
@@ -90,7 +91,8 @@ public class GuiMain {
 							if (threadName==null || threadName.isEmpty()) {
 								return;
 							}
-							final LogAccess logAccessFilter = LogAccessFilter.create(logFileAccess
+							final LogAccess logAccessFilter = LogAccessFilter.create(
+							 logFileAccess, version
 							 , new LogLineThreadFilter(threadName), view);
 							log.debug("switching model");
 							model.setLogAccess(logAccessFilter);
