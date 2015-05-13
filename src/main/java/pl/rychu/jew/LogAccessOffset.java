@@ -52,6 +52,7 @@ public class LogAccessOffset implements LogAccess {
 		return result;
 	}
 
+	@Override
 	public void dispose() {
 		readerThread.interrupt();
 		readerThread = null;

@@ -46,6 +46,7 @@ public class LogAccessFilter implements LogAccess {
 		return result;
 	}
 
+	@Override
 	public void dispose() {
 		readerThread.interrupt();
 		readerThread = null;

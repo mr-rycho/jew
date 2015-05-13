@@ -14,4 +14,6 @@ public interface LogAccess {
 
 	LogLineFull getFull(long pos, int version) throws BadVersionException;
 
+	void dispose();
+
 }

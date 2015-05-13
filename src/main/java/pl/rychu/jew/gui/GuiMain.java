@@ -75,7 +75,7 @@ public class GuiMain {
 						if (newM) {
 							final LogAccess oldLogAccess = model.getLogAccess();
 							model.setLogAccess(logFileAccess);
-							((LogAccessFilter)oldLogAccess).dispose();
+							oldLogAccess.dispose();
 						} else {
 							final int view = getView(logViewPanel);
 							log.debug("switching to filter with view = {}", view);

@@ -54,6 +54,11 @@ public class LogAccessFile implements LogAccess {
 		return result;
 	}
 
+	@Override
+	public void dispose() {
+		// TODO decide if should dispose
+	}
+
 	// ---
 
 	@Override
