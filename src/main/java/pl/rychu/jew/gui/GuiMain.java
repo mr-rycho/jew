@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import pl.rychu.jew.LogAccess;
 import pl.rychu.jew.LogAccessFilter;
 import pl.rychu.jew.LogAccessFile;
+import pl.rychu.jew.LogAccessOffset;
 import pl.rychu.jew.LogLine;
 import pl.rychu.jew.filter.LogLineThreadFilter;
 import pl.rychu.jew.gl.BadVersionException;
@@ -74,16 +75,31 @@ public class GuiMain {
 						testModel.set(newM);
 						if (newM) {
 							final LogAccess oldLogAccess = model.getLogAccess();
-							model.setLogAccess(logAccessFile);
+							final int version = oldLogAccess.getVersion();
+							final int view = getView(logViewPanel);
+							long initIndex = 0L;
+							try {
+								initIndex = oldLogAccess.getRootIndex(view, version);
+							} catch (BadVersionException e1) {
+								log.error("bad version exception", e1);
+								return;
+							}
+							final LogAccess newLogAccess = LogAccessOffset.create(logAccessFile, version, initIndex);
+							log.debug("switching model");
+							model.setLogAccess(newLogAccess);
+							log.debug("model switched");
 							oldLogAccess.dispose();
 						} else {
 							final int view = getView(logViewPanel);
 							log.debug("switching to filter with view = {}", view);
-							final int version = logAccessFile.getVersion();
+							final LogAccess oldLogAccess = model.getLogAccess();
+							final int version = oldLogAccess.getVersion();
 							String threadName = "EJB default - 2";
+							long initIndex = 0L;
 							try {
 								final LogLine logLine = logAccessFile.get(view, version);
 								threadName = logLine.getThreadName();
+								initIndex = oldLogAccess.getRootIndex(view, version);
 							} catch (BadVersionException e1) {
 								log.error("bad version exception", e1);
 								return;
@@ -93,10 +109,11 @@ public class GuiMain {
 							}
 							final LogAccess logAccessFilter = LogAccessFilter.create(
 							 logAccessFile, version
-							 , new LogLineThreadFilter(threadName), view);
+							 , new LogLineThreadFilter(threadName), initIndex);
 							log.debug("switching model");
 							model.setLogAccess(logAccessFilter);
 							log.debug("model switched");
+							oldLogAccess.dispose();
 						}
 					}
 				});

@@ -128,6 +128,21 @@ public class LogAccessOffset implements LogAccess {
 		return source.getFull(index, sourceVersion.get());
 	}
 
+	@Override
+	public long getRootIndex(final long pos, final int version)
+	 throws BadVersionException {
+		final Lock lock = locks.readLock();
+		lock.lock();
+		try {
+			if (version != this.myVersion) {
+				throw new BadVersionException();
+			}
+			return pos + offset;
+		} finally {
+			lock.unlock();
+		}
+	}
+
 	// ========================
 
 	private class SourceReaderMultiway implements Runnable {

@@ -79,6 +79,12 @@ public class LogAccessFilter implements LogAccess {
 		return source.getFull(index.get(pos, version), sourceVersion.get());
 	}
 
+	@Override
+	public long getRootIndex(final long pos, final int version)
+	 throws BadVersionException {
+		return index.get(pos, version);
+	}
+
 	// ========================
 
 	private class SourceReaderMultiway implements Runnable {

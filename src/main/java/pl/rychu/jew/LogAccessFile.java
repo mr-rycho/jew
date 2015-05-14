@@ -115,6 +115,12 @@ public class LogAccessFile implements LogAccess {
 		}
 	}
 
+	@Override
+	public long getRootIndex(final long pos, final int version)
+	 throws BadVersionException {
+		return pos; // no ver check?
+	}
+
 	// ==================
 
 	private class LogFileReader implements Runnable {
