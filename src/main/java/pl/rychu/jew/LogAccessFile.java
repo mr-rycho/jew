@@ -33,7 +33,7 @@ public class LogAccessFile implements LogAccess {
 
 	final String pathStr;
 
-	private final GrowingListVer<LogLine> index = GrowingListVerLocked.create(1024);
+	private final GrowingListVer<LogLine> index = GrowingListVerLocked.create(65536);
 
 	private volatile FileChannel fileChannel;
 

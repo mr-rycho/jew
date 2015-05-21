@@ -28,7 +28,7 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 	private LogAccess logAccess;
 	private int logAccessVersion;
 
-	private final Mapper mapper = Mapper.create(1024);
+	private final Mapper mapper = Mapper.create(65536);
 
 	private final List<CyclicModelListener> listeners
 	 = new CopyOnWriteArrayList<>();
