@@ -32,12 +32,12 @@ public class InfoPanel extends JPanel implements CyclicModelListener
 	// --------------
 
 	@Override
-	public void linesAddedStart(final int newSize, final long total) {
+	public void linesAddedStart(final int numberOfLinesAdded, final long total) {
 		setLineCount((int)total);
 	}
 
 	@Override
-	public void linesAddedEnd(final int newSize, final long total) {
+	public void linesAddedEnd(final int numberOfLinesAdded, final long total) {
 		setLineCount((int)total);
 	}
 
