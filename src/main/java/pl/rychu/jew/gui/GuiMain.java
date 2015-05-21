@@ -16,12 +16,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import pl.rychu.jew.LogAccess;
-import pl.rychu.jew.LogAccessFilter;
 import pl.rychu.jew.LogAccessFile;
-import pl.rychu.jew.LogAccessOffset;
 import pl.rychu.jew.LogLine;
+import pl.rychu.jew.filter.LogLineFilterAll;
 import pl.rychu.jew.filter.LogLineThreadFilter;
-import pl.rychu.jew.gl.BadVersionException;
 
 
 
@@ -34,11 +32,8 @@ public class GuiMain {
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				final LogAccess logAccessFile
+				final LogAccess logAccess
 				 = LogAccessFile.create("/home/rycho/Pulpit/server.log");
-				final LogAccess logAccessFilter = LogAccessFilter.create(
-				 logAccessFile, logAccessFile.getVersion()
-				 , new LogLineThreadFilter("EJB default - 2"), 0);
 
 				final JFrame mainFrame = new JFrame("jew");
 
@@ -51,9 +46,9 @@ public class GuiMain {
 				final InfoPanel infoPanel = new InfoPanel();
 				topPanel.add(infoPanel, BorderLayout.CENTER);
 
-				final AtomicBoolean testModel = new AtomicBoolean();
+				final AtomicBoolean testModel = new AtomicBoolean(false);
 
-				final ListModelLog model = ListModelLog.create(logAccessFilter);
+				final ListModelLog model = ListModelLog.create(logAccess);
 
 				final LogViewPanel logViewPanel = LogViewPanel.create(model);
 
@@ -73,47 +68,28 @@ public class GuiMain {
 						final boolean oldM = testModel.get();
 						final boolean newM = !oldM;
 						testModel.set(newM);
-						if (newM) {
-							final LogAccess oldLogAccess = model.getLogAccess();
-							final int version = oldLogAccess.getVersion();
+						if (!newM) {
 							final int view = getView(logViewPanel);
-							long initIndex = 0L;
-							try {
-								initIndex = oldLogAccess.getRootIndex(view, version);
-							} catch (BadVersionException e1) {
-								log.error("bad version exception", e1);
-								return;
-							}
-							final LogAccess newLogAccess = LogAccessOffset.create(logAccessFile, version, initIndex);
+							final long rootIndex = model.getRootIndex(view);
 							log.debug("switching model");
-							model.setLogAccess(newLogAccess);
+							model.setFiltering(rootIndex, new LogLineFilterAll());
 							log.debug("model switched");
-							oldLogAccess.dispose();
 						} else {
 							final int view = getView(logViewPanel);
 							log.debug("switching to filter with view = {}", view);
-							final LogAccess oldLogAccess = model.getLogAccess();
-							final int version = oldLogAccess.getVersion();
 							String threadName = "EJB default - 2";
 							long initIndex = 0L;
-							try {
-								final LogLine logLine = logAccessFile.get(view, version);
+							final LogLine logLine = model.getIndexElementAdd(view);
+							if (logLine != null) {
 								threadName = logLine.getThreadName();
-								initIndex = oldLogAccess.getRootIndex(view, version);
-							} catch (BadVersionException e1) {
-								log.error("bad version exception", e1);
-								return;
+								initIndex = view;
 							}
 							if (threadName==null || threadName.isEmpty()) {
 								return;
 							}
-							final LogAccess logAccessFilter = LogAccessFilter.create(
-							 logAccessFile, version
-							 , new LogLineThreadFilter(threadName), initIndex);
 							log.debug("switching model");
-							model.setLogAccess(logAccessFilter);
+							model.setFiltering(initIndex, new LogLineThreadFilter(threadName));
 							log.debug("model switched");
-							oldLogAccess.dispose();
 						}
 					}
 				});

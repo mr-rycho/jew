@@ -16,6 +16,4 @@ public interface LogAccess {
 
 	void dispose();
 
-	long getRootIndex(long pos, int version) throws BadVersionException;
-
 }

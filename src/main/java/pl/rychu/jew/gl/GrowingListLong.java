@@ -5,20 +5,20 @@ import java.util.List;
 
 
 
-public class GrowingList<T> {
+public class GrowingListLong {
 
 	private final int arraySizePower;
 	private final int arraySize;
 	private final int arrayOffMask;
 
-	private final List<Object[]> listOfArrays = new ArrayList<Object[]>();
+	private final List<long[]> listOfArrays = new ArrayList<long[]>();
 
 	private int currentListIndex;
 	private int currentArrayIndex;
 
 	// -----------
 
-	protected GrowingList(final int arraySize) {
+	protected GrowingListLong(final int arraySize) {
 		final int power = GrowingListUtils.getPower(arraySize);
 
 		this.arraySizePower = power;
@@ -26,8 +26,8 @@ public class GrowingList<T> {
 		this.arrayOffMask = arraySize - 1;
 	}
 
-	public static <T> GrowingList<T> create(final int arraySize) {
-		final GrowingList<T> result = new GrowingList<>(arraySize);
+	public static GrowingListLong create(final int arraySize) {
+		final GrowingListLong result = new GrowingListLong(arraySize);
 
 		result.init();
 
@@ -44,9 +44,9 @@ public class GrowingList<T> {
 
 	// -----------
 
-	public void add(final T value) {
+	public void add(final long value) {
 		while (currentListIndex >= listOfArrays.size()) {
-			listOfArrays.add(new Object[arraySize]);
+			listOfArrays.add(new long[arraySize]);
 			currentArrayIndex = 0;
 		}
 
@@ -66,13 +66,11 @@ public class GrowingList<T> {
 
 	// ----------
 
-	public T get(final long index) {
+	public long get(final long index) {
 		final int listIndex = (int)(index >> arraySizePower);
 		final int arrayIndex = (int)(index & arrayOffMask);
 
-		@SuppressWarnings("unchecked")
-		final T result = (T)listOfArrays.get(listIndex)[arrayIndex];
-		return result;
+		return listOfArrays.get(listIndex)[arrayIndex];
 	}
 
 	public long size() {

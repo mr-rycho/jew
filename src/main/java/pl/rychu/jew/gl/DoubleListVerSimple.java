@@ -62,6 +62,10 @@ public class DoubleListVerSimple<T> implements DoubleListVer<T> {
 
 	@Override
 	public T get(final long index, final int version) throws BadVersionException {
+		if (version != this.version) {
+			throw new BadVersionException();
+		}
+
 		if (index < 0) {
 			return backwardList.get((-index) - 1);
 		} else {

@@ -12,7 +12,8 @@ import pl.rychu.jew.gl.BadVersionException;
 
 
 
-public class LogAccessOffset implements LogAccess {
+@Deprecated
+public class LogAccessOffset {
 
 	private final LogAccess source;
 
@@ -52,7 +53,6 @@ public class LogAccessOffset implements LogAccess {
 		return result;
 	}
 
-	@Override
 	public void dispose() {
 		readerThread.interrupt();
 		readerThread = null;
@@ -60,7 +60,6 @@ public class LogAccessOffset implements LogAccess {
 
 	// ----
 
-	@Override
 	public int getVersion() {
 		final Lock lock = locks.readLock();
 		lock.lock();
@@ -71,7 +70,6 @@ public class LogAccessOffset implements LogAccess {
 		}
 	}
 
-	@Override
 	public long sizeF(int version) throws BadVersionException {
 		final Lock lock = locks.readLock();
 		lock.lock();
@@ -82,7 +80,6 @@ public class LogAccessOffset implements LogAccess {
 		}
 	}
 
-	@Override
 	public long sizeB(int version) throws BadVersionException {
 		final Lock lock = locks.readLock();
 		lock.lock();
@@ -96,7 +93,6 @@ public class LogAccessOffset implements LogAccess {
 		}
 	}
 
-	@Override
 	public LogLine get(long pos, int version) throws BadVersionException {
 		long index = 0;
 		final Lock lock = locks.readLock();
@@ -112,7 +108,6 @@ public class LogAccessOffset implements LogAccess {
 		return source.get(index, sourceVersion.get());
 	}
 
-	@Override
 	public LogLineFull getFull(long pos, int version) throws BadVersionException {
 		long index = 0;
 		final Lock lock = locks.readLock();
@@ -128,7 +123,6 @@ public class LogAccessOffset implements LogAccess {
 		return source.getFull(index, sourceVersion.get());
 	}
 
-	@Override
 	public long getRootIndex(final long pos, final int version)
 	 throws BadVersionException {
 		final Lock lock = locks.readLock();

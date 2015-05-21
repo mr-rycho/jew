@@ -5,6 +5,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 
 
+@Deprecated
 public class DoubleList<T> {
 
 	private final GrowingListVer<T> forwardList;

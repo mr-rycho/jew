@@ -13,7 +13,8 @@ import pl.rychu.jew.gl.DoubleListVerSimple;
 
 
 
-public class LogAccessFilter implements LogAccess {
+@Deprecated
+public class LogAccessFilter {
 
 	private static final Logger log = LoggerFactory.getLogger(LogAccessFilter.class);
 
@@ -36,7 +37,7 @@ public class LogAccessFilter implements LogAccess {
 		this.filter = filter;
 	}
 
-	public static LogAccess create(final LogAccess source, final int version
+	public static LogAccessFilter create(final LogAccess source, final int version
 	 , final LogLineFilter filter, final long startLine) {
 		final LogAccessFilter result = new LogAccessFilter(source, version, filter);
 
@@ -46,7 +47,6 @@ public class LogAccessFilter implements LogAccess {
 		return result;
 	}
 
-	@Override
 	public void dispose() {
 		readerThread.interrupt();
 		readerThread = null;
@@ -54,32 +54,26 @@ public class LogAccessFilter implements LogAccess {
 
 	// -------------
 
-	@Override
 	public int getVersion() {
 		return index.getVersion();
 	}
 
-	@Override
 	public long sizeF(final int version) throws BadVersionException {
 		return index.sizeF(version);
 	}
 
-	@Override
 	public long sizeB(final int version) throws BadVersionException {
 		return index.sizeB(version);
 	}
 
-	@Override
 	public LogLine get(final long pos, final int version) throws BadVersionException {
 		return source.get(index.get(pos, version), sourceVersion.get());
 	}
 
-	@Override
 	public LogLineFull getFull(final long pos, final int version) throws BadVersionException {
 		return source.getFull(index.get(pos, version), sourceVersion.get());
 	}
 
-	@Override
 	public long getRootIndex(final long pos, final int version)
 	 throws BadVersionException {
 		return index.get(pos, version);
