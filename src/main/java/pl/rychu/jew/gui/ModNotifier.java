@@ -71,7 +71,7 @@ public class ModNotifier implements Runnable {
 			return;
 		}
 
-		final int maxSlice = 1000;
+		final int maxSlice = 10000;
 		while (true) {
 			final long maxIndexF = logAccess.sizeF(version);
 			final long minIndexB = -logAccess.sizeB(version);
