@@ -62,7 +62,7 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 	public void setFiltering(final long startIndex, final LogLineFilter filter) {
 		stopModNotifierAndWait();
 
-		mapper.clear();
+		clear(logAccessVersion);
 
 		setupModNotifierAndStart(startIndex, filter);
 	}
