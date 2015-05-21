@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.swing.AbstractListModel;
+import javax.swing.SwingUtilities;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,9 +63,14 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 	public void setFiltering(final long startIndex, final LogLineFilter filter) {
 		stopModNotifierAndWait();
 
-		clear(logAccessVersion);
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				clear(logAccessVersion);
 
-		setupModNotifierAndStart(startIndex, filter);
+				setupModNotifierAndStart(startIndex, filter);
+			}
+		});
 	}
 
 	private void stopModNotifierAndWait() {
@@ -162,7 +168,7 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 		}
 		fireIntervalAdded(this, 0, length-1);
 		for (final CyclicModelListener listener: listeners) {
-			listener.linesAddedEnd(length, (int)mapper.size());
+			listener.linesAddedStart(length, (int)mapper.size());
 		}
 	}
 

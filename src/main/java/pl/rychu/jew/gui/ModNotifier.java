@@ -122,7 +122,7 @@ public class ModNotifier implements Runnable {
 				if (indexSlice != 0) {
 					modelFacade.addB(slice, indexSlice);
 				}
-				prevMaxIndexF += maxSize;
+				prevMinIndexB -= maxSize;
 			}
 		}
 	}
