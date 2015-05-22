@@ -1,7 +1,9 @@
 package pl.rychu.jew.gui;
 
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.ListModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -16,6 +18,7 @@ public class InfoPanel extends JPanel implements CyclicModelListener
 
 	private final JLabel currentLine;
 	private final JLabel lineCountLabel;
+	private final JLabel rootIndex;
 
 	// ---------------
 
@@ -27,6 +30,9 @@ public class InfoPanel extends JPanel implements CyclicModelListener
 
 		lineCountLabel = new JLabel("#");
 		this.add(lineCountLabel);
+
+		rootIndex = new JLabel("#");
+		this.add(rootIndex);
 	}
 
 	// --------------
@@ -53,7 +59,22 @@ public class InfoPanel extends JPanel implements CyclicModelListener
 			final LogViewPanel panel = (LogViewPanel)sourceObj;
 			final int firstIndex = panel.getSelectedIndex();
 			setCurrentLine(firstIndex);
+			setRootIndex(getRootIndex(panel, firstIndex));
 		}
+	}
+
+	// --------------
+
+	private int getRootIndex(final JList<?> list, final int firstIndex) {
+		final ListModel<?> modelRaw = list.getModel();
+		if (modelRaw instanceof ListModelLog) {
+			final ListModelLog model = (ListModelLog)modelRaw;
+			final int size = model.getSize();
+			if (firstIndex>=0 && firstIndex<size) {
+			return (int) model.getRootIndex(firstIndex);
+			}
+		}
+		return -1;
 	}
 
 	// --------------
@@ -65,6 +86,11 @@ public class InfoPanel extends JPanel implements CyclicModelListener
 
 	private void setLineCount(final int count) {
 		lineCountLabel.setText(Integer.toString(count));
+	}
+
+	private void setRootIndex(final int number) {
+		final String numStr = number < 0 ? "-" : Integer.toString(number+1);
+		rootIndex.setText(numStr);
 	}
 
 }
