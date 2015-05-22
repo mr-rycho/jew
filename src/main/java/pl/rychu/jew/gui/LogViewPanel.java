@@ -1,10 +1,12 @@
 package pl.rychu.jew.gui;
 
 import java.awt.Component;
+import java.awt.Rectangle;
 
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,7 +60,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 	}
 
 	private void scrollForward(final int linesToScroll) {
-		final int lastVisibleIndex = getLastVisibleIndex();
+		final int lastVisibleIndex = getLastWholeVisibleIndex();
 		final int index
 		 = lastVisibleIndex >= 0
 		 ? lastVisibleIndex + linesToScroll
@@ -67,7 +69,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		ensureIndexIsVisible(index);
 
 		final int newFirstVisibleIndex = getFirstVisibleIndex();
-		final int newLastVisibleIndex = getLastVisibleIndex();
+		final int newLastVisibleIndex = getLastWholeVisibleIndex();
 		log.debug("new visible indexes: {}-{}", newFirstVisibleIndex
 		 , newLastVisibleIndex);
 		if (newFirstVisibleIndex<0 || newLastVisibleIndex<0
@@ -76,9 +78,26 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 			 , newFirstVisibleIndex, newLastVisibleIndex);
 			ensureIndexIsVisible(index);
 			final int newestFirstVisibleIndex = getFirstVisibleIndex();
-			final int newestLastVisibleIndex = getLastVisibleIndex();
+			final int newestLastVisibleIndex = getLastWholeVisibleIndex();
 			log.debug("newest visible indexes: {}-{}", newestFirstVisibleIndex
 			 , newestLastVisibleIndex);
+		}
+	}
+
+	private int getLastWholeVisibleIndex() {
+		final int last = getLastVisibleIndex();
+		if (last <= 0) {
+			return last;
+		} else {
+			final Rectangle r = getVisibleRect();
+	    final Rectangle bounds = getCellBounds(last, last);
+			final Rectangle cut = bounds.getBounds();
+			SwingUtilities.computeIntersection(r.x, r.y, r.width, r.height, cut);
+			if (cut.height != bounds.height) {
+				return last - 1;
+			} else {
+				return last;
+			}
 		}
 	}
 
