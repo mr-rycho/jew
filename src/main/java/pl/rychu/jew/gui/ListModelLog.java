@@ -173,7 +173,7 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 		}
 		fireIntervalAdded(this, 0, length-1);
 		for (final CyclicModelListener listener: listeners) {
-			listener.linesAddedStart(length, (int)mapper.size());
+			listener.linesAddedStart(length, mapper.size());
 		}
 	}
 

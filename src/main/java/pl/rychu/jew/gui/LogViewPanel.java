@@ -21,6 +21,8 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 
 	private static final Logger log = LoggerFactory.getLogger(LogViewPanel.class);
 
+	private boolean tail;
+
 	// ---------
 
 	public static LogViewPanel create(final ListModelLog model) {
@@ -30,6 +32,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		result.setCellRenderer(new CellRenderer());
 		result.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
+		result.setTail(false);
 		result.setModel(model);
 
 		return result;
@@ -37,11 +40,25 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 
 	// ---------
 
+	protected boolean isTail() {
+		return tail;
+	}
+
+	protected void setTail(final boolean tail) {
+		this.tail = tail;
+	}
+
+	// -----
+
 	private int prevSize = 0;
 
 	@Override
 	public void linesAddedStart(int numberOfLinesAdded, final long total) {
-		scrollForward(numberOfLinesAdded);
+		if (tail) {
+			tail((int)total);
+		} else {
+			scrollForward(numberOfLinesAdded);
+		}
 		prevSize = (int)total;
 	}
 
@@ -49,6 +66,9 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 	public void linesAddedEnd(int numberOfLinesAdded, final long total) {
 		if (prevSize == 0) {
 			setSelectedIndex(0);
+		}
+		if (tail) {
+			tail((int)total);
 		}
 		prevSize = (int)total;
 	}
@@ -61,6 +81,8 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 
 	@Override
 	public void sourceChanged(long totalSourceLines) {}
+
+	// ----
 
 	private void scrollForward(final int linesToScroll) {
 		final int lastVisibleIndex = getLastWholeVisibleIndex();
@@ -86,6 +108,15 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 			 , newestLastVisibleIndex);
 		}
 	}
+
+	// ----
+
+	private void tail(final int size) {
+		setSelectedIndex(size-1);
+		ensureIndexIsVisible(size - 1);
+	}
+
+	// ----
 
 	private int getLastWholeVisibleIndex() {
 		final int last = getLastVisibleIndex();
