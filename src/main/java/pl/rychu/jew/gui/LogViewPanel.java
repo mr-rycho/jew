@@ -73,16 +73,16 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 
 		final int newFirstVisibleIndex = getFirstVisibleIndex();
 		final int newLastVisibleIndex = getLastWholeVisibleIndex();
-		log.debug("new visible indexes: {}-{}", newFirstVisibleIndex
+		log.trace("new visible indexes: {}-{}", newFirstVisibleIndex
 		 , newLastVisibleIndex);
 		if (newFirstVisibleIndex<0 || newLastVisibleIndex<0
 		 || index<newFirstVisibleIndex || index>newLastVisibleIndex) {
-			log.debug("trying to scroll again because {} != ({}, {})", index
+			log.trace("trying to scroll again because {} != ({}, {})", index
 			 , newFirstVisibleIndex, newLastVisibleIndex);
 			ensureIndexIsVisible(index);
 			final int newestFirstVisibleIndex = getFirstVisibleIndex();
 			final int newestLastVisibleIndex = getLastWholeVisibleIndex();
-			log.debug("newest visible indexes: {}-{}", newestFirstVisibleIndex
+			log.trace("newest visible indexes: {}-{}", newestFirstVisibleIndex
 			 , newestLastVisibleIndex);
 		}
 	}
