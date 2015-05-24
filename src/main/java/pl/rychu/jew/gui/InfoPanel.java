@@ -19,6 +19,7 @@ public class InfoPanel extends JPanel implements CyclicModelListener
 	private final JLabel currentLine;
 	private final JLabel lineCountLabel;
 	private final JLabel rootIndex;
+	private final JLabel rootSize;
 
 	// ---------------
 
@@ -33,6 +34,9 @@ public class InfoPanel extends JPanel implements CyclicModelListener
 
 		rootIndex = new JLabel("#");
 		this.add(rootIndex);
+
+		rootSize = new JLabel("#");
+		this.add(rootSize);
 	}
 
 	// --------------
@@ -53,6 +57,11 @@ public class InfoPanel extends JPanel implements CyclicModelListener
 	}
 
 	@Override
+	public void sourceChanged(long totalSourceLines) {
+		setRootSize(totalSourceLines);
+	}
+
+	@Override
 	public void valueChanged(final ListSelectionEvent e) {
 		final Object sourceObj = e.getSource();
 		if (sourceObj instanceof LogViewPanel) {
@@ -65,13 +74,13 @@ public class InfoPanel extends JPanel implements CyclicModelListener
 
 	// --------------
 
-	private int getRootIndex(final JList<?> list, final int firstIndex) {
+	private long getRootIndex(final JList<?> list, final int firstIndex) {
 		final ListModel<?> modelRaw = list.getModel();
 		if (modelRaw instanceof ListModelLog) {
 			final ListModelLog model = (ListModelLog)modelRaw;
 			final int size = model.getSize();
 			if (firstIndex>=0 && firstIndex<size) {
-			return (int) model.getRootIndex(firstIndex);
+			return model.getRootIndex(firstIndex);
 			}
 		}
 		return -1;
@@ -88,9 +97,14 @@ public class InfoPanel extends JPanel implements CyclicModelListener
 		lineCountLabel.setText(Integer.toString(count));
 	}
 
-	private void setRootIndex(final int number) {
-		final String numStr = number < 0 ? "-" : Integer.toString(number+1);
+	private void setRootIndex(final long number) {
+		final String numStr = number < 0 ? "-" : Long.toString(number+1);
 		rootIndex.setText(numStr);
+	}
+
+	private void setRootSize(final long number) {
+		final String numStr = number < 0 ? "-" : Long.toString(number);
+		rootSize.setText(numStr);
 	}
 
 }

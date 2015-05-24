@@ -29,6 +29,7 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 	private int logAccessVersion;
 
 	private final Mapper mapper = Mapper.create(65536);
+	private long sourceSize = 0L;
 
 	private final List<CyclicModelListener> listeners
 	 = new CopyOnWriteArrayList<>();
@@ -97,6 +98,10 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 	@Override
 	public int getSize() {
 		return (int)(mapper.sizeB() + mapper.sizeF());
+	}
+
+	public long getSourceSize() {
+		return sourceSize;
 	}
 
 	public long getRootIndex(final long index) {
@@ -169,6 +174,13 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 		fireIntervalAdded(this, 0, length-1);
 		for (final CyclicModelListener listener: listeners) {
 			listener.linesAddedStart(length, (int)mapper.size());
+		}
+	}
+
+	public void setSourceSize(final long size) {
+		this.sourceSize = size;
+		for (final CyclicModelListener listener: listeners) {
+			listener.sourceChanged(size);
 		}
 	}
 

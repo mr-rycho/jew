@@ -59,6 +59,9 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		prevSize = 0;
 	}
 
+	@Override
+	public void sourceChanged(long totalSourceLines) {}
+
 	private void scrollForward(final int linesToScroll) {
 		final int lastVisibleIndex = getLastWholeVisibleIndex();
 		final int index

@@ -17,6 +17,7 @@ public class ModNotifier implements Runnable {
 
 	private long prevMaxIndexF;
 	private long prevMinIndexB;
+	private long prevMaxIndexLabel;
 
 	private final ModelFacade modelFacade;
 
@@ -76,13 +77,18 @@ public class ModNotifier implements Runnable {
 			final long maxIndexF = logAccess.sizeF(version);
 			final long minIndexB = -logAccess.sizeB(version);
 
-			if (maxIndexF==prevMaxIndexF && minIndexB==prevMinIndexB) {
+			if (maxIndexF==prevMaxIndexF && minIndexB==prevMinIndexB && maxIndexF==prevMaxIndexLabel) {
 				break;
 			}
 
 			if (Thread.interrupted()) {
 				Thread.currentThread().interrupt();
 				break;
+			}
+
+			if (maxIndexF != prevMaxIndexLabel) {
+				modelFacade.setSourceSize(maxIndexF);
+				prevMaxIndexLabel = maxIndexF;
 			}
 
 			if (maxIndexF != prevMaxIndexF) {
@@ -102,6 +108,7 @@ public class ModNotifier implements Runnable {
 				if (indexSlice != 0) {
 					modelFacade.addF(slice, indexSlice);
 				}
+
 				prevMaxIndexF += maxSize;
 			}
 

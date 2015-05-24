@@ -38,4 +38,11 @@ public class ModelFacade {
 		});
 	}
 
+	public void setSourceSize(final long sourceSize) {
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				model.setSourceSize(sourceSize);
+			}
+		});
+	}
 }

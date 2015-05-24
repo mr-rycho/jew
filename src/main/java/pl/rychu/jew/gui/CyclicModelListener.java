@@ -8,4 +8,6 @@ public interface CyclicModelListener {
 
 	void listReset();
 
+	void sourceChanged(long totalSourceLines);
+
 }
