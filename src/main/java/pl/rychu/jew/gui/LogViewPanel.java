@@ -2,11 +2,19 @@ package pl.rychu.jew.gui;
 
 import java.awt.Component;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 
+import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.InputMap;
 import javax.swing.JList;
+import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import javax.swing.text.Position.Bias;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,11 +23,14 @@ import pl.rychu.jew.LogLineFull;
 
 
 
-public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListener {
+public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListener
+ , KeyListener {
 
 	private static final long serialVersionUID = -6731368974272464443L;
 
 	private static final Logger log = LoggerFactory.getLogger(LogViewPanel.class);
+
+	private static final String ACTION_KEY_TOGGLE_TAIL = "jew.toggleTail";
 
 	private boolean tail;
 
@@ -33,19 +44,55 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		result.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
 		result.setTail(false);
+
+		createActions(result);
+		createKeyBindings(result);
+
 		result.setModel(model);
 
 		return result;
 	}
 
+	private static void createActions(final LogViewPanel logViewPanel) {
+		final ActionMap actionMap = new ActionMap();
+		final ActionMap oldActionMap = logViewPanel.getActionMap();
+		actionMap.setParent(oldActionMap);
+		logViewPanel.setActionMap(actionMap);
+
+		actionMap.put(ACTION_KEY_TOGGLE_TAIL, new AbstractAction(ACTION_KEY_TOGGLE_TAIL) {
+			private static final long serialVersionUID = -1368224947366776200L;
+
+			@Override
+			public void actionPerformed(final ActionEvent e) {
+				final Object sourceObj = e.getSource();
+				if (sourceObj instanceof LogViewPanel) {
+					((LogViewPanel)sourceObj).toggleTail();
+				}
+			}
+		});
+	}
+
+	private static void createKeyBindings(final LogViewPanel logViewPanel) {
+		final InputMap inputMap = new InputMap();
+		final InputMap oldInputMap = logViewPanel.getInputMap();
+		inputMap.setParent(oldInputMap);
+		logViewPanel.setInputMap(WHEN_FOCUSED, inputMap);
+
+		inputMap.put(KeyStroke.getKeyStroke('`'), ACTION_KEY_TOGGLE_TAIL);
+	}
+
 	// ---------
 
-	protected boolean isTail() {
+	public boolean isTail() {
 		return tail;
 	}
 
 	protected void setTail(final boolean tail) {
 		this.tail = tail;
+	}
+
+	protected void toggleTail() {
+		this.tail = !this.tail;
 	}
 
 	// -----
@@ -131,6 +178,32 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 				return last - 1;
 			} else {
 				return last;
+			}
+		}
+	}
+
+	@Override
+	public int getNextMatch(String prefix, int startIndex, Bias bias) {
+		return -1;
+	}
+
+	// -------------
+
+	@Override
+	public void keyTyped(KeyEvent e) {}
+
+	@Override
+	public void keyReleased(KeyEvent e) {}
+
+	@Override
+	public void keyPressed(final KeyEvent e) {
+		final int keyCode = e.getKeyCode();
+		if (keyCode == KeyEvent.VK_BACK_QUOTE) {
+			if (tail) {
+				tail = false;
+			} else {
+				tail = true;
+				tail(prevSize);
 			}
 		}
 	}
