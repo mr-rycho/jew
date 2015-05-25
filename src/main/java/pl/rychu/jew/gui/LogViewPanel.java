@@ -47,6 +47,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 
 		createActions(result);
 		createKeyBindings(result);
+		result.addKeyListener(result);
 
 		result.setModel(model);
 
@@ -198,12 +199,13 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 	@Override
 	public void keyPressed(final KeyEvent e) {
 		final int keyCode = e.getKeyCode();
-		if (keyCode == KeyEvent.VK_BACK_QUOTE) {
+		final boolean noMod = !e.isAltDown() && !e.isAltGraphDown() && !e.isControlDown()
+		 && !e.isMetaDown() && !e.isShiftDown();
+
+		if (noMod && (keyCode==KeyEvent.VK_UP || keyCode==KeyEvent.VK_PAGE_UP
+		 || keyCode==KeyEvent.VK_HOME)) {
 			if (tail) {
 				tail = false;
-			} else {
-				tail = true;
-				tail(prevSize);
 			}
 		}
 	}
