@@ -10,21 +10,27 @@ import javax.swing.event.ListSelectionListener;
 
 
 public class InfoPanel extends JPanel implements CyclicModelListener
- , ListSelectionListener {
+ , ListSelectionListener, PanelModelChangeListener {
 
 	private static final long serialVersionUID = 5701049831143954538L;
 
 	// ---------------
 
+	private final LogViewPanel logViewPanel;
+
 	private final JLabel currentLine;
 	private final JLabel lineCountLabel;
 	private final JLabel rootIndex;
 	private final JLabel rootSize;
+	private final JLabel panelProps;
+	private final JLabel modelProps;
 
 	// ---------------
 
-	public InfoPanel() {
+	private InfoPanel(final LogViewPanel logViewPanel) {
 		super(true);
+
+		this.logViewPanel = logViewPanel;
 
 		currentLine = new JLabel("#");
 		this.add(currentLine);
@@ -37,6 +43,20 @@ public class InfoPanel extends JPanel implements CyclicModelListener
 
 		rootSize = new JLabel("#");
 		this.add(rootSize);
+
+		panelProps = new JLabel("--");
+		this.add(panelProps);
+
+		modelProps = new JLabel("--");
+		this.add(modelProps);
+	}
+
+	public static InfoPanel create(final LogViewPanel logViewPanel) {
+		final InfoPanel result = new InfoPanel(logViewPanel);
+
+		logViewPanel.addPanelModelChangeListener(result);
+
+		return result;
 	}
 
 	// --------------
@@ -74,6 +94,19 @@ public class InfoPanel extends JPanel implements CyclicModelListener
 
 	// --------------
 
+	@Override
+	public void panelChanged() {
+		final boolean tail = logViewPanel.isTail();
+		StringBuilder sb = new StringBuilder();
+		sb.append(tail ? "TAIL" : "tail-");
+		setPanelProps(sb.toString());
+	}
+
+	@Override
+	public void modelChanged() {}
+
+	// --------------
+
 	private long getRootIndex(final JList<?> list, final int firstIndex) {
 		final ListModel<?> modelRaw = list.getModel();
 		if (modelRaw instanceof ListModelLog) {
@@ -105,6 +138,10 @@ public class InfoPanel extends JPanel implements CyclicModelListener
 	private void setRootSize(final long number) {
 		final String numStr = number < 0 ? "-" : Long.toString(number);
 		rootSize.setText(numStr);
+	}
+
+	private void setPanelProps(final String propsStr) {
+		panelProps.setText(propsStr);
 	}
 
 }

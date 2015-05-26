@@ -5,6 +5,8 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
@@ -33,6 +35,9 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 	private static final String ACTION_KEY_TOGGLE_TAIL = "jew.toggleTail";
 
 	private boolean tail;
+
+	private final List<PanelModelChangeListener> listeners
+	 = new CopyOnWriteArrayList<>();
 
 	// ---------
 
@@ -82,6 +87,16 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		inputMap.put(KeyStroke.getKeyStroke('`'), ACTION_KEY_TOGGLE_TAIL);
 	}
 
+	// -----
+
+	public void addPanelModelChangeListener(final PanelModelChangeListener listener) {
+		listeners.add(listener);
+	}
+
+	public void removePanelModelChangeListener(final PanelModelChangeListener listener) {
+		listeners.remove(listener);
+	}
+
 	// ---------
 
 	public boolean isTail() {
@@ -92,6 +107,9 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		this.tail = tail;
 		if (tail) {
 			tail(getModel().getSize());
+		}
+		for (final PanelModelChangeListener lsn: listeners) {
+			lsn.panelChanged();
 		}
 	}
 

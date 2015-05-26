@@ -26,16 +26,16 @@ public class GuiMain {
 
 				mainFrame.setLayout(new BorderLayout());
 
+				final ListModelLog model = ListModelLog.create(logAccess);
+
+				final LogViewPanel logViewPanel = LogViewPanel.create(model);
+
 				final JPanel topPanel = new JPanel();
 				topPanel.setLayout(new BorderLayout());
 				mainFrame.add(topPanel, BorderLayout.NORTH);
 
-				final InfoPanel infoPanel = new InfoPanel();
+				final InfoPanel infoPanel = InfoPanel.create(logViewPanel);
 				topPanel.add(infoPanel, BorderLayout.CENTER);
-
-				final ListModelLog model = ListModelLog.create(logAccess);
-
-				final LogViewPanel logViewPanel = LogViewPanel.create(model);
 
 				logViewPanel.addListSelectionListener(infoPanel);
 				model.addCyclicModelListener(infoPanel);
