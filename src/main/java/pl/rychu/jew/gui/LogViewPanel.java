@@ -90,10 +90,13 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 
 	protected void setTail(final boolean tail) {
 		this.tail = tail;
+		if (tail) {
+			tail(getModel().getSize());
+		}
 	}
 
 	protected void toggleTail() {
-		this.tail = !this.tail;
+		setTail(!isTail());
 	}
 
 	// -----
@@ -205,7 +208,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		if (noMod && (keyCode==KeyEvent.VK_UP || keyCode==KeyEvent.VK_PAGE_UP
 		 || keyCode==KeyEvent.VK_HOME)) {
 			if (tail) {
-				tail = false;
+				setTail(false);
 			}
 		}
 	}
