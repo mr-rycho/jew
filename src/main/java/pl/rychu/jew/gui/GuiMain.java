@@ -39,6 +39,7 @@ public class GuiMain {
 
 				logViewPanel.addListSelectionListener(infoPanel);
 				model.addCyclicModelListener(infoPanel);
+				model.addPanelModelChangeListener(infoPanel);
 				model.addCyclicModelListener(logViewPanel);
 
 				final JScrollPane scrollPane = new JScrollPane(logViewPanel);

@@ -30,4 +30,9 @@ public class LogLineThreadFilter implements LogLineFilter {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
+	public String toString() {
+		return "thread=\""+threadName+"\"";
+	}
+
 }

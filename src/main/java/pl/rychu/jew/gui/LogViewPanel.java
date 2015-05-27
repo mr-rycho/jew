@@ -21,7 +21,11 @@ import javax.swing.text.Position.Bias;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import pl.rychu.jew.LogLine;
 import pl.rychu.jew.LogLineFull;
+import pl.rychu.jew.filter.LogLineFilter;
+import pl.rychu.jew.filter.LogLineFilterAll;
+import pl.rychu.jew.filter.LogLineThreadFilter;
 
 
 
@@ -34,7 +38,11 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 
 	private static final String ACTION_KEY_TOGGLE_TAIL = "jew.toggleTail";
 
+	private static final String ACTION_KEY_FILTER_TOGGLE_THREAD = "jew.flt.thread";
+
 	private boolean tail;
+
+	private String filterThread;
 
 	private final List<PanelModelChangeListener> listeners
 	 = new CopyOnWriteArrayList<>();
@@ -67,12 +75,22 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 
 		actionMap.put(ACTION_KEY_TOGGLE_TAIL, new AbstractAction(ACTION_KEY_TOGGLE_TAIL) {
 			private static final long serialVersionUID = -1368224947366776200L;
-
 			@Override
 			public void actionPerformed(final ActionEvent e) {
 				final Object sourceObj = e.getSource();
 				if (sourceObj instanceof LogViewPanel) {
 					((LogViewPanel)sourceObj).toggleTail();
+				}
+			}
+		});
+
+		actionMap.put(ACTION_KEY_FILTER_TOGGLE_THREAD, new AbstractAction(ACTION_KEY_FILTER_TOGGLE_THREAD) {
+			private static final long serialVersionUID = 5681791587445929606L;
+			@Override
+			public void actionPerformed(final ActionEvent e) {
+				final Object sourceObj = e.getSource();
+				if (sourceObj instanceof LogViewPanel) {
+					((LogViewPanel)sourceObj).toggleThread();
 				}
 			}
 		});
@@ -85,6 +103,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		logViewPanel.setInputMap(WHEN_FOCUSED, inputMap);
 
 		inputMap.put(KeyStroke.getKeyStroke('`'), ACTION_KEY_TOGGLE_TAIL);
+		inputMap.put(KeyStroke.getKeyStroke('t'), ACTION_KEY_FILTER_TOGGLE_THREAD);
 	}
 
 	// -----
@@ -115,6 +134,62 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 
 	protected void toggleTail() {
 		setTail(!isTail());
+	}
+
+	protected void toggleThread() {
+		final String prev = filterThread;
+
+		if (filterThread != null) {
+			filterThread = null;
+		} else {
+			final ListModelLog model = (ListModelLog)getModel();
+			final int view = getView();
+			final LogLine logLine = model.getIndexElementAt(view);
+			if (logLine != null) {
+				final String threadName = logLine.getThreadName();
+				if (threadName!=null && !threadName.isEmpty()) {
+					filterThread = threadName;
+				}
+			}
+		}
+
+		if ((prev==null&&filterThread!=null)||(!prev.equals(filterThread))) {
+			createAndSetFilter();
+		}
+	}
+
+	protected void createAndSetFilter() {
+		setFilter(createFilter());
+	}
+
+	protected LogLineFilter createFilter() {
+		LogLineFilter filter = null;
+
+		if (filterThread != null) {
+			final LogLineFilter fThread = new LogLineThreadFilter(filterThread);
+			if (filter != null) {
+				// TODO filter AND
+			} else {
+				filter = fThread;
+			}
+		}
+
+		return filter!=null ? filter : new LogLineFilterAll();
+	}
+
+	protected void setFilter(final LogLineFilter filter) {
+		final ListModelLog model = (ListModelLog)getModel();
+		final int view = getView();
+		final long rootIndex = model.getRootIndex(view);
+		model.setFiltering(rootIndex, filter);
+	}
+
+	private int getView() {
+		final int selectedIndex = getSelectedIndex();
+		if (selectedIndex >= 0) {
+			return selectedIndex;
+		}
+		return getFirstVisibleIndex();
 	}
 
 	// -----

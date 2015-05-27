@@ -38,6 +38,11 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 
 	private final ModelFacade facade = new ModelFacade(this);
 
+	private LogLineFilter logLineFilter;
+
+	private final List<PanelModelChangeListener> pmcLsns
+	 = new CopyOnWriteArrayList<>();
+
 	// ------------------
 
 	private ListModelLog(final LogAccess logAccess) {
@@ -61,8 +66,26 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 		listeners.remove(lsn);
 	}
 
+	public void addPanelModelChangeListener(final PanelModelChangeListener listener) {
+		pmcLsns.add(listener);
+	}
+
+	public void removePanelModelChangeListener(final PanelModelChangeListener listener) {
+		pmcLsns.remove(listener);
+	}
+
+	public LogLineFilter getFilter() {
+		return logLineFilter;
+	}
+
 	public void setFiltering(final long startIndex, final LogLineFilter filter) {
 		stopModNotifierAndWait();
+
+		this.logLineFilter = filter;
+
+		for (final PanelModelChangeListener lsn: pmcLsns) {
+			lsn.modelChanged();
+		}
 
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
@@ -109,7 +132,7 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 		return mapper.get(indexWithOffset);
 	}
 
-	public LogLine getIndexElementAdd(final int index) {
+	public LogLine getIndexElementAt(final int index) {
 		final long logAccessIndex = getRootIndex(index);
 		try {
 			return logAccess.get(logAccessIndex, logAccessVersion);

@@ -7,6 +7,8 @@ import javax.swing.ListModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import pl.rychu.jew.filter.LogLineFilter;
+
 
 
 public class InfoPanel extends JPanel implements CyclicModelListener
@@ -103,7 +105,11 @@ public class InfoPanel extends JPanel implements CyclicModelListener
 	}
 
 	@Override
-	public void modelChanged() {}
+	public void modelChanged() {
+		final ListModelLog model = (ListModelLog)logViewPanel.getModel();
+		final LogLineFilter filter = model.getFilter();
+		setModelProps(filter.toString());
+	}
 
 	// --------------
 
@@ -142,6 +148,10 @@ public class InfoPanel extends JPanel implements CyclicModelListener
 
 	private void setPanelProps(final String propsStr) {
 		panelProps.setText(propsStr);
+	}
+
+	private void setModelProps(final String propsStr) {
+		modelProps.setText(propsStr);
 	}
 
 }

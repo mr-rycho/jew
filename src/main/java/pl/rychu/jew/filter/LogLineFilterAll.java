@@ -20,4 +20,9 @@ public class LogLineFilterAll implements LogLineFilter {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
+	public String toString() {
+		return "no filter";
+	}
+
 }
