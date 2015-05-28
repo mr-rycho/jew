@@ -90,7 +90,7 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				clear(logAccessVersion);
+				clear(logAccessVersion, false);
 
 				setupModNotifierAndStart(startIndex, filter);
 			}
@@ -128,8 +128,12 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 	}
 
 	public long getRootIndex(final long index) {
-		final long indexWithOffset = index - mapper.sizeB();
-		return mapper.get(indexWithOffset);
+		if (index>=0 && index<mapper.size()) {
+			final long indexWithOffset = index - mapper.sizeB();
+			return mapper.get(indexWithOffset);
+		} else {
+			return 0L;
+		}
 	}
 
 	public LogLine getIndexElementAt(final int index) {
@@ -163,12 +167,12 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 
 	// -------------
 
-	public void clear(final int newSourceVer) {
+	public void clear(final int newSourceVer, final boolean sourceReset) {
 		log.debug("reset start; new version is {}", newSourceVer);
 		mapper.clear();
 		fireIntervalRemoved(this, 0, Integer.MAX_VALUE>>1);
 		for (final CyclicModelListener listener: listeners) {
-			listener.listReset();
+			listener.listReset(sourceReset);
 		}
 		logAccessVersion = newSourceVer;
 		log.debug("reset end");

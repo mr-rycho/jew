@@ -137,10 +137,12 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 	}
 
 	protected void toggleThread() {
-		final String prev = filterThread;
+		setThreadName(getToggleThread());
+	}
 
+	protected String getToggleThread() {
 		if (filterThread != null) {
-			filterThread = null;
+			return null;
 		} else {
 			final ListModelLog model = (ListModelLog)getModel();
 			final int view = getView();
@@ -148,12 +150,16 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 			if (logLine != null) {
 				final String threadName = logLine.getThreadName();
 				if (threadName!=null && !threadName.isEmpty()) {
-					filterThread = threadName;
+					return threadName;
 				}
 			}
+			return filterThread;
 		}
+	}
 
-		if ((prev==null&&filterThread!=null)||(!prev.equals(filterThread))) {
+	protected void setThreadName(final String newName) {
+		if ((newName==null&&filterThread!=null) || (newName!=null&&!newName.equals(filterThread))) {
+			filterThread = newName;
 			createAndSetFilter();
 		}
 	}
@@ -201,7 +207,8 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		if (tail) {
 			tail((int)total);
 		} else {
-			scrollForward(numberOfLinesAdded);
+			log.trace("{} + {} -> {}", prevSize, numberOfLinesAdded, total);
+			scrollForward(numberOfLinesAdded, prevSize);
 		}
 		prevSize = (int)total;
 	}
@@ -218,9 +225,12 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 	}
 
 	@Override
-	public void listReset() {
+	public void listReset(final boolean sourceReset) {
 		ensureIndexIsVisible(0);
 		prevSize = 0;
+		if (sourceReset) {
+			resetView();
+		}
 	}
 
 	@Override
@@ -228,29 +238,42 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 
 	// ----
 
-	private void scrollForward(final int linesToScroll) {
-		final int lastVisibleIndex = getLastWholeVisibleIndex();
-		final int index
-		 = lastVisibleIndex >= 0
-		 ? lastVisibleIndex + linesToScroll
-		 : linesToScroll - 1;
+	private void resetView() {
+		setTail(true);
+		setThreadName(null);
+	}
 
+	// ----
+
+	private void scrollForward(final int linesToScroll, final int prevSize) {
+		final int lastVisibleIndex = getLastWholeVisibleIndex();
+		final int lastIndex = prevSize>0 ? prevSize-1 : 0;
+		final int maxIndex
+		 = lastVisibleIndex >= 0
+		 ? Math.min(lastVisibleIndex, lastIndex)
+		 : lastIndex;
+		final int index = maxIndex + linesToScroll;
+		log.trace("{} + {} -> {}", lastVisibleIndex, linesToScroll, index);
+
+		for (int retry=0; retry<5; retry++) {
+			final boolean mustRetry = scrollToAndCheck(index);
+			if (!mustRetry) {
+				break;
+			} else {
+				log.trace("retrying... (selection is {})", getMinSelectionIndex());
+			}
+		}
+	}
+
+	private boolean scrollToAndCheck(final int index) {
 		ensureIndexIsVisible(index);
 
 		final int newFirstVisibleIndex = getFirstVisibleIndex();
 		final int newLastVisibleIndex = getLastWholeVisibleIndex();
 		log.trace("new visible indexes: {}-{}", newFirstVisibleIndex
 		 , newLastVisibleIndex);
-		if (newFirstVisibleIndex<0 || newLastVisibleIndex<0
-		 || index<newFirstVisibleIndex || index>newLastVisibleIndex) {
-			log.trace("trying to scroll again because {} != ({}, {})", index
-			 , newFirstVisibleIndex, newLastVisibleIndex);
-			ensureIndexIsVisible(index);
-			final int newestFirstVisibleIndex = getFirstVisibleIndex();
-			final int newestLastVisibleIndex = getLastWholeVisibleIndex();
-			log.trace("newest visible indexes: {}-{}", newestFirstVisibleIndex
-			 , newestLastVisibleIndex);
-		}
+		return newFirstVisibleIndex<0 || newLastVisibleIndex<0
+		 || index<newFirstVisibleIndex || index>newLastVisibleIndex;
 	}
 
 	// ----

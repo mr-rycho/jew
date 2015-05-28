@@ -74,7 +74,7 @@ public class InfoPanel extends JPanel implements CyclicModelListener
 	}
 
 	@Override
-	public void listReset() {
+	public void listReset(final boolean sourceReset) {
 		setLineCount(0);
 	}
 

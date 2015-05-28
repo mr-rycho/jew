@@ -17,7 +17,7 @@ public class ModelFacade {
 	public void clear(final int version) {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				model.clear(version);
+				model.clear(version, true);
 			}
 		});
 	}

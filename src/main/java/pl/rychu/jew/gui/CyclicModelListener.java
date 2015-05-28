@@ -6,7 +6,7 @@ public interface CyclicModelListener {
 
 	void linesAddedEnd(int numberOfLinesAdded, long totalLines);
 
-	void listReset();
+	void listReset(boolean sourceReset);
 
 	void sourceChanged(long totalSourceLines);
 
