@@ -37,8 +37,9 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 	private static final Logger log = LoggerFactory.getLogger(LogViewPanel.class);
 
 	private static final String ACTION_KEY_TOGGLE_TAIL = "jew.toggleTail";
-
 	private static final String ACTION_KEY_FILTER_TOGGLE_THREAD = "jew.flt.thread";
+
+	private static final String ACTION_KEY_RNDR_TOGGLE_CLASS = "jew.rndr.toggleClass";
 
 	private boolean tail;
 
@@ -94,6 +95,20 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 				}
 			}
 		});
+
+		actionMap.put(ACTION_KEY_RNDR_TOGGLE_CLASS, new AbstractAction(ACTION_KEY_RNDR_TOGGLE_CLASS) {
+			private static final long serialVersionUID = 3385146847577067253L;
+			@Override
+			public void actionPerformed(final ActionEvent e) {
+				final Object sourceObj = e.getSource();
+				if (sourceObj instanceof LogViewPanel) {
+					final LogViewPanel logViewPanel = (LogViewPanel)sourceObj;
+					CellRenderer cellRenderer = (CellRenderer)logViewPanel.getCellRenderer();
+					cellRenderer.toggleClassVisuType();
+					logViewPanel.repaint();
+				}
+			}
+		});
 	}
 
 	private static void createKeyBindings(final LogViewPanel logViewPanel) {
@@ -104,6 +119,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 
 		inputMap.put(KeyStroke.getKeyStroke('`'), ACTION_KEY_TOGGLE_TAIL);
 		inputMap.put(KeyStroke.getKeyStroke('t'), ACTION_KEY_FILTER_TOGGLE_THREAD);
+		inputMap.put(KeyStroke.getKeyStroke('C'), ACTION_KEY_RNDR_TOGGLE_CLASS);
 	}
 
 	// -----
@@ -331,8 +347,61 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 
 	// ==================
 
+	private static enum ClassVisuType {
+		NORMAL
+
+		, HIDDEN {
+			@Override
+			public boolean replacesClass() {
+				return true;
+			}
+
+			@Override
+			public String getReplacement(final String className) {
+				return "";
+			}
+		}
+
+		, CLASS {
+			@Override
+			public boolean replacesClass() {
+				return true;
+			}
+
+			@Override
+			public String getReplacement(final String className) {
+				final int dotIndex = className.lastIndexOf('.');
+				return dotIndex<0 ? className : className.substring(dotIndex+1);
+			}
+		};
+
+		public boolean replacesClass() {
+			return false;
+		}
+
+		public String getReplacement(final String className) {
+			throw new UnsupportedOperationException();
+		}
+	}
+
+	// ==================
+
 	private static class CellRenderer extends DefaultListCellRenderer {
 		private static final long serialVersionUID = 7313136726313412175L;
+
+		private static final ClassVisuType[] VISU_TYPES = ClassVisuType.values();
+
+		private ClassVisuType classVisuType = ClassVisuType.NORMAL;
+
+		public void toggleClassVisuType() {
+			final int oldOrd = classVisuType!=null ? classVisuType.ordinal() : -1;
+			final int newOrd = (oldOrd+1) % VISU_TYPES.length;
+			setClassVisuType(VISU_TYPES[newOrd]);
+		}
+
+		public void setClassVisuType(final ClassVisuType classVisuType) {
+			this.classVisuType = classVisuType;
+		}
 
 		@Override
     public Component getListCellRendererComponent(final JList<?> list
@@ -348,7 +417,31 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 			if (logLineFull == null) {
 				return "~";
 			} else {
-				return logLineFull.getFullText();
+				String currentText = logLineFull.getFullText();
+				currentText = replaceClass(logLineFull, currentText);
+				return currentText;
+			}
+		}
+
+		private String replaceClass(final LogLineFull logLineFull, final String currentText) {
+			if (!classVisuType.replacesClass()) {
+				return currentText;
+			} else {
+				final String className = logLineFull.getLogLine().getClassName();
+				if (className==null || className.isEmpty()) {
+					return currentText;
+				} else {
+					final String findStr = " ["+className+"]";
+					final int findStrIndex = currentText.indexOf(findStr);
+					if (findStrIndex < 0) {
+						return currentText;
+					} else {
+						final String replacement = classVisuType.getReplacement(className);
+						final int findStrLen = findStr.length();
+						return currentText.substring(0, findStrIndex)+" ["+replacement+"]"
+						 +currentText.substring(findStrIndex+findStrLen);
+					}
+				}
 			}
 		}
 	}
