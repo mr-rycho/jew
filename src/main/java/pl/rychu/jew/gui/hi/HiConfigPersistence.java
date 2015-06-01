@@ -12,17 +12,25 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 
 public class HiConfigPersistence {
+
+	private static final Logger log = LoggerFactory.getLogger(HiConfigPersistence.class);
 
 	private static final String ENV_HOME = "HOME";
 
 	private static final String FILENAME = ".jew.hi";
 
+	// ----------------
+
 	public static HiConfig load() {
 		final String homeDir = System.getenv(ENV_HOME);
 		final String file = (homeDir!=null?homeDir:".")+"/"+FILENAME;
+		log.debug("loading hi config from \"{}\"", file);
 		return load(file);
 	}
 

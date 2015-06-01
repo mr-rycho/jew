@@ -15,7 +15,7 @@ public class HiConfig {
 	protected HiConfig() {};
 
 	protected HiConfig(final Collection<HiConfigEntry> entries) {
-		entries.addAll(entries);
+		this.entries.addAll(entries);
 	}
 
 	// -----------
