@@ -1,12 +1,16 @@
 package pl.rychu.jew.gui;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
@@ -16,6 +20,8 @@ import javax.swing.JList;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
 import javax.swing.text.Position.Bias;
 
 import org.slf4j.Logger;
@@ -26,6 +32,8 @@ import pl.rychu.jew.LogLineFull;
 import pl.rychu.jew.filter.LogLineFilter;
 import pl.rychu.jew.filter.LogLineFilterAll;
 import pl.rychu.jew.filter.LogLineThreadFilter;
+import pl.rychu.jew.gui.hi.HiConfig;
+import pl.rychu.jew.gui.hi.HiConfigEntry;
 
 
 
@@ -216,6 +224,12 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 
 	// -----
 
+	public void setHiConfig(final HiConfig hiConfig) {
+		((CellRenderer)getCellRenderer()).setHiConfig(hiConfig);
+	}
+
+	// -----
+
 	private int prevSize = 0;
 
 	@Override
@@ -389,9 +403,34 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 	private static class CellRenderer extends DefaultListCellRenderer {
 		private static final long serialVersionUID = 7313136726313412175L;
 
+		private static final Border NO_FOCUS_BORDER = new EmptyBorder(1, 1, 1, 1);
+
 		private static final ClassVisuType[] VISU_TYPES = ClassVisuType.values();
 
 		private ClassVisuType classVisuType = ClassVisuType.NORMAL;
+
+		private final List<HiConfigEntryGui> hiConfigEntries = new ArrayList<>();
+
+		// ----------
+
+		public void setHiConfig(final HiConfig hiConfig) {
+			hiConfigEntries.clear();
+			final int len = hiConfig.size();
+			for (int i=0; i<len; i++) {
+				final HiConfigEntry entry = hiConfig.get(i);
+				final String regexpStr = entry.getRegexp();
+				try {
+					final Pattern regexp = Pattern.compile(regexpStr);
+					final Color colorB = new Color(entry.getColorB());
+					final Color colorF = new Color(entry.getColorF());
+					hiConfigEntries.add(new HiConfigEntryGui(regexp, colorB, colorF));
+				} catch (Exception e) {
+					// TODO log? msgBox?
+				}
+			}
+		}
+
+		// ----------
 
 		public void toggleClassVisuType() {
 			final int oldOrd = classVisuType!=null ? classVisuType.ordinal() : -1;
@@ -409,8 +448,60 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
      , final boolean cellHasFocus) {
 			final LogLineFull logLineFull = (LogLineFull)value;
 			final String logLineStr = getRenderedString(logLineFull);
-			return super.getListCellRendererComponent(list, logLineStr, index
+			return getListCellRendererComponentSuper(list, logLineStr, index
 			 , isSelected, cellHasFocus);
+		}
+
+		private Component getListCellRendererComponentSuper(final JList<?> list
+		 , final Object value, final int index, final boolean isSelected
+		 , final boolean cellHasFocus) {
+			setComponentOrientation(list.getComponentOrientation());
+
+			final String text = (value == null) ? "" : value.toString();
+
+			Color bg = null;
+			Color fg = null;
+
+			if (isSelected) {
+				setBackground(bg == null ? list.getSelectionBackground() : bg);
+				setForeground(fg == null ? list.getSelectionForeground() : fg);
+			}
+			else {
+				final int len = hiConfigEntries.size();
+				for (int i=0; i<len; i++) {
+					final HiConfigEntryGui entry = hiConfigEntries.get(i);
+					final Pattern pattern = entry.getPattern();
+					final Matcher matcher = pattern.matcher(text);
+					if (matcher.find()) {
+						bg = entry.getColorB();
+						fg = entry.getColorF();
+						break;
+					}
+				}
+				setBackground(bg == null ? list.getBackground() : bg);
+				setForeground(fg == null ? list.getForeground() : fg);
+			}
+
+			setIcon(null);
+			setText(text);
+
+			setEnabled(list.isEnabled());
+			setFont(list.getFont());
+
+			Border border = null;
+			if (cellHasFocus) {
+				if (isSelected) {
+					border = NO_FOCUS_BORDER;
+				}
+				if (border == null) {
+					border = NO_FOCUS_BORDER;
+				}
+			} else {
+				border = NO_FOCUS_BORDER;
+			}
+			setBorder(border);
+
+			return this;
 		}
 
 		private String getRenderedString(final LogLineFull logLineFull) {
@@ -444,6 +535,38 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 				}
 			}
 		}
+
+		@Override
+		public boolean isOpaque() {
+			return true;
+		}
+
+		// ====================
+
+		private static class HiConfigEntryGui {
+			private final Pattern pattern;
+			private final Color colorB;
+			private final Color colorF;
+
+			public HiConfigEntryGui(final Pattern pattern
+			 , final Color colorB, final Color colorF) {
+				super();
+				this.pattern = pattern;
+				this.colorB = colorB;
+				this.colorF = colorF;
+			}
+
+			private Pattern getPattern() {
+				return pattern;
+			}
+			private Color getColorB() {
+				return colorB;
+			}
+			private Color getColorF() {
+				return colorF;
+			}
+		}
+
 	}
 
 }
