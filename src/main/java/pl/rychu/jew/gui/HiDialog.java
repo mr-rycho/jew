@@ -16,6 +16,7 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.WindowConstants;
 import javax.swing.border.Border;
@@ -36,7 +37,7 @@ public class HiDialog extends JDialog {
 	public HiDialog(final JFrame fr, final HiConfig hiConfig) {
 		super(fr, "Highlighting", true);
 
-		setSize(400, 300);
+		setSize(400, 400);
 
 		cp = getContentPane();
 
@@ -48,10 +49,40 @@ public class HiDialog extends JDialog {
 		jList.setCellRenderer(new CellRenderer());
 		cp.add(jList, BorderLayout.CENTER);
 
+		final JPanel regexEditPanel = new JPanel();
+		regexEditPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
+		final JTextField regexEditField = new JTextField(20);
+		regexEditPanel.add(regexEditField);
+
+		final JPanel colorpickPanel = new JPanel();
+		colorpickPanel.setMinimumSize(new Dimension(300, 40));
+		colorpickPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
+		final JButton pickBackButton = new JButton("back");
+		colorpickPanel.add(pickBackButton);
+		final JTextField colorBackField = new JTextField(10);
+		colorpickPanel.add(colorBackField);
+		final JButton pickForeButton = new JButton("fore");
+		colorpickPanel.add(pickForeButton);
+		final JTextField colorForeField = new JTextField(10);
+		colorpickPanel.add(colorForeField);
+
+		final JPanel configPanel = new JPanel();
+		configPanel.setLayout(new BorderLayout());
+		configPanel.setMinimumSize(new Dimension(300, 80));
+		configPanel.add(regexEditPanel, BorderLayout.NORTH);
+		configPanel.add(colorpickPanel, BorderLayout.SOUTH);
+
 		final JPanel buttonPanel = new JPanel();
 		buttonPanel.setPreferredSize(new Dimension(0, 40));
 		buttonPanel.setLayout(new FlowLayout(FlowLayout.RIGHT, 5, 5));
-		cp.add(buttonPanel, BorderLayout.SOUTH);
+
+		final JPanel bottomPanel = new JPanel();
+		bottomPanel.setLayout(new BorderLayout());
+		bottomPanel.setMinimumSize(new Dimension(300, 40));
+		bottomPanel.add(configPanel, BorderLayout.NORTH);
+		bottomPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+		cp.add(bottomPanel, BorderLayout.SOUTH);
 
 		final JButton closeButton = new JButton("close");
 		closeButton.addActionListener(new ActionListener() {
