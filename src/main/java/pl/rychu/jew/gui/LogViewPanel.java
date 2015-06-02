@@ -16,6 +16,7 @@ import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.InputMap;
+import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
@@ -49,9 +50,13 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 
 	private static final String ACTION_KEY_RNDR_TOGGLE_CLASS = "jew.rndr.toggleClass";
 
+	private static final String ACTION_KEY_HI_DIALOG = "jew.hi.dialog";
+
 	private boolean tail;
 
 	private String filterThread;
+
+	private HiConfig hiConfig;
 
 	private final List<PanelModelChangeListener> listeners
 	 = new CopyOnWriteArrayList<>();
@@ -117,6 +122,14 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 				}
 			}
 		});
+
+		actionMap.put(ACTION_KEY_HI_DIALOG, new AbstractAction(ACTION_KEY_HI_DIALOG) {
+			private static final long serialVersionUID = -8346845550957257182L;
+			@Override
+			public void actionPerformed(final ActionEvent e) {
+				new HiDialog((JFrame)logViewPanel.getTopLevelAncestor(), logViewPanel.hiConfig);
+			}
+		});
 	}
 
 	private static void createKeyBindings(final LogViewPanel logViewPanel) {
@@ -128,6 +141,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		inputMap.put(KeyStroke.getKeyStroke('`'), ACTION_KEY_TOGGLE_TAIL);
 		inputMap.put(KeyStroke.getKeyStroke('t'), ACTION_KEY_FILTER_TOGGLE_THREAD);
 		inputMap.put(KeyStroke.getKeyStroke('C'), ACTION_KEY_RNDR_TOGGLE_CLASS);
+		inputMap.put(KeyStroke.getKeyStroke('H'), ACTION_KEY_HI_DIALOG);
 	}
 
 	// -----
@@ -225,6 +239,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 	// -----
 
 	public void setHiConfig(final HiConfig hiConfig) {
+		this.hiConfig = hiConfig;
 		((CellRenderer)getCellRenderer()).setHiConfig(hiConfig);
 	}
 
