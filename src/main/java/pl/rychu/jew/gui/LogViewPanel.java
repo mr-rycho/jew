@@ -22,7 +22,7 @@ import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
-import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 import javax.swing.text.Position.Bias;
 
 import org.slf4j.Logger;
@@ -418,7 +418,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 	private static class CellRenderer extends DefaultListCellRenderer {
 		private static final long serialVersionUID = 7313136726313412175L;
 
-		private static final Border NO_FOCUS_BORDER = new EmptyBorder(1, 1, 1, 1);
+		private static final Border SEL_BORDER = new LineBorder(Color.BLACK, 1);
 
 		private static final ClassVisuType[] VISU_TYPES = ClassVisuType.values();
 
@@ -477,25 +477,19 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 			Color bg = null;
 			Color fg = null;
 
-			if (isSelected) {
-				setBackground(bg == null ? list.getSelectionBackground() : bg);
-				setForeground(fg == null ? list.getSelectionForeground() : fg);
-			}
-			else {
-				final int len = hiConfigEntries.size();
-				for (int i=0; i<len; i++) {
-					final HiConfigEntryGui entry = hiConfigEntries.get(i);
-					final Pattern pattern = entry.getPattern();
-					final Matcher matcher = pattern.matcher(text);
-					if (matcher.find()) {
-						bg = entry.getColorB();
-						fg = entry.getColorF();
-						break;
-					}
+			final int len = hiConfigEntries.size();
+			for (int i=0; i<len; i++) {
+				final HiConfigEntryGui entry = hiConfigEntries.get(i);
+				final Pattern pattern = entry.getPattern();
+				final Matcher matcher = pattern.matcher(text);
+				if (matcher.find()) {
+					bg = entry.getColorB();
+					fg = entry.getColorF();
+					break;
 				}
-				setBackground(bg == null ? list.getBackground() : bg);
-				setForeground(fg == null ? list.getForeground() : fg);
 			}
+			setBackground(bg == null ? list.getBackground() : bg);
+			setForeground(fg == null ? list.getForeground() : fg);
 
 			setIcon(null);
 			setText(text);
@@ -503,16 +497,9 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 			setEnabled(list.isEnabled());
 			setFont(list.getFont());
 
-			Border border = null;
-			if (cellHasFocus) {
-				if (isSelected) {
-					border = NO_FOCUS_BORDER;
-				}
-				if (border == null) {
-					border = NO_FOCUS_BORDER;
-				}
-			} else {
-				border = NO_FOCUS_BORDER;
+			Border border = noFocusBorder;
+			if (cellHasFocus && isSelected) {
+				border = SEL_BORDER;
 			}
 			setBorder(border);
 
