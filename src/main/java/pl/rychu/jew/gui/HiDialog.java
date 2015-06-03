@@ -64,12 +64,7 @@ public class HiDialog extends JDialog {
 		cp.add(bottomPanel, BorderLayout.SOUTH);
 
 		final JButton closeButton = new JButton("close");
-		closeButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(final ActionEvent e) {
-				dispose();
-			}
-		});
+		closeButton.addActionListener(new Disposer());
 		buttonPanel.add(closeButton);
 		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		setVisible(true);
@@ -115,6 +110,15 @@ public class HiDialog extends JDialog {
 			setMinimumSize(new Dimension(300, 80));
 			add(regexEditPanel, BorderLayout.NORTH);
 			add(colorpickPanel, BorderLayout.SOUTH);
+		}
+	}
+
+	// =======================
+
+	private class Disposer implements ActionListener {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			dispose();
 		}
 	}
 
