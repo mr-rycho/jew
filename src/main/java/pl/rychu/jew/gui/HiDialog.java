@@ -49,28 +49,7 @@ public class HiDialog extends JDialog {
 		jList.setCellRenderer(new CellRenderer());
 		cp.add(jList, BorderLayout.CENTER);
 
-		final JPanel regexEditPanel = new JPanel();
-		regexEditPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
-		final JTextField regexEditField = new JTextField(20);
-		regexEditPanel.add(regexEditField);
-
-		final JPanel colorpickPanel = new JPanel();
-		colorpickPanel.setMinimumSize(new Dimension(300, 40));
-		colorpickPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
-		final JButton pickBackButton = new JButton("back");
-		colorpickPanel.add(pickBackButton);
-		final JTextField colorBackField = new JTextField(10);
-		colorpickPanel.add(colorBackField);
-		final JButton pickForeButton = new JButton("fore");
-		colorpickPanel.add(pickForeButton);
-		final JTextField colorForeField = new JTextField(10);
-		colorpickPanel.add(colorForeField);
-
-		final JPanel configPanel = new JPanel();
-		configPanel.setLayout(new BorderLayout());
-		configPanel.setMinimumSize(new Dimension(300, 80));
-		configPanel.add(regexEditPanel, BorderLayout.NORTH);
-		configPanel.add(colorpickPanel, BorderLayout.SOUTH);
+		final ConfigPanel configPanel = new ConfigPanel();
 
 		final JPanel buttonPanel = new JPanel();
 		buttonPanel.setPreferredSize(new Dimension(0, 40));
@@ -103,6 +82,40 @@ public class HiDialog extends JDialog {
 			result.addElement(hiConfig.get(i));
 		}
 		return result;
+	}
+
+	// =======================
+
+	private static class ConfigPanel extends JPanel {
+		private static final long serialVersionUID = 5612974465196310018L;
+
+		private final JTextField regexEditField;
+		private final JTextField colorBackField;
+		private final JTextField colorForeField;
+
+		private ConfigPanel() {
+			final JPanel regexEditPanel = new JPanel();
+			regexEditPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
+			regexEditField = new JTextField(20);
+			regexEditPanel.add(regexEditField);
+
+			final JPanel colorpickPanel = new JPanel();
+			colorpickPanel.setMinimumSize(new Dimension(300, 40));
+			colorpickPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
+			final JButton pickBackButton = new JButton("back");
+			colorpickPanel.add(pickBackButton);
+			colorBackField = new JTextField(10);
+			colorpickPanel.add(colorBackField);
+			final JButton pickForeButton = new JButton("fore");
+			colorpickPanel.add(pickForeButton);
+			colorForeField = new JTextField(10);
+			colorpickPanel.add(colorForeField);
+
+			setLayout(new BorderLayout());
+			setMinimumSize(new Dimension(300, 80));
+			add(regexEditPanel, BorderLayout.NORTH);
+			add(colorpickPanel, BorderLayout.SOUTH);
+		}
 	}
 
 	// =======================
