@@ -114,16 +114,9 @@ public class HiDialog extends JDialog {
 			colorForeField = new JTextField(10);
 			colorpickPanel.add(colorForeField);
 
-			pickBackButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					Color initColor = new Color(ColorUtil.getColorSafe(colorBackField.getText()));
-					Color newColor = JColorChooser.showDialog(ConfigPanel.this, "background", initColor);
-					if (newColor != null) {
-						colorBackField.setText(ColorUtil.toCssColor(newColor.getRGB()));
-					}
-				}
-			});
+			pickBackButton.addActionListener(new ColorButton("background", colorBackField));
+			pickForeButton.addActionListener(new ColorButton("foreground", colorForeField));
+
 			setLayout(new BorderLayout());
 			setMinimumSize(new Dimension(300, 80));
 			add(regexEditPanel, BorderLayout.NORTH);
@@ -140,6 +133,27 @@ public class HiDialog extends JDialog {
 			regexEditField.setText(hiConfigEntry.getRegexp());
 			colorBackField.setText(Integer.toString(hiConfigEntry.getColorB(), 16));
 			colorForeField.setText(Integer.toString(hiConfigEntry.getColorF(), 16));
+		}
+
+		// ==========
+
+		private class ColorButton implements ActionListener {
+			private String title;
+			private JTextField textField;
+
+			private ColorButton(String title, JTextField textField) {
+				this.title = title;
+				this.textField = textField;
+			}
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Color initColor = new Color(ColorUtil.getColorSafe(textField.getText()));
+				Color newColor = JColorChooser.showDialog(ConfigPanel.this, title, initColor);
+				if (newColor != null) {
+					textField.setText(ColorUtil.toCssColor(newColor.getRGB()));
+				}
+			}
 		}
 
 	}
