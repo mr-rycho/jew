@@ -181,7 +181,9 @@ public class HiDialog extends JDialog {
 
 		private static final long serialVersionUID = 5002424923342503398L;
 
-		private static final Border SEL_BORDER = new LineBorder(Color.BLACK, 1);
+		private static final Border SEL_BORDER_FOCUS = new LineBorder(Color.BLACK, 1);
+
+		private static final Border SEL_BORDER_NO_FOCUS = new LineBorder(Color.LIGHT_GRAY, 1);
 
 		@Override
 		public Component getListCellRendererComponent(final JList<?> list, final Object value
@@ -207,8 +209,8 @@ public class HiDialog extends JDialog {
 			setFont(list.getFont());
 
 			Border border = noFocusBorder;
-			if (cellHasFocus && isSelected) {
-				border = SEL_BORDER;
+			if (isSelected) {
+				border = cellHasFocus ? SEL_BORDER_FOCUS : SEL_BORDER_NO_FOCUS;
 			}
 			setBorder(border);
 
