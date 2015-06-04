@@ -12,6 +12,7 @@ import java.awt.event.ActionListener;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JColorChooser;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JList;
@@ -21,9 +22,12 @@ import javax.swing.ListSelectionModel;
 import javax.swing.WindowConstants;
 import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import pl.rychu.jew.gui.hi.HiConfig;
 import pl.rychu.jew.gui.hi.HiConfigEntry;
+import pl.rychu.jew.util.ColorUtil;
 
 
 
@@ -66,7 +70,11 @@ public class HiDialog extends JDialog {
 		final JButton closeButton = new JButton("close");
 		closeButton.addActionListener(new Disposer());
 		buttonPanel.add(closeButton);
+
+		jList.addListSelectionListener(new SelectionToConfig(jList, configPanel));
+
 		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+
 		setVisible(true);
 	}
 
@@ -106,11 +114,34 @@ public class HiDialog extends JDialog {
 			colorForeField = new JTextField(10);
 			colorpickPanel.add(colorForeField);
 
+			pickBackButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					Color initColor = new Color(ColorUtil.getColorSafe(colorBackField.getText()));
+					Color newColor = JColorChooser.showDialog(ConfigPanel.this, "background", initColor);
+					if (newColor != null) {
+						colorBackField.setText(ColorUtil.toCssColor(newColor.getRGB()));
+					}
+				}
+			});
 			setLayout(new BorderLayout());
 			setMinimumSize(new Dimension(300, 80));
 			add(regexEditPanel, BorderLayout.NORTH);
 			add(colorpickPanel, BorderLayout.SOUTH);
 		}
+
+		private void clear() {
+			regexEditField.setText("");
+			colorBackField.setText("");
+			colorForeField.setText("");
+		}
+
+		private void put(HiConfigEntry hiConfigEntry) {
+			regexEditField.setText(hiConfigEntry.getRegexp());
+			colorBackField.setText(Integer.toString(hiConfigEntry.getColorB(), 16));
+			colorForeField.setText(Integer.toString(hiConfigEntry.getColorF(), 16));
+		}
+
 	}
 
 	// =======================
@@ -119,6 +150,28 @@ public class HiDialog extends JDialog {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			dispose();
+		}
+	}
+
+	// =======================
+
+	private class SelectionToConfig implements ListSelectionListener {
+		private JList<HiConfigEntry> jList;
+		private ConfigPanel configPanel;
+
+		private SelectionToConfig(JList<HiConfigEntry> jList, ConfigPanel configPanel) {
+			this.jList = jList;
+			this.configPanel = configPanel;
+		}
+
+		@Override
+		public void valueChanged(ListSelectionEvent e) {
+			int minSelIndex = jList.getMinSelectionIndex();
+			if (minSelIndex < 0) {
+				configPanel.clear();
+			} else {
+				configPanel.put(jList.getModel().getElementAt(minSelIndex));
+			}
 		}
 	}
 
