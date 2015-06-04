@@ -64,7 +64,7 @@ public class ColorUtil {
 	}
 
 	private static boolean isCompressible(int color) {
-		return (color & 0x555) == ((color & 0xaaa) >> 4);
+		return (color & 0x0f0f0f) == ((color & 0xf0f0f0) >> 4);
 	}
 
 	private static String getColor3(int color) {

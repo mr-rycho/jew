@@ -131,8 +131,8 @@ public class HiDialog extends JDialog {
 
 		private void put(HiConfigEntry hiConfigEntry) {
 			regexEditField.setText(hiConfigEntry.getRegexp());
-			colorBackField.setText(Integer.toString(hiConfigEntry.getColorB(), 16));
-			colorForeField.setText(Integer.toString(hiConfigEntry.getColorF(), 16));
+			colorBackField.setText(ColorUtil.toCssColor(hiConfigEntry.getColorB()));
+			colorForeField.setText(ColorUtil.toCssColor(hiConfigEntry.getColorF()));
 		}
 
 		// ==========
