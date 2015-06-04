@@ -35,6 +35,7 @@ import pl.rychu.jew.filter.LogLineFilterAll;
 import pl.rychu.jew.filter.LogLineThreadFilter;
 import pl.rychu.jew.gui.hi.HiConfig;
 import pl.rychu.jew.gui.hi.HiConfigEntry;
+import pl.rychu.jew.gui.hi.HiDialog;
 
 
 

@@ -1,4 +1,4 @@
-package pl.rychu.jew.gui;
+package pl.rychu.jew.gui.hi;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -25,8 +25,6 @@ import javax.swing.border.LineBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import pl.rychu.jew.gui.hi.HiConfig;
-import pl.rychu.jew.gui.hi.HiConfigEntry;
 import pl.rychu.jew.util.ColorUtil;
 
 
