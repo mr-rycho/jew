@@ -66,6 +66,7 @@ public class HiDialog extends JDialog {
 		buttonPanel.add(closeButton);
 
 		jList.addListSelectionListener(new SelectionToConfig(jList, configPanel));
+		configPanel.addHiEntryChangeListener(new ConfigToSelection(jList, configPanel));
 
 		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
@@ -93,8 +94,8 @@ public class HiDialog extends JDialog {
 	// =======================
 
 	private class SelectionToConfig implements ListSelectionListener {
-		private JList<HiConfigEntry> jList;
-		private ConfigPanel configPanel;
+		private final JList<HiConfigEntry> jList;
+		private final ConfigPanel configPanel;
 
 		private SelectionToConfig(JList<HiConfigEntry> jList, ConfigPanel configPanel) {
 			this.jList = jList;
@@ -108,6 +109,31 @@ public class HiDialog extends JDialog {
 				configPanel.clear();
 			} else {
 				configPanel.put(jList.getModel().getElementAt(minSelIndex));
+			}
+		}
+	}
+
+	// =======================
+
+	private class ConfigToSelection implements HiEntryChangeListener {
+		private final JList<HiConfigEntry> jList;
+		private final ConfigPanel configPanel;
+
+		private ConfigToSelection(JList<HiConfigEntry> jList, ConfigPanel configPanel) {
+			this.jList = jList;
+			this.configPanel = configPanel;
+		}
+
+		@Override
+		public void hiEntryChanged(boolean fromInside) {
+			if (fromInside) {
+				int index = jList.getMinSelectionIndex();
+				if (index >= 0) {
+					DefaultListModel<HiConfigEntry> model
+					 = (DefaultListModel<HiConfigEntry>)jList.getModel();
+					HiConfigEntry hiConfigEntry = configPanel.get();
+					model.set(index, hiConfigEntry);
+				}
 			}
 		}
 	}

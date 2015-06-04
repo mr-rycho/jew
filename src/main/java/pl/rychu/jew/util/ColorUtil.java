@@ -2,7 +2,7 @@ package pl.rychu.jew.util;
 
 public class ColorUtil {
 
-	public static int getColorSafe(String str) {
+	public static int getColor(String str, int defaultColor) {
 		try {
 			return getColor(str);
 		} catch (RuntimeException e) {
