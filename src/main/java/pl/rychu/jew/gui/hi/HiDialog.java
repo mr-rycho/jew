@@ -49,21 +49,38 @@ public class HiDialog extends JDialog {
 
 		final ConfigPanel configPanel = new ConfigPanel();
 
-		final JPanel buttonPanel = new JPanel();
-		buttonPanel.setPreferredSize(new Dimension(0, 40));
-		buttonPanel.setLayout(new FlowLayout(FlowLayout.RIGHT, 5, 5));
+		final JPanel editButtonsPanel = new JPanel();
+		editButtonsPanel.setPreferredSize(new Dimension(0, 40));
+		editButtonsPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
+
+		final JPanel windowButtonsPanel = new JPanel();
+		windowButtonsPanel.setPreferredSize(new Dimension(0, 40));
+		windowButtonsPanel.setLayout(new FlowLayout(FlowLayout.RIGHT, 5, 5));
+
+		final JPanel buttonsPanel = new JPanel();
+		buttonsPanel.setLayout(new BorderLayout());
+		buttonsPanel.add(editButtonsPanel, BorderLayout.NORTH);
+		buttonsPanel.add(windowButtonsPanel, BorderLayout.SOUTH);
 
 		final JPanel bottomPanel = new JPanel();
 		bottomPanel.setLayout(new BorderLayout());
 		bottomPanel.setMinimumSize(new Dimension(300, 40));
 		bottomPanel.add(configPanel, BorderLayout.NORTH);
-		bottomPanel.add(buttonPanel, BorderLayout.SOUTH);
+		bottomPanel.add(buttonsPanel, BorderLayout.SOUTH);
 
 		cp.add(bottomPanel, BorderLayout.SOUTH);
 
-		final JButton closeButton = new JButton("close");
-		closeButton.addActionListener(new Disposer());
-		buttonPanel.add(closeButton);
+		JButton duplicateButton = new JButton("duplicate");
+		editButtonsPanel.add(duplicateButton);
+		JButton removeButton = new JButton("remove");
+		editButtonsPanel.add(removeButton);
+
+		final JButton cancelButton = new JButton("cancel");
+		cancelButton.addActionListener(new Disposer());
+		windowButtonsPanel.add(cancelButton);
+		final JButton acceptButton = new JButton("accept");
+		acceptButton.addActionListener(new Disposer());
+		windowButtonsPanel.add(acceptButton);
 
 		jList.addListSelectionListener(new SelectionToConfig(jList, configPanel));
 		configPanel.addHiEntryChangeListener(new ConfigToSelection(jList, configPanel));
