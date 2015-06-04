@@ -18,6 +18,10 @@ public class HiConfig {
 		this.entries.addAll(entries);
 	}
 
+	public static HiConfig clone(HiConfig hiConfig) {
+		return new HiConfig(hiConfig.entries);
+	}
+
 	// -----------
 
 	public void add(final HiConfigEntry entry) {
