@@ -87,6 +87,12 @@ public class HiDialog extends JDialog {
 		JButton removeButton = new JButton("remove");
 		removeButton.addActionListener(new ListActionRemove());
 		editButtonsPanel.add(removeButton);
+		JButton moveUpButton = new JButton("up");
+		moveUpButton.addActionListener(new ListActionMove(-1));
+		editButtonsPanel.add(moveUpButton);
+		JButton moveDownButton = new JButton("down");
+		moveDownButton.addActionListener(new ListActionMove(1));
+		editButtonsPanel.add(moveDownButton);
 
 		final JButton undoButton = new JButton("undo");
 		undoButton.addActionListener(new Undoer());
@@ -140,6 +146,32 @@ public class HiDialog extends JDialog {
 				int index = jList.getMinSelectionIndex();
 				if (index >= 0) {
 					model.add(index+1, model.get(index));
+				}
+			}
+		}
+	}
+
+	private class ListActionMove implements ActionListener {
+		private final int offset;
+
+		private ListActionMove(int offset) {
+			if (offset!=1 && offset!=-1) {
+				throw new IllegalArgumentException("bad offset: "+offset);
+			}
+			this.offset = offset;
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			if (!model.isEmpty()) {
+				int size = model.size();
+				int index = jList.getMinSelectionIndex();
+				if (index >= 0) {
+					if ((offset>0 && index+1<size) || (offset<0 && index>0)) {
+						int targetIndex = index + offset;
+						model.add(targetIndex, model.remove(index));
+						jList.getSelectionModel().addSelectionInterval(targetIndex, targetIndex);
+					}
 				}
 			}
 		}
