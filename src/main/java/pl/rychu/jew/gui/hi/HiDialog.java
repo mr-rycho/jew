@@ -8,6 +8,8 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -31,6 +33,8 @@ public class HiDialog extends JDialog {
 	private static final long serialVersionUID = -2045018991383910432L;
 
 	private final Container cp;
+	private final DefaultListModel<HiConfigEntry> model;
+	private HiConfig result = null;
 
 	public HiDialog(final JFrame fr, final HiConfig hiConfig) {
 		super(fr, "Highlighting", true);
@@ -41,7 +45,7 @@ public class HiDialog extends JDialog {
 
 		cp.setLayout(new BorderLayout());
 
-		final DefaultListModel<HiConfigEntry> model = createModel(hiConfig);
+		model = createModel(hiConfig);
 		final JList<HiConfigEntry> jList = new JList<HiConfigEntry>(model);
 		jList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		jList.setCellRenderer(new CellRenderer());
@@ -76,10 +80,10 @@ public class HiDialog extends JDialog {
 		editButtonsPanel.add(removeButton);
 
 		final JButton cancelButton = new JButton("cancel");
-		cancelButton.addActionListener(new Disposer());
+		cancelButton.addActionListener(new DialogCloser());
 		windowButtonsPanel.add(cancelButton);
 		final JButton acceptButton = new JButton("accept");
-		acceptButton.addActionListener(new Disposer());
+		acceptButton.addActionListener(new DialogAccepter());
 		windowButtonsPanel.add(acceptButton);
 
 		jList.addListSelectionListener(new SelectionToConfig(jList, configPanel));
@@ -88,6 +92,19 @@ public class HiDialog extends JDialog {
 		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
 		setVisible(true);
+	}
+
+	public HiConfig get() {
+		return result;
+	}
+
+	private HiConfig listToHiConfig() {
+		int size = model.size();
+		List<HiConfigEntry> entries = new ArrayList<>(size);
+		for (int i=0; i<size; i++) {
+			entries.add(model.get(i));
+		}
+		return new HiConfig(entries);
 	}
 
 	private static DefaultListModel<HiConfigEntry> createModel(final HiConfig hiConfig) {
@@ -101,10 +118,19 @@ public class HiDialog extends JDialog {
 
 	// =======================
 
-	private class Disposer implements ActionListener {
+	private class DialogCloser implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			dispose();
+			result = null;
+			setVisible(false);
+		}
+	}
+
+	private class DialogAccepter implements ActionListener {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			result = listToHiConfig();
+			setVisible(false);
 		}
 	}
 

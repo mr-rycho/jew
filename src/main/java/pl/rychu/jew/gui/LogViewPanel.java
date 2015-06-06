@@ -128,7 +128,15 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 			private static final long serialVersionUID = -8346845550957257182L;
 			@Override
 			public void actionPerformed(final ActionEvent e) {
-				new HiDialog((JFrame)logViewPanel.getTopLevelAncestor(), logViewPanel.hiConfig);
+				HiDialog hiDialog
+				 = new HiDialog((JFrame)logViewPanel.getTopLevelAncestor(), logViewPanel.hiConfig);
+				// execution continues here after closing the dialog
+				HiConfig hiConfig = hiDialog.get();
+				hiDialog.dispose();
+				if (hiConfig != null) {
+					logViewPanel.setHiConfig(hiConfig);
+					logViewPanel.repaint();
+				}
 			}
 		});
 	}
