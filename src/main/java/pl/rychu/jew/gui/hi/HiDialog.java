@@ -54,6 +54,7 @@ public class HiDialog extends JDialog {
 		model = createModel(hiConfig);
 		jList = new JList<HiConfigEntry>(model);
 		jList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		jList.setFixedCellHeight(14);
 		jList.setCellRenderer(new CellRenderer());
 		cp.add(jList, BorderLayout.CENTER);
 
@@ -81,6 +82,7 @@ public class HiDialog extends JDialog {
 		cp.add(bottomPanel, BorderLayout.SOUTH);
 
 		JButton duplicateButton = new JButton("duplicate");
+		duplicateButton.addActionListener(new ListActionDup());
 		editButtonsPanel.add(duplicateButton);
 		JButton removeButton = new JButton("remove");
 		removeButton.addActionListener(new ListActionRemove());
@@ -128,6 +130,20 @@ public class HiDialog extends JDialog {
 	}
 
 	// =======================
+
+	private class ListActionDup implements ActionListener {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			if (model.isEmpty()) {
+				model.add(0, new HiConfigEntry("", 0xffffff, 0x000000));
+			} else {
+				int index = jList.getMinSelectionIndex();
+				if (index >= 0) {
+					model.add(index+1, model.get(index));
+				}
+			}
+		}
+	}
 
 	private class ListActionRemove implements ActionListener {
 		@Override
