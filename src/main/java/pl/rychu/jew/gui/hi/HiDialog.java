@@ -34,10 +34,13 @@ public class HiDialog extends JDialog {
 
 	private final Container cp;
 	private final DefaultListModel<HiConfigEntry> model;
-	private HiConfig result = null;
+	private final HiConfigChangeListener lsn;
 
-	public HiDialog(final JFrame fr, final HiConfig hiConfig) {
+	public HiDialog(final JFrame fr, final HiConfig hiConfig
+	 , HiConfigChangeListener hiConfigChangeListener) {
 		super(fr, "Highlighting", true);
+
+		lsn = hiConfigChangeListener;
 
 		setSize(400, 400);
 
@@ -94,10 +97,6 @@ public class HiDialog extends JDialog {
 		setVisible(true);
 	}
 
-	public HiConfig get() {
-		return result;
-	}
-
 	private HiConfig listToHiConfig() {
 		int size = model.size();
 		List<HiConfigEntry> entries = new ArrayList<>(size);
@@ -121,7 +120,6 @@ public class HiDialog extends JDialog {
 	private class DialogCloser implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			result = null;
 			setVisible(false);
 		}
 	}
@@ -129,7 +127,9 @@ public class HiDialog extends JDialog {
 	private class DialogAccepter implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			result = listToHiConfig();
+			if (lsn != null) {
+				lsn.hiConfigChanged(listToHiConfig());
+			}
 			setVisible(false);
 		}
 	}

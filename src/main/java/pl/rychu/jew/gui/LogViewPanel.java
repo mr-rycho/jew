@@ -34,6 +34,7 @@ import pl.rychu.jew.filter.LogLineFilter;
 import pl.rychu.jew.filter.LogLineFilterAll;
 import pl.rychu.jew.filter.LogLineThreadFilter;
 import pl.rychu.jew.gui.hi.HiConfig;
+import pl.rychu.jew.gui.hi.HiConfigChangeListener;
 import pl.rychu.jew.gui.hi.HiConfigEntry;
 import pl.rychu.jew.gui.hi.HiDialog;
 
@@ -128,15 +129,17 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 			private static final long serialVersionUID = -8346845550957257182L;
 			@Override
 			public void actionPerformed(final ActionEvent e) {
+				HiConfigChangeListener lsn = new HiConfigChangeListener() {
+					@Override
+					public void hiConfigChanged(HiConfig hiConfig) {
+						logViewPanel.setHiConfig(hiConfig);
+						logViewPanel.repaint();
+					}
+				};
 				HiDialog hiDialog
-				 = new HiDialog((JFrame)logViewPanel.getTopLevelAncestor(), logViewPanel.hiConfig);
+				 = new HiDialog((JFrame)logViewPanel.getTopLevelAncestor(), logViewPanel.hiConfig, lsn);
 				// execution continues here after closing the dialog
-				HiConfig hiConfig = hiDialog.get();
 				hiDialog.dispose();
-				if (hiConfig != null) {
-					logViewPanel.setHiConfig(hiConfig);
-					logViewPanel.repaint();
-				}
 			}
 		});
 	}
