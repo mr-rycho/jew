@@ -33,6 +33,7 @@ public class HiDialog extends JDialog {
 	private static final long serialVersionUID = -2045018991383910432L;
 
 	private final Container cp;
+	private final HiConfig origHiConfig;
 	private final DefaultListModel<HiConfigEntry> model;
 	private final HiConfigChangeListener lsn;
 
@@ -41,6 +42,7 @@ public class HiDialog extends JDialog {
 		super(fr, "Highlighting", true);
 
 		lsn = hiConfigChangeListener;
+		origHiConfig = HiConfig.clone(hiConfig);
 
 		setSize(400, 400);
 
@@ -82,10 +84,13 @@ public class HiDialog extends JDialog {
 		JButton removeButton = new JButton("remove");
 		editButtonsPanel.add(removeButton);
 
+		final JButton undoButton = new JButton("undo");
+		undoButton.addActionListener(new Undoer());
+		windowButtonsPanel.add(undoButton);
 		final JButton cancelButton = new JButton("cancel");
 		cancelButton.addActionListener(new DialogCloser());
 		windowButtonsPanel.add(cancelButton);
-		final JButton acceptButton = new JButton("accept");
+		final JButton acceptButton = new JButton("OK");
 		acceptButton.addActionListener(new DialogAccepter());
 		windowButtonsPanel.add(acceptButton);
 
@@ -108,11 +113,16 @@ public class HiDialog extends JDialog {
 
 	private static DefaultListModel<HiConfigEntry> createModel(final HiConfig hiConfig) {
 		final DefaultListModel<HiConfigEntry> result = new DefaultListModel<>();
+		fillModel(result, hiConfig);
+		return result;
+	}
+
+	private static void fillModel(DefaultListModel<HiConfigEntry> model, final HiConfig hiConfig) {
+		model.clear();
 		final int size = hiConfig.size();
 		for (int i=0; i<size; i++) {
-			result.addElement(hiConfig.get(i));
+			model.addElement(hiConfig.get(i));
 		}
-		return result;
 	}
 
 	// =======================
@@ -131,6 +141,13 @@ public class HiDialog extends JDialog {
 				lsn.hiConfigChanged(listToHiConfig());
 			}
 			setVisible(false);
+		}
+	}
+
+	private class Undoer implements ActionListener {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			fillModel(model, origHiConfig);
 		}
 	}
 
