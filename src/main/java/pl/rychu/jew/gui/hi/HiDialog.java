@@ -97,9 +97,12 @@ public class HiDialog extends JDialog {
 		final JButton undoButton = new JButton("undo");
 		undoButton.addActionListener(new Undoer());
 		windowButtonsPanel.add(undoButton);
-		final JButton cancelButton = new JButton("cancel");
-		cancelButton.addActionListener(new DialogCloser());
-		windowButtonsPanel.add(cancelButton);
+		final JButton closeButton = new JButton("close");
+		closeButton.addActionListener(new DialogCloser());
+		windowButtonsPanel.add(closeButton);
+		JButton applyButton = new JButton("apply");
+		applyButton.addActionListener(new DialogApplier());
+		windowButtonsPanel.add(applyButton);
 		final JButton acceptButton = new JButton("OK");
 		acceptButton.addActionListener(new DialogAccepter());
 		windowButtonsPanel.add(acceptButton);
@@ -201,6 +204,15 @@ public class HiDialog extends JDialog {
 				lsn.hiConfigChanged(listToHiConfig());
 			}
 			setVisible(false);
+		}
+	}
+
+	private class DialogApplier implements ActionListener {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			if (lsn != null) {
+				lsn.hiConfigChanged(listToHiConfig());
+			}
 		}
 	}
 
