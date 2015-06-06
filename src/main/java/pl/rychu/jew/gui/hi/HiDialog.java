@@ -82,6 +82,7 @@ public class HiDialog extends JDialog {
 		JButton duplicateButton = new JButton("duplicate");
 		editButtonsPanel.add(duplicateButton);
 		JButton removeButton = new JButton("remove");
+		removeButton.addActionListener(new ListActionRemove(jList));
 		editButtonsPanel.add(removeButton);
 
 		final JButton undoButton = new JButton("undo");
@@ -126,6 +127,22 @@ public class HiDialog extends JDialog {
 	}
 
 	// =======================
+
+	private class ListActionRemove implements ActionListener {
+		private final JList<HiConfigEntry> jList;
+
+		private ListActionRemove(JList<HiConfigEntry> jList) {
+			this.jList = jList;
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			int index = jList.getMinSelectionIndex();
+			if (index >= 0) {
+				model.remove(index);
+			}
+		}
+	}
 
 	private class DialogCloser implements ActionListener {
 		@Override
