@@ -35,6 +35,7 @@ public class HiDialog extends JDialog {
 	private final Container cp;
 	private final HiConfig origHiConfig;
 	private final DefaultListModel<HiConfigEntry> model;
+	private final JList<HiConfigEntry> jList;
 	private final HiConfigChangeListener lsn;
 
 	public HiDialog(final JFrame fr, final HiConfig hiConfig
@@ -51,7 +52,7 @@ public class HiDialog extends JDialog {
 		cp.setLayout(new BorderLayout());
 
 		model = createModel(hiConfig);
-		final JList<HiConfigEntry> jList = new JList<HiConfigEntry>(model);
+		jList = new JList<HiConfigEntry>(model);
 		jList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		jList.setCellRenderer(new CellRenderer());
 		cp.add(jList, BorderLayout.CENTER);
@@ -82,7 +83,7 @@ public class HiDialog extends JDialog {
 		JButton duplicateButton = new JButton("duplicate");
 		editButtonsPanel.add(duplicateButton);
 		JButton removeButton = new JButton("remove");
-		removeButton.addActionListener(new ListActionRemove(jList));
+		removeButton.addActionListener(new ListActionRemove());
 		editButtonsPanel.add(removeButton);
 
 		final JButton undoButton = new JButton("undo");
@@ -95,8 +96,8 @@ public class HiDialog extends JDialog {
 		acceptButton.addActionListener(new DialogAccepter());
 		windowButtonsPanel.add(acceptButton);
 
-		jList.addListSelectionListener(new SelectionToConfig(jList, configPanel));
-		configPanel.addHiEntryChangeListener(new ConfigToSelection(jList, configPanel));
+		jList.addListSelectionListener(new SelectionToConfig(configPanel));
+		configPanel.addHiEntryChangeListener(new ConfigToSelection(configPanel));
 
 		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
@@ -129,12 +130,6 @@ public class HiDialog extends JDialog {
 	// =======================
 
 	private class ListActionRemove implements ActionListener {
-		private final JList<HiConfigEntry> jList;
-
-		private ListActionRemove(JList<HiConfigEntry> jList) {
-			this.jList = jList;
-		}
-
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			int index = jList.getMinSelectionIndex();
@@ -171,11 +166,9 @@ public class HiDialog extends JDialog {
 	// =======================
 
 	private class SelectionToConfig implements ListSelectionListener {
-		private final JList<HiConfigEntry> jList;
 		private final ConfigPanel configPanel;
 
-		private SelectionToConfig(JList<HiConfigEntry> jList, ConfigPanel configPanel) {
-			this.jList = jList;
+		private SelectionToConfig(ConfigPanel configPanel) {
 			this.configPanel = configPanel;
 		}
 
@@ -193,11 +186,9 @@ public class HiDialog extends JDialog {
 	// =======================
 
 	private class ConfigToSelection implements HiEntryChangeListener {
-		private final JList<HiConfigEntry> jList;
 		private final ConfigPanel configPanel;
 
-		private ConfigToSelection(JList<HiConfigEntry> jList, ConfigPanel configPanel) {
-			this.jList = jList;
+		private ConfigToSelection(ConfigPanel configPanel) {
 			this.configPanel = configPanel;
 		}
 
