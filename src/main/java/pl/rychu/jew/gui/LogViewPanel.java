@@ -6,6 +6,8 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -41,7 +43,7 @@ import pl.rychu.jew.gui.hi.HiDialog;
 
 
 public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListener
- , KeyListener {
+ , KeyListener, MouseWheelListener {
 
 	private static final long serialVersionUID = -6731368974272464443L;
 
@@ -77,6 +79,8 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		createActions(result);
 		createKeyBindings(result);
 		result.addKeyListener(result);
+
+		result.addMouseWheelListener(result);
 
 		result.setModel(model);
 
@@ -384,6 +388,32 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 				setTail(false);
 			}
 		}
+	}
+
+	@Override
+	public void mouseWheelMoved(MouseWheelEvent e) {
+		boolean isCtrl = (e.getModifiersEx() & MouseWheelEvent.CTRL_DOWN_MASK) != 0;
+		boolean isShift = (e.getModifiersEx() & MouseWheelEvent.SHIFT_DOWN_MASK) != 0;
+
+		MouseWheelEvent eventToDispatch = e;
+		if (isCtrl || isShift) {
+			int amountMulti = 1;
+			int rotMulti = 1;
+			if (isCtrl) {
+				amountMulti *= 10;
+				if (isShift) {
+					amountMulti *= 5;
+					rotMulti *= 2;
+				}
+			}
+			eventToDispatch = new MouseWheelEvent(this, e.getID(), e.getWhen()
+			 , e.getModifiers() | e.getModifiersEx(), e.getX(), e.getY()
+			 , e.getXOnScreen(), e.getYOnScreen(), e.getClickCount(), e.isPopupTrigger()
+			 , e.getScrollType(), e.getScrollAmount()*amountMulti, e.getWheelRotation()*rotMulti
+			 , e.getPreciseWheelRotation()*amountMulti*rotMulti);
+		}
+
+		getParent().dispatchEvent(eventToDispatch);
 	}
 
 	// ==================

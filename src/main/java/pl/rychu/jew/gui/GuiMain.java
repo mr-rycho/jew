@@ -56,6 +56,7 @@ public class GuiMain {
 
 		final JScrollPane scrollPane = new JScrollPane(logViewPanel);
 		scrollPane.setPreferredSize(new Dimension(900, 600));
+		scrollPane.getVerticalScrollBar().putClientProperty("JScrollBar.fastWheelScrolling", true);
 		mainFrame.add(scrollPane, BorderLayout.CENTER);
 
 		mainFrame.pack();
