@@ -1,14 +1,17 @@
 package pl.rychu.jew.util;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -76,6 +79,27 @@ public class FileUtil {
 			}
 		} finally {
 			fr.close();
+		}
+	}
+
+	// --------
+
+	public static void saveLines(Iterator<String> lines, String filename) {
+		try {
+			saveLines(lines, new File(filename));
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	public static void saveLines(Iterator<String> lines, File file) throws IOException {
+		try (FileWriter fw = new FileWriter(file)) {
+			try (BufferedWriter bw = new BufferedWriter(fw)) {
+				while (lines.hasNext()) {
+					bw.write(lines.next());
+					bw.newLine();
+				}
+			}
 		}
 	}
 

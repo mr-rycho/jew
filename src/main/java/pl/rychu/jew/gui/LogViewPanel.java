@@ -38,6 +38,7 @@ import pl.rychu.jew.filter.LogLineThreadFilter;
 import pl.rychu.jew.gui.hi.HiConfig;
 import pl.rychu.jew.gui.hi.HiConfigChangeListener;
 import pl.rychu.jew.gui.hi.HiConfigEntry;
+import pl.rychu.jew.gui.hi.HiConfigProvider;
 import pl.rychu.jew.gui.hi.HiDialog;
 
 
@@ -61,6 +62,8 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 	private String filterThread;
 
 	private HiConfig hiConfig;
+
+	private HiConfigProvider hiConfigProvider;
 
 	private final List<PanelModelChangeListener> listeners
 	 = new CopyOnWriteArrayList<>();
@@ -137,6 +140,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 					@Override
 					public void hiConfigChanged(HiConfig hiConfig) {
 						logViewPanel.setHiConfig(hiConfig);
+						logViewPanel.hiConfigProvider.put(hiConfig);
 						logViewPanel.repaint();
 					}
 				};
@@ -254,7 +258,12 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 
 	// -----
 
-	public void setHiConfig(final HiConfig hiConfig) {
+	public void setHiConfigProvider(HiConfigProvider hiConfigProvider) {
+		this.hiConfigProvider = hiConfigProvider;
+		setHiConfig(hiConfigProvider.get());
+	}
+
+	private void setHiConfig(final HiConfig hiConfig) {
 		this.hiConfig = hiConfig;
 		((CellRenderer)getCellRenderer()).setHiConfig(hiConfig);
 	}

@@ -10,8 +10,7 @@ import javax.swing.SwingUtilities;
 
 import pl.rychu.jew.LogAccess;
 import pl.rychu.jew.LogAccessFile;
-import pl.rychu.jew.gui.hi.HiConfig;
-import pl.rychu.jew.gui.hi.HiConfigPersistence;
+import pl.rychu.jew.gui.hi.HiConfigProviderPer;
 
 
 
@@ -28,8 +27,6 @@ public class GuiMain {
 	}
 
 	private static JFrame createFrame() {
-		final HiConfig hiConfig = HiConfigPersistence.load();
-
 		final LogAccess logAccess
 		 = LogAccessFile.create("/home/rycho/Pulpit/server.log");
 
@@ -40,7 +37,7 @@ public class GuiMain {
 		final ListModelLog model = ListModelLog.create(logAccess);
 
 		final LogViewPanel logViewPanel = LogViewPanel.create(model);
-		logViewPanel.setHiConfig(hiConfig);
+		logViewPanel.setHiConfigProvider(new HiConfigProviderPer());
 
 		final JPanel topPanel = new JPanel();
 		topPanel.setLayout(new BorderLayout());

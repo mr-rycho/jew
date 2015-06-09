@@ -1,6 +1,9 @@
 package pl.rychu.jew.gui.hi;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -24,11 +27,15 @@ public class HiConfigPersistence {
 
 	// ----------------
 
-	public static HiConfig load() {
+	private static String getFilename() {
 		final String homeDir = System.getenv(ENV_HOME);
-		final String file = (homeDir!=null?homeDir:".")+"/"+FILENAME;
-		log.debug("loading hi config from \"{}\"", file);
-		return load(file);
+		return (homeDir!=null?homeDir:".")+"/"+FILENAME;
+	}
+
+	public static HiConfig load() {
+		final String filename = getFilename();
+		log.debug("loading hi config from \"{}\"", filename);
+		return load(filename);
 	}
 
 	public static HiConfig load(final String filename) {
@@ -38,6 +45,18 @@ public class HiConfigPersistence {
 		} catch (IOException e) {
 			throw new IllegalStateException(e);
 		}
+	}
+
+	public static void save(HiConfig hiConfig) {
+		final String filename = getFilename();
+		log.debug("saving hi config to \"{}\"", filename);
+		save(hiConfig, filename);
+	}
+
+	public static void save(HiConfig hiConfig, String filename) {
+		Iterator<String> lineIterator = getEntries(hiConfig).stream()
+		 .map(new HiConfigEntryToLine()).collect(Collectors.toList()).iterator();
+		FileUtil.saveLines(lineIterator, filename);
 	}
 
 	// ===========
@@ -71,6 +90,26 @@ public class HiConfigPersistence {
 			return new HiConfigEntry(regexpStr, colorB, colorF);
 		}
 
+	}
+
+	// ===========
+
+	private static List<HiConfigEntry> getEntries(HiConfig hiConfig) {
+		int size = hiConfig.size();
+		List<HiConfigEntry> result = new ArrayList<>(size);
+		for (int i=0; i<size; i++) {
+			result.add(hiConfig.get(i));
+		}
+		return result;
+	}
+
+	private static class HiConfigEntryToLine implements Function<HiConfigEntry, String> {
+		@Override
+		public String apply(HiConfigEntry t) {
+			String colorBStr = ColorUtil.toCssColor(t.getColorB());
+			String colorFStr = ColorUtil.toCssColor(t.getColorF());
+			return colorBStr+":"+colorFStr+":"+t.getRegexp();
+		}
 	}
 
 }
