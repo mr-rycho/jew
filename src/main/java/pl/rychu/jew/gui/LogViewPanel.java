@@ -422,6 +422,9 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 			 , e.getPreciseWheelRotation()*amountMulti*rotMulti);
 		}
 
+		if (tail) {
+			setTail(false);
+		}
 		getParent().dispatchEvent(eventToDispatch);
 	}
 
