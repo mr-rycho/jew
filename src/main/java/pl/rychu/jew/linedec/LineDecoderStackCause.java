@@ -4,6 +4,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import pl.rychu.jew.LogLine;
+import pl.rychu.jew.LogLineStackCause;
 
 public class LineDecoderStackCause implements LineDecoder {
 
@@ -17,7 +18,7 @@ public class LineDecoderStackCause implements LineDecoder {
 		final Matcher matcherStack = PATTERN.matcher(line);
 		if (matcherStack.matches()) {
 			final String classname = matcherStack.group(1);
-			return LogLine.createStackCause(filePos, length
+			return LogLineStackCause.create(filePos, length
 			 , LogElemsCache.getOrPutLogger(classname));
 		} else {
 			return null;

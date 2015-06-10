@@ -4,6 +4,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import pl.rychu.jew.LogLine;
+import pl.rychu.jew.LogLineStd;
 
 
 
@@ -30,8 +31,7 @@ public class LineDecoderStd implements LineDecoder {
 			final String level = LogElemsCache.getOrPutLevel(levelRaw);
 			final String classname = LogElemsCache.getOrPutLogger(classnameRaw);
 			final String threadName = LogElemsCache.getOrPutThread(threadRaw);
-			return LogLine.createStandard(filePos, length, 0L, level
-			 , classname, threadName);
+			return LogLineStd.create(filePos, length, 0L, level, classname, threadName);
 		} else {
 			return null;
 		}
