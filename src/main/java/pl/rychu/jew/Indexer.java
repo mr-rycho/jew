@@ -2,9 +2,10 @@ package pl.rychu.jew;
 
 import java.util.Arrays;
 
-import pl.rychu.jew.LogLine.LogLineType;
 import pl.rychu.jew.gl.GrowingListVer;
 import pl.rychu.jew.linedec.LineDecoder;
+import pl.rychu.jew.logline.LogLine;
+import pl.rychu.jew.logline.LogLine.LogLineType;
 
 public class Indexer implements LinePosSink {
 

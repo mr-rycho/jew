@@ -24,6 +24,8 @@ import pl.rychu.jew.gl.BadVersionException;
 import pl.rychu.jew.gl.GrowingListVer;
 import pl.rychu.jew.gl.GrowingListVerLocked;
 import pl.rychu.jew.linedec.LineDecoder;
+import pl.rychu.jew.logline.LogLine;
+import pl.rychu.jew.logline.LogLineFull;
 
 
 

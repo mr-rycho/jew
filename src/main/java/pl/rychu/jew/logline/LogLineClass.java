@@ -1,4 +1,4 @@
-package pl.rychu.jew;
+package pl.rychu.jew.logline;
 
 
 

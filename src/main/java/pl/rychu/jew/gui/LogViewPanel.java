@@ -30,8 +30,6 @@ import javax.swing.text.Position.Bias;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import pl.rychu.jew.LogLine;
-import pl.rychu.jew.LogLineFull;
 import pl.rychu.jew.filter.LogLineFilter;
 import pl.rychu.jew.filter.LogLineFilterAll;
 import pl.rychu.jew.filter.LogLineThreadFilter;
@@ -40,6 +38,8 @@ import pl.rychu.jew.gui.hi.HiConfigChangeListener;
 import pl.rychu.jew.gui.hi.HiConfigEntry;
 import pl.rychu.jew.gui.hi.HiConfigProvider;
 import pl.rychu.jew.gui.hi.HiDialog;
+import pl.rychu.jew.logline.LogLine;
+import pl.rychu.jew.logline.LogLineFull;
 
 
 

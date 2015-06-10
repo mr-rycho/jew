@@ -1,7 +1,7 @@
 package pl.rychu.jew.filter;
 
-import pl.rychu.jew.LogLine;
-import pl.rychu.jew.LogLineFull;
+import pl.rychu.jew.logline.LogLine;
+import pl.rychu.jew.logline.LogLineFull;
 
 
 

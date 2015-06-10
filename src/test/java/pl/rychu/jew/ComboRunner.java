@@ -9,12 +9,13 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 
-import pl.rychu.jew.LogLine.LogLineType;
 import pl.rychu.jew.gl.BadVersionException;
 import pl.rychu.jew.gl.GrowingListVer;
 import pl.rychu.jew.gl.GrowingListVerLocked;
 import pl.rychu.jew.linedec.LineDecoder;
 import pl.rychu.jew.linedec.LogElemsCache;
+import pl.rychu.jew.logline.LogLine;
+import pl.rychu.jew.logline.LogLine.LogLineType;
 
 
 

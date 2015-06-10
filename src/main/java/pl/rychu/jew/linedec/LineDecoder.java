@@ -1,6 +1,6 @@
 package pl.rychu.jew.linedec;
 
-import pl.rychu.jew.LogLine;
+import pl.rychu.jew.logline.LogLine;
 
 
 

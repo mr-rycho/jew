@@ -1,6 +1,8 @@
 package pl.rychu.jew;
 
 import pl.rychu.jew.gl.BadVersionException;
+import pl.rychu.jew.logline.LogLine;
+import pl.rychu.jew.logline.LogLineFull;
 
 public interface LogAccess {
 

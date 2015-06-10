@@ -1,7 +1,7 @@
 package pl.rychu.jew.linedec;
 
-import pl.rychu.jew.LogLine;
-import pl.rychu.jew.LogLineText;
+import pl.rychu.jew.logline.LogLine;
+import pl.rychu.jew.logline.LogLineText;
 
 public class LineDecoderText implements LineDecoder {
 

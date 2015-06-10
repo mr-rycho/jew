@@ -3,8 +3,8 @@ package pl.rychu.jew.linedec;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import pl.rychu.jew.LogLine;
-import pl.rychu.jew.LogLineStack;
+import pl.rychu.jew.logline.LogLine;
+import pl.rychu.jew.logline.LogLineStack;
 
 public class LineDecoderStack implements LineDecoder {
 
