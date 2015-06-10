@@ -1,21 +1,19 @@
 package pl.rychu.jew.logline;
 
 
-public class LogLineStd extends LogLineClass {
+public class LogLineStd extends LogLineThreadClass {
 
 	private final long timestamp;
 	private final String level;
-	private final String threadName;
 
 	// --------
 
 	protected LogLineStd(final long filePos, final int length
 	 , final LogLineType logLineType, final long timestamp, final String level
 	 , final String className, final String threadName) {
-		super(filePos, length, logLineType, className);
+		super(filePos, length, logLineType, threadName, className);
 		this.timestamp = timestamp;
 		this.level = level;
-		this.threadName = threadName;
 	}
 
 	// --------
@@ -37,11 +35,6 @@ public class LogLineStd extends LogLineClass {
 	@Override
 	public String getLevel() {
 		return level;
-	}
-
-	@Override
-	public String getThreadName() {
-		return threadName;
 	}
 
 }

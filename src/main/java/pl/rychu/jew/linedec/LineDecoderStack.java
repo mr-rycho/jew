@@ -19,7 +19,8 @@ public class LineDecoderStack implements LineDecoder {
 		final Matcher matcherStack = PATTERN_STACK.matcher(line);
 		if (matcherStack.matches()) {
 			final String classname = matcherStack.group(1);
-			return LogLineStack.create(filePos, length
+			final String threadName = prevLine!=null ? prevLine.getThreadName() : null;
+			return LogLineStack.create(filePos, length, threadName
 			 , LogElemsCache.getOrPutLogger(classname));
 		} else {
 			return null;

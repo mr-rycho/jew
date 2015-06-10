@@ -2,7 +2,7 @@ package pl.rychu.jew.logline;
 
 
 
-public class LogLineClass extends LogLine {
+public abstract class LogLineClass extends LogLine {
 
 	private final String className;
 
