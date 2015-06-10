@@ -20,8 +20,11 @@ public class LineDecoderStack implements LineDecoder {
 		if (matcherStack.matches()) {
 			final String classname = matcherStack.group(1);
 			final String threadName = prevLine!=null ? prevLine.getThreadName() : null;
+			LogLineStack logLineStack = LineDecoderUtil.getLogLineStack(prevLine);
+			int stackLineTotal = logLineStack!=null ? logLineStack.getStackLineTotal()+1 : 0;
+			int stackLineInCause = logLineStack!=null ? logLineStack.getStackLineInCause()+1 : 0;
 			return LogLineStack.create(filePos, length, threadName
-			 , LogElemsCache.getOrPutLogger(classname));
+			 , LogElemsCache.getOrPutLogger(classname), stackLineTotal, stackLineInCause);
 		} else {
 			return null;
 		}

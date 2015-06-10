@@ -4,6 +4,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import pl.rychu.jew.logline.LogLine;
+import pl.rychu.jew.logline.LogLineStack;
 import pl.rychu.jew.logline.LogLineStackCause;
 
 public class LineDecoderStackCause implements LineDecoder {
@@ -20,8 +21,11 @@ public class LineDecoderStackCause implements LineDecoder {
 		if (matcherStack.matches()) {
 			final String classname = matcherStack.group(1);
 			final String threadName = prevLine!=null ? prevLine.getThreadName() : null;
+			LogLineStack logLineStack = LineDecoderUtil.getLogLineStack(prevLine);
+			int stackLineTotal = logLineStack!=null ? logLineStack.getStackLineTotal()+1 : 0;
+			int stackLineInCause = 0;
 			return LogLineStackCause.create(filePos, length, threadName
-			 , LogElemsCache.getOrPutLogger(classname));
+			 , LogElemsCache.getOrPutLogger(classname), stackLineTotal, stackLineInCause);
 		} else {
 			return null;
 		}
