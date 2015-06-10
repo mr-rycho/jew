@@ -11,6 +11,6 @@ public interface LineDecoder {
 	 * @param line
 	 * @return {@link LogLine} or {@code null} when not decoded
 	 */
-	LogLine decode(long filePos, String line, int length);
+	LogLine decode(long filePos, String line, int length, LogLine prevLine);
 
 }

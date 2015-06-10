@@ -14,6 +14,10 @@ public class Indexer implements LinePosSink {
 
 	private final long[] typeCounter = new long[LogLineType.values().length];
 
+	private LogLine prevLogLine = null;
+
+	// ------------------
+
 	public Indexer(final LineDecoder lineDecoder
 	 , final GrowingListVer<LogLine> index) {
 		this.lineDecoder = lineDecoder;
@@ -22,15 +26,17 @@ public class Indexer implements LinePosSink {
 
 	@Override
 	public void put(String line, long filePos, int length) {
-		final LogLine logLine = lineDecoder.decode(filePos, line, length);
+		final LogLine logLine = lineDecoder.decode(filePos, line, length, prevLogLine);
 		index.add(logLine);
 		final LogLineType logLineType = logLine.getLogLineType();
 		typeCounter[logLineType.ordinal()]++;
+		prevLogLine = logLine;
 	}
 
 	@Override
 	public void reset() {
 		index.clear();
+		prevLogLine = null;
 	}
 
 	public long[] getTypeCounts() {

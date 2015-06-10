@@ -14,7 +14,8 @@ public class LineDecoderStack implements LineDecoder {
 	// -----------
 
 	@Override
-	public LogLine decode(final long filePos, final String line, final int length) {
+	public LogLine decode(final long filePos, final String line
+	 , final int length, final LogLine prevLine) {
 		final Matcher matcherStack = PATTERN_STACK.matcher(line);
 		if (matcherStack.matches()) {
 			final String classname = matcherStack.group(1);

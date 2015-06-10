@@ -21,7 +21,8 @@ public class LineDecoderStd implements LineDecoder {
 	// -----------------
 
 	@Override
-	public LogLine decode(final long filePos, final String line, final int length) {
+	public LogLine decode(final long filePos, final String line
+	 , final int length, final LogLine prevLine) {
 		final Matcher matcherStd = PATTERN_STD.matcher(line);
 		if (matcherStd.matches()) {
 			final String levelRaw = matcherStd.group(2);
