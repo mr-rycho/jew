@@ -12,7 +12,6 @@ import javax.swing.JList;
 import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 
-import pl.rychu.jew.gui.LogViewPanel.ClassVisuType;
 import pl.rychu.jew.gui.hi.HiConfig;
 import pl.rychu.jew.gui.hi.HiConfigEntry;
 import pl.rychu.jew.logline.LogLineFull;
@@ -168,6 +167,45 @@ public class LogViewPanelCellRenderer extends DefaultListCellRenderer {
 		}
 		private Color getColorF() {
 			return colorF;
+		}
+	}
+
+	// ==================
+
+	private static enum ClassVisuType {
+		NORMAL
+
+		, HIDDEN {
+			@Override
+			public boolean replacesClass() {
+				return true;
+			}
+
+			@Override
+			public String getReplacement(final String className) {
+				return "";
+			}
+		}
+
+		, CLASS {
+			@Override
+			public boolean replacesClass() {
+				return true;
+			}
+
+			@Override
+			public String getReplacement(final String className) {
+				final int dotIndex = className.lastIndexOf('.');
+				return dotIndex<0 ? className : className.substring(dotIndex+1);
+			}
+		};
+
+		public boolean replacesClass() {
+			return false;
+		}
+
+		public String getReplacement(final String className) {
+			throw new UnsupportedOperationException();
 		}
 	}
 

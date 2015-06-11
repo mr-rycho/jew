@@ -419,43 +419,4 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		getParent().dispatchEvent(eventToDispatch);
 	}
 
-	// ==================
-
-	static enum ClassVisuType {
-		NORMAL
-
-		, HIDDEN {
-			@Override
-			public boolean replacesClass() {
-				return true;
-			}
-
-			@Override
-			public String getReplacement(final String className) {
-				return "";
-			}
-		}
-
-		, CLASS {
-			@Override
-			public boolean replacesClass() {
-				return true;
-			}
-
-			@Override
-			public String getReplacement(final String className) {
-				final int dotIndex = className.lastIndexOf('.');
-				return dotIndex<0 ? className : className.substring(dotIndex+1);
-			}
-		};
-
-		public boolean replacesClass() {
-			return false;
-		}
-
-		public String getReplacement(final String className) {
-			throw new UnsupportedOperationException();
-		}
-	}
-
 }
