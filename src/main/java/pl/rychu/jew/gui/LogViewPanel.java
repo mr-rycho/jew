@@ -24,6 +24,9 @@ import org.slf4j.LoggerFactory;
 
 import pl.rychu.jew.filter.LogLineFilter;
 import pl.rychu.jew.filter.LogLineFilterAll;
+import pl.rychu.jew.filter.LogLineFilterAnd;
+import pl.rychu.jew.filter.LogLineFilterStackCollapse;
+import pl.rychu.jew.filter.LogLineFilterStackShort;
 import pl.rychu.jew.filter.LogLineThreadFilter;
 import pl.rychu.jew.gui.hi.HiConfig;
 import pl.rychu.jew.gui.hi.HiConfigChangeListener;
@@ -43,6 +46,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 
 	private static final String ACTION_KEY_TOGGLE_TAIL = "jew.toggleTail";
 	private static final String ACTION_KEY_FILTER_TOGGLE_THREAD = "jew.flt.thread";
+	private static final String ACTION_KEY_FILTER_TOGGLE_STACK = "jew.flt.stack";
 
 	private static final String ACTION_KEY_RNDR_TOGGLE_CLASS = "jew.rndr.toggleClass";
 
@@ -51,6 +55,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 	private boolean tail;
 
 	private String filterThread;
+	private StacktraceShowMode stacktraceShowMode = StacktraceShowMode.SHOW;
 
 	private HiConfig hiConfig;
 
@@ -109,6 +114,17 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 			}
 		});
 
+		actionMap.put(ACTION_KEY_FILTER_TOGGLE_STACK, new AbstractAction(ACTION_KEY_FILTER_TOGGLE_STACK) {
+			private static final long serialVersionUID = 5681791587445929606L;
+			@Override
+			public void actionPerformed(final ActionEvent e) {
+				final Object sourceObj = e.getSource();
+				if (sourceObj instanceof LogViewPanel) {
+					((LogViewPanel)sourceObj).toggleStacktraceShowMode();
+				}
+			}
+		});
+
 		actionMap.put(ACTION_KEY_RNDR_TOGGLE_CLASS, new AbstractAction(ACTION_KEY_RNDR_TOGGLE_CLASS) {
 			private static final long serialVersionUID = 3385146847577067253L;
 			@Override
@@ -151,6 +167,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 
 		inputMap.put(KeyStroke.getKeyStroke('`'), ACTION_KEY_TOGGLE_TAIL);
 		inputMap.put(KeyStroke.getKeyStroke('t'), ACTION_KEY_FILTER_TOGGLE_THREAD);
+		inputMap.put(KeyStroke.getKeyStroke('S'), ACTION_KEY_FILTER_TOGGLE_STACK);
 		inputMap.put(KeyStroke.getKeyStroke('C'), ACTION_KEY_RNDR_TOGGLE_CLASS);
 		inputMap.put(KeyStroke.getKeyStroke('H'), ACTION_KEY_HI_DIALOG);
 	}
@@ -185,6 +202,15 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		setTail(!isTail());
 	}
 
+	// -----
+
+	private void resetFilterSilent() {
+		filterThread = null;
+		// stacktraceShowMode = StacktraceShowMode.SHOW;
+	}
+
+	// -----
+
 	protected void toggleThread() {
 		setThreadName(getToggleThread());
 	}
@@ -213,6 +239,21 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		}
 	}
 
+	// -----
+
+	private void toggleStacktraceShowMode() {
+		setStacktraceShowMode(getNext(stacktraceShowMode));
+	}
+
+	private void setStacktraceShowMode(StacktraceShowMode newMode) {
+		if (newMode != stacktraceShowMode) {
+			stacktraceShowMode = newMode;
+			createAndSetFilter();
+		}
+	}
+
+	// -----
+
 	protected void createAndSetFilter() {
 		setFilter(createFilter());
 	}
@@ -222,14 +263,36 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 
 		if (filterThread != null) {
 			final LogLineFilter fThread = new LogLineThreadFilter(filterThread);
-			if (filter != null) {
-				// TODO filter AND
-			} else {
-				filter = fThread;
-			}
+			filter = createConjunction(filter, fThread);
+		}
+
+		if (stacktraceShowMode != StacktraceShowMode.SHOW) {
+			LogLineFilter fStack = createFilter(stacktraceShowMode);
+			filter = createConjunction(filter, fStack);
 		}
 
 		return filter!=null ? filter : new LogLineFilterAll();
+	}
+
+	private LogLineFilter createConjunction(LogLineFilter filterOne, LogLineFilter filterTwo) {
+		if (filterOne==null && filterTwo==null) {
+			return null;
+		} else if (filterOne!=null && filterTwo==null) {
+			return filterOne;
+		} else if (filterOne==null && filterTwo!=null) {
+			return filterTwo;
+		} else {
+			return new LogLineFilterAnd(filterOne, filterTwo);
+		}
+	}
+
+	private LogLineFilter createFilter(StacktraceShowMode mode) {
+		switch (mode) {
+			case SHOW: return new LogLineFilterAll();
+			case COLLAPSE: return new LogLineFilterStackCollapse();
+			case SHORT: return new LogLineFilterStackShort();
+		}
+		throw new IllegalStateException("unsupported: "+mode);
 	}
 
 	protected void setFilter(final LogLineFilter filter) {
@@ -301,7 +364,8 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 
 	private void resetView() {
 		setTail(true);
-		setThreadName(null);
+		resetFilterSilent();
+		createAndSetFilter();
 	}
 
 	// ----
@@ -418,5 +482,20 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		}
 		getParent().dispatchEvent(eventToDispatch);
 	}
+
+	// =======================
+
+	private static final StacktraceShowMode[] STACKTRACE_SHOW_MODES
+	 = StacktraceShowMode.values();
+
+	private StacktraceShowMode getNext(StacktraceShowMode showMode) {
+		int oldOrd = showMode.ordinal();
+		int newOrd = (oldOrd+1) % STACKTRACE_SHOW_MODES.length;
+		return STACKTRACE_SHOW_MODES[newOrd];
+	}
+
+	private static enum StacktraceShowMode {
+		SHOW, COLLAPSE, SHORT
+	};
 
 }
