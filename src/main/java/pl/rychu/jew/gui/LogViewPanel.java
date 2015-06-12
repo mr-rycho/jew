@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import pl.rychu.jew.filter.LogLineFilter;
 import pl.rychu.jew.filter.LogLineFilterAll;
 import pl.rychu.jew.filter.LogLineFilterAnd;
+import pl.rychu.jew.filter.LogLineFilterPos;
 import pl.rychu.jew.filter.LogLineFilterStackCollapse;
 import pl.rychu.jew.filter.LogLineFilterStackShort;
 import pl.rychu.jew.filter.LogLineThreadFilter;
@@ -47,6 +48,8 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 	private static final String ACTION_KEY_TOGGLE_TAIL = "jew.toggleTail";
 	private static final String ACTION_KEY_FILTER_TOGGLE_THREAD = "jew.flt.thread";
 	private static final String ACTION_KEY_FILTER_TOGGLE_STACK = "jew.flt.stack";
+	private static final String ACTION_KEY_FILTER_POS_CURRENT = "jew.flt.pos.cur";
+	private static final String ACTION_KEY_FILTER_POS_ZERO = "jew.flt.pos.zero";
 
 	private static final String ACTION_KEY_RNDR_TOGGLE_CLASS = "jew.rndr.toggleClass";
 
@@ -56,6 +59,8 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 
 	private String filterThread;
 	private StacktraceShowMode stacktraceShowMode = StacktraceShowMode.SHOW;
+	private long minFilePosFilter = 0L;
+	private long minLineFilter = 0L;
 
 	private HiConfig hiConfig;
 
@@ -117,12 +122,34 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		});
 
 		actionMap.put(ACTION_KEY_FILTER_TOGGLE_STACK, new AbstractAction(ACTION_KEY_FILTER_TOGGLE_STACK) {
-			private static final long serialVersionUID = 5681791587445929606L;
+			private static final long serialVersionUID = 3385146847577067253L;
 			@Override
 			public void actionPerformed(final ActionEvent e) {
 				final Object sourceObj = e.getSource();
 				if (sourceObj instanceof LogViewPanel) {
 					((LogViewPanel)sourceObj).toggleStacktraceShowMode();
+				}
+			}
+		});
+
+		actionMap.put(ACTION_KEY_FILTER_POS_CURRENT, new AbstractAction(ACTION_KEY_FILTER_POS_CURRENT) {
+			private static final long serialVersionUID = -330377882983454631L;
+			@Override
+			public void actionPerformed(final ActionEvent e) {
+				final Object sourceObj = e.getSource();
+				if (sourceObj instanceof LogViewPanel) {
+					((LogViewPanel)sourceObj).setMinFilePosToCurrent();
+				}
+			}
+		});
+
+		actionMap.put(ACTION_KEY_FILTER_POS_ZERO, new AbstractAction(ACTION_KEY_FILTER_POS_ZERO) {
+			private static final long serialVersionUID = 5948643319788351989L;
+			@Override
+			public void actionPerformed(final ActionEvent e) {
+				final Object sourceObj = e.getSource();
+				if (sourceObj instanceof LogViewPanel) {
+					((LogViewPanel)sourceObj).setMinFilePosToZero();
 				}
 			}
 		});
@@ -170,6 +197,8 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		inputMap.put(KeyStroke.getKeyStroke('`'), ACTION_KEY_TOGGLE_TAIL);
 		inputMap.put(KeyStroke.getKeyStroke('t'), ACTION_KEY_FILTER_TOGGLE_THREAD);
 		inputMap.put(KeyStroke.getKeyStroke('S'), ACTION_KEY_FILTER_TOGGLE_STACK);
+		inputMap.put(KeyStroke.getKeyStroke('['), ACTION_KEY_FILTER_POS_CURRENT);
+		inputMap.put(KeyStroke.getKeyStroke(']'), ACTION_KEY_FILTER_POS_ZERO);
 		inputMap.put(KeyStroke.getKeyStroke('C'), ACTION_KEY_RNDR_TOGGLE_CLASS);
 		inputMap.put(KeyStroke.getKeyStroke('H'), ACTION_KEY_HI_DIALOG);
 	}
@@ -209,6 +238,8 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 	private void resetFilterSilent() {
 		filterThread = null;
 		// stacktraceShowMode = StacktraceShowMode.SHOW;
+		minFilePosFilter = 0L;
+		minLineFilter = 0L;
 	}
 
 	// -----
@@ -256,6 +287,40 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 
 	// -----
 
+	private void setMinFilePosToCurrent() {
+		final int view = getView();
+		long rootLine = getRootLine(view);
+		setMinFilePos(getCurrentLineFilePos(view), rootLine);
+	}
+
+	private void setMinFilePosToZero() {
+		setMinFilePos(0L, 0L);
+	}
+
+	private long getRootLine(int view) {
+		ListModelLog model = (ListModelLog)getModel();
+		return model.getRootIndex(view);
+	}
+
+	private long getCurrentLineFilePos(int view) {
+		final ListModelLog model = (ListModelLog)getModel();
+		final LogLine logLine = model.getIndexElementAt(view);
+		if (logLine != null) {
+			return logLine.getFilePos();
+		}
+		return 0L;
+	}
+
+	private void setMinFilePos(long newMinFilePos, long newMinLine) {
+		if (newMinFilePos!=minFilePosFilter || newMinLine!=minLineFilter) {
+			minFilePosFilter = newMinFilePos;
+			minLineFilter = newMinLine;
+			createAndSetFilter();
+		}
+	}
+
+	// -----
+
 	protected void createAndSetFilter() {
 		setFilter(createFilter());
 	}
@@ -271,6 +336,11 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		if (stacktraceShowMode != StacktraceShowMode.SHOW) {
 			LogLineFilter fStack = createFilter(stacktraceShowMode);
 			filter = createConjunction(filter, fStack);
+		}
+
+		if (minFilePosFilter != 0L) {
+			LogLineFilter fPos = new LogLineFilterPos(minFilePosFilter, minLineFilter);
+			filter = createConjunction(filter, fPos);
 		}
 
 		return filter!=null ? filter : new LogLineFilterAll();
