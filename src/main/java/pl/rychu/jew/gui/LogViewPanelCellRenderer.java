@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,6 +17,8 @@ import pl.rychu.jew.gui.hi.HiConfig;
 import pl.rychu.jew.gui.hi.HiConfigEntry;
 import pl.rychu.jew.logline.LogLineFull;
 
+
+
 public class LogViewPanelCellRenderer extends DefaultListCellRenderer {
 	private static final long serialVersionUID = 7313136726313412175L;
 
@@ -26,6 +29,19 @@ public class LogViewPanelCellRenderer extends DefaultListCellRenderer {
 	private ClassVisuType classVisuType = ClassVisuType.NORMAL;
 
 	private final List<HiConfigEntryGui> hiConfigEntries = new ArrayList<>();
+
+	private final List<CellRenderedListener> listeners
+	 = new CopyOnWriteArrayList<>();
+
+	// ----------
+
+	public void addCellRenderedListener(final CellRenderedListener listener) {
+		listeners.add(listener);
+	}
+
+	public void removeCellRenderedListener(final CellRenderedListener listener) {
+		listeners.remove(listener);
+	}
 
 	// ----------
 
@@ -63,7 +79,7 @@ public class LogViewPanelCellRenderer extends DefaultListCellRenderer {
    , final Object value, final int index, final boolean isSelected
    , final boolean cellHasFocus) {
 		final LogLineFull logLineFull = (LogLineFull)value;
-		final String fullText = logLineFull.getFullText();
+		final String fullText = getFullString(logLineFull);
 		final String logLineStr = getRenderedString(logLineFull);
 		return getListCellRendererComponentSuper(list, fullText, logLineStr, index
 		 , isSelected, cellHasFocus);
@@ -103,7 +119,18 @@ public class LogViewPanelCellRenderer extends DefaultListCellRenderer {
 		}
 		setBorder(border);
 
+		if (!listeners.isEmpty()) {
+			int width = getPreferredSize().width;
+			for (CellRenderedListener lsn: listeners) {
+				lsn.cellRendered(width);
+			}
+		}
+
 		return this;
+	}
+
+	private String getFullString(final LogLineFull logLineFull) {
+		return logLineFull!=null ? logLineFull.getFullText() : "~";
 	}
 
 	private String getRenderedString(final LogLineFull logLineFull) {

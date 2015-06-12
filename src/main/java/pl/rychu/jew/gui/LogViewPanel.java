@@ -38,7 +38,7 @@ import pl.rychu.jew.logline.LogLineFull;
 
 
 public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListener
- , KeyListener, MouseWheelListener {
+ , KeyListener, MouseWheelListener, CellRenderedListener {
 
 	private static final long serialVersionUID = -6731368974272464443L;
 
@@ -70,7 +70,9 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		final LogViewPanel result = new LogViewPanel();
 		result.setFixedCellWidth(600);
 		result.setFixedCellHeight(14);
-		result.setCellRenderer(new LogViewPanelCellRenderer());
+		LogViewPanelCellRenderer cellRenderer = new LogViewPanelCellRenderer();
+		result.setCellRenderer(cellRenderer);
+		cellRenderer.addCellRenderedListener(result);
 		result.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
 		result.setTail(false);
@@ -362,8 +364,18 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 
 	// ----
 
+	@Override
+	public void cellRendered(int width) {
+		if (width > getFixedCellWidth()) {
+			setFixedCellWidth(width);
+		}
+	}
+
+	// ----
+
 	private void resetView() {
 		setTail(true);
+		setFixedCellWidth(600);
 		resetFilterSilent();
 		createAndSetFilter();
 	}
