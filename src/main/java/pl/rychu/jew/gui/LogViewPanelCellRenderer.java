@@ -63,17 +63,16 @@ public class LogViewPanelCellRenderer extends DefaultListCellRenderer {
    , final Object value, final int index, final boolean isSelected
    , final boolean cellHasFocus) {
 		final LogLineFull logLineFull = (LogLineFull)value;
+		final String fullText = logLineFull.getFullText();
 		final String logLineStr = getRenderedString(logLineFull);
-		return getListCellRendererComponentSuper(list, logLineStr, index
+		return getListCellRendererComponentSuper(list, fullText, logLineStr, index
 		 , isSelected, cellHasFocus);
 	}
 
 	private Component getListCellRendererComponentSuper(final JList<?> list
-	 , final Object value, final int index, final boolean isSelected
-	 , final boolean cellHasFocus) {
+	 , final String fullText, final String displayedText, final int index
+	 , final boolean isSelected, final boolean cellHasFocus) {
 		setComponentOrientation(list.getComponentOrientation());
-
-		final String text = (value == null) ? "" : value.toString();
 
 		Color bg = null;
 		Color fg = null;
@@ -82,7 +81,7 @@ public class LogViewPanelCellRenderer extends DefaultListCellRenderer {
 		for (int i=0; i<len; i++) {
 			final LogViewPanelCellRenderer.HiConfigEntryGui entry = hiConfigEntries.get(i);
 			final Pattern pattern = entry.getPattern();
-			final Matcher matcher = pattern.matcher(text);
+			final Matcher matcher = pattern.matcher(fullText);
 			if (matcher.find()) {
 				bg = entry.getColorB();
 				fg = entry.getColorF();
@@ -93,7 +92,7 @@ public class LogViewPanelCellRenderer extends DefaultListCellRenderer {
 		setForeground(fg == null ? list.getForeground() : fg);
 
 		setIcon(null);
-		setText(text);
+		setText(displayedText);
 
 		setEnabled(list.isEnabled());
 		setFont(list.getFont());
@@ -113,6 +112,7 @@ public class LogViewPanelCellRenderer extends DefaultListCellRenderer {
 		} else {
 			String currentText = logLineFull.getFullText();
 			currentText = replaceClass(logLineFull, currentText);
+			currentText = replaceTab(currentText);
 			return currentText;
 		}
 	}
@@ -136,6 +136,14 @@ public class LogViewPanelCellRenderer extends DefaultListCellRenderer {
 					 +currentText.substring(findStrIndex+findStrLen);
 				}
 			}
+		}
+	}
+
+	private String replaceTab(String src) {
+		if (src!=null && src.contains("\t")) {
+			return src.replace("\t", "    ");
+		} else {
+			return src;
 		}
 	}
 
