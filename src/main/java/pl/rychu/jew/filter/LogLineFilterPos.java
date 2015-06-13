@@ -8,14 +8,17 @@ import pl.rychu.jew.logline.LogLineFull;
 public class LogLineFilterPos implements LogLineFilter {
 
 	private final long minPos;
+	private final long maxPos;
 	private final String asString;
 
 	// -----
 
-	public LogLineFilterPos(final long minPos, final long minLine) {
+	public LogLineFilterPos(final long minPos, final long minLine
+	 , final long maxPos, final long maxLine) {
 		super();
 		this.minPos = minPos;
-		this.asString = asString(minLine);
+		this.maxPos = maxPos;
+		this.asString = asString(minLine, maxLine);
 	}
 
 	// -----
@@ -27,7 +30,8 @@ public class LogLineFilterPos implements LogLineFilter {
 
 	@Override
 	public boolean apply(LogLine logLine) {
-		return logLine.getFilePos() >= minPos;
+		long filePos = logLine.getFilePos();
+		return filePos>=minPos && filePos<=maxPos;
 	}
 
 	@Override
@@ -42,8 +46,14 @@ public class LogLineFilterPos implements LogLineFilter {
 		return asString;
 	}
 
-	private static String asString(final long minLine) {
-		return "line>="+(minLine+1);
+	private static String asString(final long minLine, final long maxLine) {
+		if (minLine>0L && maxLine<Long.MAX_VALUE) {
+			return "line in ["+(minLine+1)+";"+(maxLine+1)+"]";
+		} else if (minLine > 0) {
+			return "line>="+(minLine+1);
+		} else {
+			return "line<="+(maxLine+1);
+		}
 	}
 
 }
