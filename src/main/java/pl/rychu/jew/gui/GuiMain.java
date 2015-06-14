@@ -16,19 +16,18 @@ import pl.rychu.jew.gui.hi.HiConfigProviderPer;
 
 public class GuiMain {
 
-	public static void main(final String... args) throws InterruptedException {
+	public static void runGuiAsynchronously(String filename) {
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				final JFrame mainFrame = createFrame();
+				final JFrame mainFrame = createFrame(filename);
 				mainFrame.setVisible(true);
 			}
 		});
 	}
 
-	private static JFrame createFrame() {
-		final LogAccess logAccess
-		 = LogAccessFile.create("/home/rycho/Pulpit/server.log");
+	private static JFrame createFrame(String filename) {
+		final LogAccess logAccess = LogAccessFile.create(filename);
 
 		final JFrame mainFrame = new JFrame("jew");
 
