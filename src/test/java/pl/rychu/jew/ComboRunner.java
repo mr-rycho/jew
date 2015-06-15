@@ -14,6 +14,11 @@ import pl.rychu.jew.gl.GrowingListVer;
 import pl.rychu.jew.gl.GrowingListVerLocked;
 import pl.rychu.jew.linedec.LineDecoder;
 import pl.rychu.jew.linedec.LogElemsCache;
+import pl.rychu.jew.logaccess.Indexer;
+import pl.rychu.jew.logaccess.LineByteSink;
+import pl.rychu.jew.logaccess.LineByteSinkDecoder;
+import pl.rychu.jew.logaccess.LineDecodersChainFactory;
+import pl.rychu.jew.logaccess.LineDividerUtf8;
 import pl.rychu.jew.logline.LogLine;
 import pl.rychu.jew.logline.LogLine.LogLineType;
 

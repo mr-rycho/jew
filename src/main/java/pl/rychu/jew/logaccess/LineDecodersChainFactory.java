@@ -1,4 +1,4 @@
-package pl.rychu.jew;
+package pl.rychu.jew.logaccess;
 
 import pl.rychu.jew.linedec.LineDecoder;
 import pl.rychu.jew.linedec.LineDecoderEmpty;

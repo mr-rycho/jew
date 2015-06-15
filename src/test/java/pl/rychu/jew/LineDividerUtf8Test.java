@@ -10,7 +10,10 @@ import java.util.List;
 
 import org.junit.Test;
 
-import pl.rychu.jew.LineByteSinkArray.LineByteSinkEvent;
+import pl.rychu.jew.logaccess.LineByteSink;
+import pl.rychu.jew.logaccess.LineByteSinkArray;
+import pl.rychu.jew.logaccess.LineDividerUtf8;
+import pl.rychu.jew.logaccess.LineByteSinkArray.LineByteSinkEvent;
 
 
 

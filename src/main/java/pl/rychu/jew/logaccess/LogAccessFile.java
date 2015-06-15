@@ -1,4 +1,4 @@
-package pl.rychu.jew;
+package pl.rychu.jew.logaccess;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;

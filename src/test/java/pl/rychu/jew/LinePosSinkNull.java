@@ -1,5 +1,7 @@
 package pl.rychu.jew;
 
+import pl.rychu.jew.logaccess.LinePosSink;
+
 public class LinePosSinkNull implements LinePosSink {
 
 	@Override

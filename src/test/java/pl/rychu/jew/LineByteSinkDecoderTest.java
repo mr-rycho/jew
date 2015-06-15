@@ -10,6 +10,10 @@ import java.util.List;
 
 import org.junit.Test;
 
+import pl.rychu.jew.logaccess.LineByteSink;
+import pl.rychu.jew.logaccess.LineByteSinkDecoder;
+import pl.rychu.jew.logaccess.LinePosSink;
+
 
 
 public class LineByteSinkDecoderTest {

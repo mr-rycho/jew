@@ -8,9 +8,9 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 
-import pl.rychu.jew.LogAccess;
-import pl.rychu.jew.LogAccessFile;
 import pl.rychu.jew.gui.hi.HiConfigProviderPer;
+import pl.rychu.jew.logaccess.LogAccess;
+import pl.rychu.jew.logaccess.LogAccessFile;
 
 
 

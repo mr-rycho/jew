@@ -3,9 +3,9 @@ package pl.rychu.jew.gui;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import pl.rychu.jew.LogAccess;
 import pl.rychu.jew.filter.LogLineFilter;
 import pl.rychu.jew.gl.BadVersionException;
+import pl.rychu.jew.logaccess.LogAccess;
 
 
 

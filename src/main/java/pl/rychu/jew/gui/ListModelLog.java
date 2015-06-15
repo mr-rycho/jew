@@ -9,11 +9,11 @@ import javax.swing.SwingUtilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import pl.rychu.jew.LogAccess;
 import pl.rychu.jew.filter.LogLineFilter;
 import pl.rychu.jew.filter.LogLineFilterAll;
 import pl.rychu.jew.gl.BadVersionException;
 import pl.rychu.jew.gui.mapper.Mapper;
+import pl.rychu.jew.logaccess.LogAccess;
 import pl.rychu.jew.logline.LogLine;
 import pl.rychu.jew.logline.LogLineFull;
 
