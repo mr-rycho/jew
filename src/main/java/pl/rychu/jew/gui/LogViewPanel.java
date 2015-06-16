@@ -33,6 +33,7 @@ import pl.rychu.jew.gui.hi.HiConfig;
 import pl.rychu.jew.gui.hi.HiConfigChangeListener;
 import pl.rychu.jew.gui.hi.HiConfigProvider;
 import pl.rychu.jew.gui.hi.HiDialog;
+import pl.rychu.jew.gui.search.SearchDialog;
 import pl.rychu.jew.logline.LogLine;
 import pl.rychu.jew.logline.LogLineFull;
 
@@ -57,6 +58,8 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 
 	private static final String ACTION_KEY_HI_DIALOG = "jew.hi.dialog";
 
+	private static final String ACTION_KEY_SEARCH_DIALOG = "jew.search.dialog";
+
 	private boolean tail;
 
 	private String filterThread;
@@ -67,8 +70,9 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 	private long maxLineFilter = Long.MAX_VALUE;
 
 	private HiConfig hiConfig;
-
 	private HiConfigProvider hiConfigProvider;
+
+	private SearchDialog sd;
 
 	private final List<PanelModelChangeListener> listeners
 	 = new CopyOnWriteArrayList<>();
@@ -93,6 +97,8 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		result.addMouseWheelListener(result);
 
 		result.setModel(model);
+
+		result.sd = new SearchDialog((JFrame)result.getTopLevelAncestor());
 
 		return result;
 	}
@@ -212,6 +218,16 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 				hiDialog.dispose();
 			}
 		});
+
+		actionMap.put(ACTION_KEY_SEARCH_DIALOG, new AbstractAction(ACTION_KEY_SEARCH_DIALOG) {
+			private static final long serialVersionUID = 8001885466600099986L;
+			@Override
+			public void actionPerformed(final ActionEvent e) {
+				logViewPanel.sd.setVisible(true);
+				// execution continues here after closing the dialog
+				System.out.println("text: "+logViewPanel.sd.getSearchText());// TODO gtfo
+			}
+		});
 	}
 
 	private static void createKeyBindings(final LogViewPanel logViewPanel) {
@@ -229,6 +245,8 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		inputMap.put(KeyStroke.getKeyStroke('}'), ACTION_KEY_FILTER_POS_MAX_ZERO);
 		inputMap.put(KeyStroke.getKeyStroke('C'), ACTION_KEY_RNDR_TOGGLE_CLASS);
 		inputMap.put(KeyStroke.getKeyStroke('H'), ACTION_KEY_HI_DIALOG);
+		inputMap.put(KeyStroke.getKeyStroke('F'), ACTION_KEY_SEARCH_DIALOG);
+		// inputMap.put(KeyStroke.getKeyStroke(new Character('F'), InputEvent.CTRL_DOWN_MASK), ACTION_KEY_SEARCH_DIALOG);
 	}
 
 	// -----
