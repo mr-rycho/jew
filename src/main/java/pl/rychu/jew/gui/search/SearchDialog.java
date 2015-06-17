@@ -6,11 +6,12 @@ import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
-import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.WindowConstants;
 
@@ -22,6 +23,8 @@ public class SearchDialog extends JDialog {
 
 
 	private JTextField textField;
+	private JRadioButton downSearch;
+	private JRadioButton searchPlainText;
 
 	private boolean okPressed;
 
@@ -29,7 +32,7 @@ public class SearchDialog extends JDialog {
 	public SearchDialog(JFrame jFrame) {
 		super(jFrame, "Search", true);
 
-		setSize(400, 200);
+		setSize(400, 150);
 
 		Container cp = getContentPane();
 		cp.setLayout(new BorderLayout());
@@ -44,11 +47,25 @@ public class SearchDialog extends JDialog {
 		JPanel optsPanel = new JPanel();
 		optsPanel.setLayout(new BorderLayout());
 
-		JList<String> list1 = new JList<>(new String[]{"down", "up"});
-		optsPanel.add(list1, BorderLayout.WEST);
+		ButtonGroup bgSearchDir = new ButtonGroup();
+		JPanel optsDirPanel = new JPanel();
+		downSearch = new JRadioButton("down", true);
+		bgSearchDir.add(downSearch);
+		optsDirPanel.add(downSearch);
+		JRadioButton upSearch = new JRadioButton("up");
+		bgSearchDir.add(upSearch);
+		optsDirPanel.add(upSearch);
+		optsPanel.add(optsDirPanel, BorderLayout.WEST);
 
-		JList<String> list2 = new JList<>(new String[]{"text", "regexp"});
-		optsPanel.add(list2, BorderLayout.EAST);
+		ButtonGroup bgSearchKind = new ButtonGroup();
+		JPanel optsSearchPanel = new JPanel();
+		searchPlainText = new JRadioButton("text", true);
+		bgSearchKind.add(searchPlainText);
+		optsSearchPanel.add(searchPlainText);
+		JRadioButton searchRegexp = new JRadioButton("regexp");
+		bgSearchKind.add(searchRegexp);
+		optsSearchPanel.add(searchRegexp);
+		optsPanel.add(optsSearchPanel, BorderLayout.EAST);
 
 		botPanel.add(optsPanel, BorderLayout.NORTH);
 
@@ -76,6 +93,14 @@ public class SearchDialog extends JDialog {
 
 	public boolean isOkPressed() {
 		return okPressed;
+	}
+
+	public boolean isDownSearch() {
+		return downSearch.isSelected();
+	}
+
+	public boolean isSearchPlaintext() {
+		return searchPlainText.isSelected();
 	}
 
 	// ========================

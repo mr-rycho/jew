@@ -8,6 +8,7 @@ import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.regex.Pattern;
 
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
@@ -223,9 +224,13 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 			private static final long serialVersionUID = 8001885466600099986L;
 			@Override
 			public void actionPerformed(final ActionEvent e) {
-				logViewPanel.sd.setVisible(true);
+				SearchDialog sd = logViewPanel.sd;
+				sd.setVisible(true);
 				// execution continues here after closing the dialog
-				System.out.println("text: "+logViewPanel.sd.getSearchText());// TODO gtfo
+				if (sd.isOkPressed()) {
+					logViewPanel.new SearchDelegate().search(sd.getSearchText(), !sd.isSearchPlaintext()
+					 , logViewPanel.getView(), sd.isDownSearch());
+				}
 			}
 		});
 	}
@@ -646,5 +651,94 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 	private static enum StacktraceShowMode {
 		SHOW, COLLAPSE, SHORT
 	};
+
+	// =======================
+
+	private class SearchDelegate {
+		private void search(String text, boolean isRegexp
+		 , int fromIndexExc, boolean searchDown) {
+			if (isRegexp) {
+				searchRegexp(text, fromIndexExc, searchDown);
+			} else {
+				searchText(text, fromIndexExc, searchDown);
+			}
+		}
+
+		private void searchText(String textRaw
+		 , int fromIndexExc, boolean searchDown) {
+			ListModelLog model = (ListModelLog)getModel();
+			String textUpper = textRaw.toUpperCase();
+			if (searchDown) {
+				int size = model.getSize();
+				for (int index=fromIndexExc+1; index<size; index++) {
+					if (checkLineAndFocus(model, index, textUpper)) {
+						break;
+					}
+				}
+			} else {
+				for (int index=fromIndexExc-1; index>=0; index--) {
+					if (checkLineAndFocus(model, index, textUpper)) {
+						break;
+					}
+				}
+			}
+		}
+
+		private boolean checkLineAndFocus(ListModelLog model, int index, String textUpper) {
+			boolean result = checkLine(model, index, textUpper);
+			if (result) {
+				focusLine(index);
+			}
+			return result;
+		}
+
+		private boolean checkLine(ListModelLog model, int index, String textUpper) {
+			LogLineFull logLineFull = model.getElementAt(index);
+			String fullText = logLineFull.getFullText();
+			String lineTextUpper = fullText==null ? "" : fullText.toUpperCase();
+			return lineTextUpper.contains(textUpper);
+		}
+
+		private void focusLine(int index) {
+			setSelectedIndex(index);
+			ensureIndexIsVisible(index);
+		}
+
+		private void searchRegexp(String regexp
+		 , int fromIndexExc, boolean searchDown) {
+			ListModelLog model = (ListModelLog)getModel();
+			Pattern pattern = Pattern.compile(regexp, Pattern.CASE_INSENSITIVE);
+			if (searchDown) {
+				int size = model.getSize();
+				for (int index=fromIndexExc+1; index<size; index++) {
+					if (checkLineAndFocus(model, index, pattern)) {
+						break;
+					}
+				}
+			} else {
+				for (int index=fromIndexExc-1; index>=0; index--) {
+					if (checkLineAndFocus(model, index, pattern)) {
+						break;
+					}
+				}
+			}
+		}
+
+		private boolean checkLineAndFocus(ListModelLog model, int index, Pattern pattern) {
+			boolean result = checkLine(model, index, pattern);
+			if (result) {
+				focusLine(index);
+			}
+			return result;
+		}
+
+		private boolean checkLine(ListModelLog model, int index, Pattern pattern) {
+			LogLineFull logLineFull = model.getElementAt(index);
+			String fullTextRaw = logLineFull.getFullText();
+			String fullText = fullTextRaw==null ? "" : fullTextRaw;
+			return pattern.matcher(fullText).find();
+		}
+
+	}
 
 }
