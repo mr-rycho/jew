@@ -60,6 +60,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 	private static final String ACTION_KEY_HI_DIALOG = "jew.hi.dialog";
 
 	private static final String ACTION_KEY_SEARCH_DIALOG = "jew.search.dialog";
+	private static final String ACTION_KEY_SEARCH_AGAIN = "jew.search.again";
 
 	private boolean tail;
 
@@ -73,7 +74,8 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 	private HiConfig hiConfig;
 	private HiConfigProvider hiConfigProvider;
 
-	private SearchDialog sd;
+	private SearchDialog searchDialog;
+	private PrevSearch prevSearch = null;
 
 	private final List<PanelModelChangeListener> listeners
 	 = new CopyOnWriteArrayList<>();
@@ -99,7 +101,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 
 		result.setModel(model);
 
-		result.sd = new SearchDialog((JFrame)result.getTopLevelAncestor());
+		result.searchDialog = new SearchDialog((JFrame)result.getTopLevelAncestor());
 
 		return result;
 	}
@@ -224,12 +226,25 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 			private static final long serialVersionUID = 8001885466600099986L;
 			@Override
 			public void actionPerformed(final ActionEvent e) {
-				SearchDialog sd = logViewPanel.sd;
+				SearchDialog sd = logViewPanel.searchDialog;
 				sd.setVisible(true);
 				// execution continues here after closing the dialog
 				if (sd.isOkPressed()) {
-					logViewPanel.new SearchDelegate().search(sd.getSearchText(), !sd.isSearchPlaintext()
-					 , logViewPanel.getView(), sd.isDownSearch());
+					PrevSearch ps = logViewPanel.new PrevSearch(sd.getSearchText()
+					 , !sd.isSearchPlaintext(), sd.isDownSearch());
+					logViewPanel.prevSearch = ps;
+					logViewPanel.new SearchDelegate().search(ps, logViewPanel.getView());
+				}
+			}
+		});
+
+		actionMap.put(ACTION_KEY_SEARCH_AGAIN, new AbstractAction(ACTION_KEY_SEARCH_AGAIN) {
+			private static final long serialVersionUID = 6045288341802840652L;
+			@Override
+			public void actionPerformed(final ActionEvent e) {
+				PrevSearch ps = logViewPanel.prevSearch;
+				if (ps != null) {
+					logViewPanel.new SearchDelegate().search(ps, logViewPanel.getView());
 				}
 			}
 		});
@@ -251,6 +266,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		inputMap.put(KeyStroke.getKeyStroke('C'), ACTION_KEY_RNDR_TOGGLE_CLASS);
 		inputMap.put(KeyStroke.getKeyStroke('H'), ACTION_KEY_HI_DIALOG);
 		inputMap.put(KeyStroke.getKeyStroke("ctrl pressed F"), ACTION_KEY_SEARCH_DIALOG);
+		inputMap.put(KeyStroke.getKeyStroke("pressed F3"), ACTION_KEY_SEARCH_AGAIN);
 	}
 
 	// -----
@@ -653,7 +669,37 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 
 	// =======================
 
+	private class PrevSearch {
+		private final String text;
+		private final boolean isRegexp;
+		private final boolean isDownSearch;
+
+		public PrevSearch(String text, boolean isRegexp, boolean isDownSearch) {
+			super();
+			this.text = text;
+			this.isRegexp = isRegexp;
+			this.isDownSearch = isDownSearch;
+		}
+
+		private String getText() {
+			return text;
+		}
+
+		private boolean isRegexp() {
+			return isRegexp;
+		}
+
+		private boolean isDownSearch() {
+			return isDownSearch;
+		}
+	}
+	// =======================
+
 	private class SearchDelegate {
+		private void search(PrevSearch search, int fromIndexExc) {
+			search(search.getText(), search.isRegexp(), fromIndexExc, search.isDownSearch());
+		}
+
 		private void search(String text, boolean isRegexp
 		 , int fromIndexExc, boolean searchDown) {
 			if (isRegexp) {
