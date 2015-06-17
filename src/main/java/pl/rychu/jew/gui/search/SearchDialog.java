@@ -6,13 +6,18 @@ import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
 import javax.swing.ButtonGroup;
+import javax.swing.InputMap;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.WindowConstants;
 
 
@@ -21,6 +26,10 @@ public class SearchDialog extends JDialog {
 
 	private static final long serialVersionUID = 5308441657084566659L;
 
+	private static final String ACTION_KEY_GLOB_ENTER = "jew.search.enter";
+	private static final String ACTION_KEY_GLOB_ESC = "jew.search.esc";
+
+	// --------------------------
 
 	private JTextField textField;
 	private JRadioButton downSearch;
@@ -28,6 +37,7 @@ public class SearchDialog extends JDialog {
 
 	private boolean okPressed;
 
+	// --------------------------
 
 	public SearchDialog(JFrame jFrame) {
 		super(jFrame, "Search", true);
@@ -35,6 +45,17 @@ public class SearchDialog extends JDialog {
 		setSize(400, 150);
 
 		Container cp = getContentPane();
+
+		createComponents(cp);
+		createActions((JComponent)cp);
+		createKeyBindings((JComponent)cp);
+
+		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+	}
+
+	// --------------------------
+
+	private void createComponents(Container cp) {
 		cp.setLayout(new BorderLayout());
 
 		textField = new JTextField(40);
@@ -83,9 +104,43 @@ public class SearchDialog extends JDialog {
 		botPanel.add(butPanel, BorderLayout.SOUTH);
 
 		cp.add(botPanel, BorderLayout.SOUTH);
-
-		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 	}
+
+	private void createActions(JComponent jp) {
+		final ActionMap actionMap = new ActionMap();
+		final ActionMap oldActionMap = jp.getActionMap();
+		actionMap.setParent(oldActionMap);
+		jp.setActionMap(actionMap);
+
+		actionMap.put(ACTION_KEY_GLOB_ENTER, new AbstractAction(ACTION_KEY_GLOB_ENTER) {
+			private static final long serialVersionUID = -7854156520657704373L;
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				new DialogCloser(true).actionPerformed(e);
+			}
+		});
+
+		actionMap.put(ACTION_KEY_GLOB_ESC, new AbstractAction(ACTION_KEY_GLOB_ESC) {
+			private static final long serialVersionUID = -8974809846867740540L;
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				new DialogCloser(false).actionPerformed(e);
+			}
+		});
+
+	}
+
+	private void createKeyBindings(JComponent jp) {
+		final InputMap inputMap = new InputMap();
+		final InputMap oldInputMap = jp.getInputMap();
+		inputMap.setParent(oldInputMap);
+		jp.setInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, inputMap);
+
+		inputMap.put(KeyStroke.getKeyStroke("pressed ENTER"), ACTION_KEY_GLOB_ENTER);
+		inputMap.put(KeyStroke.getKeyStroke("pressed ESCAPE"), ACTION_KEY_GLOB_ESC);
+	}
+
+	// --------------------------
 
 	public String getSearchText() {
 		return textField.getText();
