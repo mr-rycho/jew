@@ -250,8 +250,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		inputMap.put(KeyStroke.getKeyStroke('}'), ACTION_KEY_FILTER_POS_MAX_ZERO);
 		inputMap.put(KeyStroke.getKeyStroke('C'), ACTION_KEY_RNDR_TOGGLE_CLASS);
 		inputMap.put(KeyStroke.getKeyStroke('H'), ACTION_KEY_HI_DIALOG);
-		inputMap.put(KeyStroke.getKeyStroke('F'), ACTION_KEY_SEARCH_DIALOG);
-		// inputMap.put(KeyStroke.getKeyStroke(new Character('F'), InputEvent.CTRL_DOWN_MASK), ACTION_KEY_SEARCH_DIALOG);
+		inputMap.put(KeyStroke.getKeyStroke("ctrl pressed F"), ACTION_KEY_SEARCH_DIALOG);
 	}
 
 	// -----
