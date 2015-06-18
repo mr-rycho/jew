@@ -42,9 +42,13 @@ public class GuiMain {
 		topPanel.setLayout(new BorderLayout());
 		mainFrame.add(topPanel, BorderLayout.NORTH);
 
+		StatusPanel statusPanel = StatusPanel.create();
+		mainFrame.add(statusPanel, BorderLayout.SOUTH);
+
 		final InfoPanel infoPanel = InfoPanel.create(logViewPanel);
 		topPanel.add(infoPanel, BorderLayout.CENTER);
 
+		logViewPanel.setMessageConsumer(statusPanel);
 		logViewPanel.addListSelectionListener(infoPanel);
 		model.addCyclicModelListener(infoPanel);
 		model.addPanelModelChangeListener(infoPanel);

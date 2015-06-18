@@ -77,6 +77,8 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 	private SearchDialog searchDialog;
 	private PrevSearch prevSearch = null;
 
+	private MessageConsumer messageConsumer;
+
 	private final List<PanelModelChangeListener> listeners
 	 = new CopyOnWriteArrayList<>();
 
@@ -239,7 +241,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 					PrevSearch ps = logViewPanel.new PrevSearch(sd.getSearchText()
 					 , !sd.isSearchPlaintext(), sd.isDownSearch());
 					logViewPanel.prevSearch = ps;
-					logViewPanel.new SearchDelegate().search(ps, logViewPanel.getView());
+					logViewPanel.search(ps);
 				}
 			}
 		});
@@ -249,9 +251,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 			@Override
 			public void actionPerformed(final ActionEvent e) {
 				PrevSearch ps = logViewPanel.prevSearch;
-				if (ps != null) {
-					logViewPanel.new SearchDelegate().search(ps, logViewPanel.getView());
-				}
+				logViewPanel.search(ps);
 			}
 		});
 	}
@@ -277,12 +277,35 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 
 	// -----
 
+	public void setMessageConsumer(MessageConsumer mc) {
+		this.messageConsumer = mc;
+	}
+
 	public void addPanelModelChangeListener(final PanelModelChangeListener listener) {
 		listeners.add(listener);
 	}
 
 	public void removePanelModelChangeListener(final PanelModelChangeListener listener) {
 		listeners.remove(listener);
+	}
+
+	// ---------
+
+	private void sendMessage(String text) {
+		if (messageConsumer != null) {
+			messageConsumer.enqueueMessage(text);
+		}
+	}
+
+	// ---------
+
+	private void search(PrevSearch ps) {
+		if (ps != null) {
+			boolean found = new SearchDelegate().search(ps, getView());
+			if (!found) {
+				sendMessage("\""+ps.getText()+"\" not found");
+			}
+		}
 	}
 
 	// ---------
@@ -702,20 +725,20 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 	// =======================
 
 	private class SearchDelegate {
-		private void search(PrevSearch search, int fromIndexExc) {
-			search(search.getText(), search.isRegexp(), fromIndexExc, search.isDownSearch());
+		private boolean search(PrevSearch search, int fromIndexExc) {
+			return search(search.getText(), search.isRegexp(), fromIndexExc, search.isDownSearch());
 		}
 
-		private void search(String text, boolean isRegexp
+		private boolean search(String text, boolean isRegexp
 		 , int fromIndexExc, boolean searchDown) {
 			if (isRegexp) {
-				searchRegexp(text, fromIndexExc, searchDown);
+				return searchRegexp(text, fromIndexExc, searchDown);
 			} else {
-				searchText(text, fromIndexExc, searchDown);
+				return searchText(text, fromIndexExc, searchDown);
 			}
 		}
 
-		private void searchText(String textRaw
+		private boolean searchText(String textRaw
 		 , int fromIndexExc, boolean searchDown) {
 			ListModelLog model = (ListModelLog)getModel();
 			String textUpper = textRaw.toUpperCase();
@@ -723,15 +746,17 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 				int size = model.getSize();
 				for (int index=fromIndexExc+1; index<size; index++) {
 					if (checkLineAndFocus(model, index, textUpper)) {
-						break;
+						return true;
 					}
 				}
+				return false;
 			} else {
 				for (int index=fromIndexExc-1; index>=0; index--) {
 					if (checkLineAndFocus(model, index, textUpper)) {
-						break;
+						return true;
 					}
 				}
+				return false;
 			}
 		}
 
@@ -755,7 +780,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 			ensureIndexIsVisible(index);
 		}
 
-		private void searchRegexp(String regexp
+		private boolean searchRegexp(String regexp
 		 , int fromIndexExc, boolean searchDown) {
 			ListModelLog model = (ListModelLog)getModel();
 			Pattern pattern = Pattern.compile(regexp, Pattern.CASE_INSENSITIVE);
@@ -763,15 +788,17 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 				int size = model.getSize();
 				for (int index=fromIndexExc+1; index<size; index++) {
 					if (checkLineAndFocus(model, index, pattern)) {
-						break;
+						return true;
 					}
 				}
+				return false;
 			} else {
 				for (int index=fromIndexExc-1; index>=0; index--) {
 					if (checkLineAndFocus(model, index, pattern)) {
-						break;
+						return true;
 					}
 				}
+				return false;
 			}
 		}
 
