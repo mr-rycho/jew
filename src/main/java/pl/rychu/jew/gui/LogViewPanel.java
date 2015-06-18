@@ -227,6 +227,12 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 			@Override
 			public void actionPerformed(final ActionEvent e) {
 				SearchDialog sd = logViewPanel.searchDialog;
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						sd.setFocusToText();
+					}
+				});
 				sd.setVisible(true);
 				// execution continues here after closing the dialog
 				if (sd.isOkPressed()) {
