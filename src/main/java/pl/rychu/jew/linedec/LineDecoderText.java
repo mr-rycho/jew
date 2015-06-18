@@ -7,7 +7,9 @@ public class LineDecoderText implements LineDecoder {
 
 	@Override
 	public LogLine decode(long filePos, String line, int length, LogLine prevLine) {
-		return LogLineText.create(filePos, length);
+		String threadName = prevLine!=null ? prevLine.getThreadName() : "";
+		threadName = threadName==null ? "" : threadName;
+		return LogLineText.create(filePos, length, threadName);
 	}
 
 }

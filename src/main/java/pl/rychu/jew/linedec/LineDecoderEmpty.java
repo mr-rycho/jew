@@ -9,7 +9,9 @@ public class LineDecoderEmpty implements LineDecoder {
 	public LogLine decode(final long filePos, final String line
 	 , final int length, final LogLine prevLine) {
 		if (line.isEmpty()) {
-			return LogLineText.create(filePos, length);
+			String threadName = prevLine!=null ? prevLine.getThreadName() : "";
+			threadName = threadName==null ? "" : threadName;
+			return LogLineText.create(filePos, length, threadName);
 		} else {
 			return null;
 		}
