@@ -1,5 +1,8 @@
 package pl.rychu.jew.gui;
 
+import java.awt.BorderLayout;
+import java.awt.FlowLayout;
+
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -30,27 +33,43 @@ public class InfoPanel extends JPanel implements CyclicModelListener
 	// ---------------
 
 	private InfoPanel(final LogViewPanel logViewPanel) {
-		super(true);
+		super(); //(true);
 
 		this.logViewPanel = logViewPanel;
 
+		setLayout(new BorderLayout());
+
+		JPanel topPanel = new JPanel();
+		add(topPanel, BorderLayout.NORTH);
+		topPanel.setLayout(new BorderLayout());
+		JPanel topLeftPanel = new JPanel();
+		topLeftPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+		topPanel.add(topLeftPanel, BorderLayout.WEST);
+		JPanel topRightPanel = new JPanel();
+		topRightPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
+		topPanel.add(topRightPanel, BorderLayout.EAST);
+
+		JPanel botPanel = new JPanel();
+		botPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+		add(botPanel, BorderLayout.SOUTH);
+
 		currentLine = new JLabel("#");
-		this.add(currentLine);
+		topLeftPanel.add(currentLine);
 
 		lineCountLabel = new JLabel("#");
-		this.add(lineCountLabel);
+		topLeftPanel.add(lineCountLabel);
 
 		rootIndex = new JLabel("#");
-		this.add(rootIndex);
+		topLeftPanel.add(rootIndex);
 
 		rootSize = new JLabel("#");
-		this.add(rootSize);
+		topLeftPanel.add(rootSize);
 
 		panelProps = new JLabel("--");
-		this.add(panelProps);
+		topRightPanel.add(panelProps);
 
 		modelProps = new JLabel("--");
-		this.add(modelProps);
+		botPanel.add(modelProps);
 	}
 
 	public static InfoPanel create(final LogViewPanel logViewPanel) {
