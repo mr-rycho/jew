@@ -16,7 +16,9 @@ public class StatusPanel extends JPanel implements MessageConsumer {
 
 	private static final int MESSAGE_DUR = 5;
 
-	private JLabel label;
+	private final JLabel label;
+
+	private final boolean useQueue;
 
 	private int counter = 0;
 
@@ -24,8 +26,10 @@ public class StatusPanel extends JPanel implements MessageConsumer {
 
 	// ----------
 
-	private StatusPanel() {
+	private StatusPanel(boolean useQueue) {
 		super();
+
+		this.useQueue = useQueue;
 
 		setLayout(new FlowLayout(FlowLayout.LEFT));
 
@@ -35,7 +39,11 @@ public class StatusPanel extends JPanel implements MessageConsumer {
 	}
 
 	public static StatusPanel create() {
-		StatusPanel result = new StatusPanel();
+		return create(false);
+	}
+
+	public static StatusPanel create(boolean useQueue) {
+		StatusPanel result = new StatusPanel(useQueue);
 
 		new Thread(result.new Timer()).start();
 
@@ -45,7 +53,7 @@ public class StatusPanel extends JPanel implements MessageConsumer {
 
 	@Override
 	public void enqueueMessage(String text) {
-		if (counter == 0) {
+		if (counter==0 || !useQueue) {
 			setLabelAndCounter(text);
 		} else {
 			messages.offer(text);
@@ -100,7 +108,6 @@ public class StatusPanel extends JPanel implements MessageConsumer {
 				@Override
 				public void run() {
 					timerTick();
-
 				}
 			});
 		}
