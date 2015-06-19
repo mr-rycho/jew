@@ -641,11 +641,12 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 	@Override
 	public void keyPressed(final KeyEvent e) {
 		final int keyCode = e.getKeyCode();
-		final boolean noMod = !e.isAltDown() && !e.isAltGraphDown() && !e.isControlDown()
+		final boolean ctrl = e.isControlDown();
+		final boolean noMod = !e.isAltDown() && !e.isAltGraphDown() && !ctrl
 		 && !e.isMetaDown() && !e.isShiftDown();
 
-		if (noMod && (keyCode==KeyEvent.VK_UP || keyCode==KeyEvent.VK_PAGE_UP
-		 || keyCode==KeyEvent.VK_HOME)) {
+		if ((noMod && (keyCode==KeyEvent.VK_UP || keyCode==KeyEvent.VK_PAGE_UP))
+		 || keyCode==KeyEvent.VK_HOME) {
 			if (tail) {
 				setTail(false);
 			}
