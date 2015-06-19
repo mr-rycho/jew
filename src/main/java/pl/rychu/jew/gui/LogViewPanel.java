@@ -62,6 +62,8 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 	private static final String ACTION_KEY_SEARCH_DIALOG = "jew.search.dialog";
 	private static final String ACTION_KEY_SEARCH_AGAIN = "jew.search.again";
 
+	private static final String ACTION_KEY_HELP_DIALOG = "jew.help.dialog";
+
 	private boolean tail;
 
 	private String filterThread;
@@ -254,6 +256,15 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 				logViewPanel.search(ps);
 			}
 		});
+
+		actionMap.put(ACTION_KEY_HELP_DIALOG, new AbstractAction(ACTION_KEY_HELP_DIALOG) {
+			private static final long serialVersionUID = 1670930291832953057L;
+			@Override
+			public void actionPerformed(final ActionEvent e) {
+				new HelpDialog((JFrame)logViewPanel.getTopLevelAncestor());
+				// execution continues here after closing the dialog
+			}
+		});
 	}
 
 	private static void createKeyBindings(final LogViewPanel logViewPanel) {
@@ -273,6 +284,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		inputMap.put(KeyStroke.getKeyStroke('H'), ACTION_KEY_HI_DIALOG);
 		inputMap.put(KeyStroke.getKeyStroke("ctrl pressed F"), ACTION_KEY_SEARCH_DIALOG);
 		inputMap.put(KeyStroke.getKeyStroke("pressed F3"), ACTION_KEY_SEARCH_AGAIN);
+		inputMap.put(KeyStroke.getKeyStroke("pressed F1"), ACTION_KEY_HELP_DIALOG);
 	}
 
 	// -----
