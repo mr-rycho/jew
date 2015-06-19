@@ -20,7 +20,7 @@ public class StatusPanel extends JPanel implements MessageConsumer {
 
 	private final boolean useQueue;
 
-	private int counter = 0;
+	private Long prevTs = null;
 
 	private Queue<String> messages = new LinkedList<>();
 
@@ -53,7 +53,7 @@ public class StatusPanel extends JPanel implements MessageConsumer {
 
 	@Override
 	public void enqueueMessage(String text) {
-		if (counter==0 || !useQueue) {
+		if (prevTs==null || !useQueue) {
 			setLabelAndCounter(text);
 		} else {
 			messages.offer(text);
@@ -62,20 +62,17 @@ public class StatusPanel extends JPanel implements MessageConsumer {
 
 	private void setLabelAndCounter(String text) {
 		label.setText(text);
-		counter = MESSAGE_DUR;
+		prevTs = System.currentTimeMillis();
 	}
 
 	private void clearLabel() {
 		label.setText(" ");
-		counter = 0;
+		prevTs = null;
 	}
 
 	private void timerTick() {
-		if (counter > 0) {
-			counter--;
-			if (counter == 0) {
-				pollAndSetOrClear();
-			}
+		if (prevTs!=null && System.currentTimeMillis()>prevTs+1000L*MESSAGE_DUR) {
+			pollAndSetOrClear();
 		}
 	}
 
