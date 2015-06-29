@@ -1,6 +1,7 @@
 package pl.rychu.jew;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.cli.CommandLine;
@@ -36,11 +37,12 @@ public class CmdLineMain {
 		 || (!cmdline.iterator().hasNext() && cmdline.getArgList().isEmpty())) {
 			printHelp(options);
 		} else {
-			String filename = null;
 			try {
-				filename = getFilename(cmdline);
+				String filename = getFilename(cmdline);
 				checkFile(filename);
-				GuiMain.runGuiAsynchronously(filename);
+				boolean isWindows = isWindows(cmdline);
+				log.debug("working operating system: {}", isWindows ? "windows" : "linux");
+				GuiMain.runGuiAsynchronously(filename, isWindows);
 			} catch (Exception e) {
 				System.err.println("error: "+e.getMessage());
 				log.error("error parsing commandline", e);
@@ -54,6 +56,7 @@ public class CmdLineMain {
 		Options options = new Options();
 
 		options.addOption("?", "help", false, "prints this help");
+		options.addOption("system", true, "sets system: LINUX, WINDOWS, AUTO");
 
 		return options;
 	}
@@ -79,6 +82,38 @@ public class CmdLineMain {
 		if (!file.isFile()) {
 			throw new IllegalStateException("file \""+filename+"\" is not a normal file");
 		}
+	}
+
+	private static boolean isWindows(CommandLine cmdLine) {
+		String sysOptStr = cmdLine.getOptionValue("system");
+		SystemOption sysOpt = getSystemOption(sysOptStr);
+		switch (sysOpt) {
+			case LINUX: return false;
+			case WINDOWS: return true;
+			case AUTO: return detectWindows();
+			default: throw new IllegalStateException("not supported: "+sysOpt);
+		}
+	}
+
+	private static SystemOption getSystemOption(String sysOptStr) {
+		try {
+			sysOptStr = sysOptStr==null || sysOptStr.isEmpty() ? "AUTO" : sysOptStr;
+			return SystemOption.valueOf(sysOptStr.toUpperCase());
+		} catch (Exception e) {
+			throw new IllegalArgumentException("bad option: \""+sysOptStr+"\". "
+			 +"available: "+Arrays.asList(SystemOption.values()));
+		}
+	}
+
+	private static boolean detectWindows() {
+		String windir = System.getenv("windir");
+		return windir!=null && !windir.isEmpty();
+	}
+
+	// ====================
+
+	private static enum SystemOption {
+		LINUX, WINDOWS, AUTO;
 	}
 
 }

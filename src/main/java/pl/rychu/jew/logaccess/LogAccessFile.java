@@ -35,6 +35,8 @@ public class LogAccessFile implements LogAccess {
 
 	final String pathStr;
 
+	final boolean isWindows;
+
 	private final GrowingListVer<LogLine> index = GrowingListVerLocked.create(65536);
 
 	private volatile FileChannel fileChannel;
@@ -44,14 +46,15 @@ public class LogAccessFile implements LogAccess {
 
 	// ------------------
 
-	private LogAccessFile(final String pathStr) {
+	private LogAccessFile(final String pathStr, boolean isWindows) {
 		this.pathStr = pathStr;
+		this.isWindows = isWindows;
 
 		new Thread(new LogFileReader()).start();
 	}
 
-	public static LogAccess create(final String pathStr) {
-		final LogAccessFile result = new LogAccessFile(pathStr);
+	public static LogAccess create(final String pathStr, boolean isWindows) {
+		final LogAccessFile result = new LogAccessFile(pathStr, isWindows);
 
 		return result;
 	}
@@ -189,10 +192,15 @@ public class LogAccessFile implements LogAccess {
 		private void checkAndClose() {
 			if (fileChannel != null) {
 				final BasicFileAttributes attrs = readAttributes();
+				log.trace("attrs: {}", attrs);
 				final Object fk = attrs!=null ? attrs.fileKey() : null;
+				log.trace("fk: {}", fk);
 				final Long fs = attrs!=null ? attrs.size() : null;
-				if (fk==null || !fk.equals(fileKey) || fs==null
-				 || (prevFileSize!=null && fs<prevFileSize)) {
+				log.trace("fs: {}", fs);
+				boolean fileKeyChanged = !isWindows && (fk==null || !fk.equals(fileKey));
+				boolean fileSizeChanged = fs==null || (prevFileSize!=null && fs<prevFileSize);
+				log.trace("change: {} / {}", fileKeyChanged, fileSizeChanged);
+				if (fileKeyChanged || fileSizeChanged) {
 					log.debug("old fk = {}", fileKey);
 					log.debug("new fk = {}", fk);
 					fileChannel = null;

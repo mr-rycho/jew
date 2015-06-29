@@ -16,18 +16,18 @@ import pl.rychu.jew.logaccess.LogAccessFile;
 
 public class GuiMain {
 
-	public static void runGuiAsynchronously(String filename) {
+	public static void runGuiAsynchronously(String filename, boolean isWindows) {
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				final JFrame mainFrame = createFrame(filename);
+				final JFrame mainFrame = createFrame(filename, isWindows);
 				mainFrame.setVisible(true);
 			}
 		});
 	}
 
-	private static JFrame createFrame(String filename) {
-		final LogAccess logAccess = LogAccessFile.create(filename);
+	private static JFrame createFrame(String filename, boolean isWindows) {
+		final LogAccess logAccess = LogAccessFile.create(filename, isWindows);
 
 		final JFrame mainFrame = new JFrame("jew");
 
