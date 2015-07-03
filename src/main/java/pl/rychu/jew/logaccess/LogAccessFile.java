@@ -203,13 +203,28 @@ public class LogAccessFile implements LogAccess {
 				if (fileKeyChanged || fileSizeChanged) {
 					log.debug("old fk = {}", fileKey);
 					log.debug("new fk = {}", fk);
-					fileChannel = null;
-					fileKey = null;
+					closeFileChannel();
 					byteBuffer.clear();
 					lineDivider.reset();
 					log.debug("list cleared");
 				}
 				prevFileSize = fs;
+			}
+		}
+
+		private void closeFileChannel() {
+			log.debug("will close file channel");
+			final FileChannel fc = fileChannel;
+			fileChannel = null;
+			if (fc == null) {
+				log.debug("file channel is null");
+			} else {
+				try {
+					fc.close();
+				} catch(IOException e) {
+					log.error("cannot close file", e);
+				}
+				fileKey = null;
 			}
 		}
 
