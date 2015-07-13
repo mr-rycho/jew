@@ -45,7 +45,7 @@ public class HiDialog extends JDialog {
 		lsn = hiConfigChangeListener;
 		origHiConfig = HiConfig.clone(hiConfig);
 
-		setSize(400, 400);
+		setSize(450, 400);
 
 		cp = getContentPane();
 
@@ -93,10 +93,10 @@ public class HiDialog extends JDialog {
 		JButton moveDownButton = new JButton("down");
 		moveDownButton.addActionListener(new ListActionMove(1));
 		editButtonsPanel.add(moveDownButton);
-
 		final JButton undoButton = new JButton("undo");
 		undoButton.addActionListener(new Undoer());
-		windowButtonsPanel.add(undoButton);
+		editButtonsPanel.add(undoButton);
+
 		final JButton closeButton = new JButton("close");
 		closeButton.addActionListener(new DialogCloser());
 		windowButtonsPanel.add(closeButton);
