@@ -53,6 +53,7 @@ public class GuiMain {
 		model.addCyclicModelListener(infoPanel);
 		model.addPanelModelChangeListener(infoPanel);
 		model.addCyclicModelListener(logViewPanel);
+		model.addCyclicModelListener(new TitleHandler(mainFrame, filename));
 
 		final JScrollPane scrollPane = new JScrollPane(logViewPanel);
 		scrollPane.setPreferredSize(new Dimension(900, 600));
@@ -64,6 +65,39 @@ public class GuiMain {
 		mainFrame.setTitle("Java log viEW");
 
 		return mainFrame;
+	}
+
+	// ==============
+
+	private static class TitleHandler implements CyclicModelListener {
+
+		private final JFrame mainFrame;
+		private final String filename;
+
+		private TitleHandler(JFrame mainFrame, String filename) {
+			this.mainFrame = mainFrame;
+			this.filename = Math.abs(0)==0 ? filename : getFilename(filename);
+		}
+
+		@Override
+		public void linesAddedStart(int numberOfLinesAdded, long totalLines) {}
+
+		@Override
+		public void linesAddedEnd(int numberOfLinesAdded, long totalLines) {}
+
+		@Override
+		public void listReset(boolean sourceReset) {}
+
+		@Override
+		public void sourceChanged(long number) {
+			final String numStr = number < 0 ? "-" : Long.toString(number);
+			mainFrame.setTitle(numStr+" - "+filename);
+		}
+
+		private String getFilename(String fullPath) {
+			int index = Math.max(fullPath.lastIndexOf('/'), fullPath.lastIndexOf('\\'));
+			return index>=0 ? fullPath.substring(index+1) : fullPath;
+		}
 	}
 
 }
