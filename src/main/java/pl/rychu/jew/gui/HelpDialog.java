@@ -33,8 +33,8 @@ public class HelpDialog extends JDialog {
 
 		Container cp = getContentPane();
 
-		createComponents(cp);
 		createActions((JComponent)cp);
+		createComponents((JComponent)cp);
 		createKeyBindings((JComponent)cp);
 
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -42,7 +42,8 @@ public class HelpDialog extends JDialog {
 		setVisible(true);
 	}
 
-	private void createComponents(Container cp) {
+	private void createComponents(JComponent cp) {
+		ActionMap actionMap = cp.getActionMap();
 		JPanel centerPanel = new JPanel(new BorderLayout());
 		JPanel botPanel = new JPanel(new BorderLayout());
 		cp.add(centerPanel, BorderLayout.CENTER);
@@ -57,7 +58,8 @@ public class HelpDialog extends JDialog {
 		botPanel.add(buttonPanel, BorderLayout.CENTER);
 		JButton closeButton = new JButton("close");
 		buttonPanel.add(closeButton);
-		closeButton.setActionCommand(ACTION_KEY_GLOB_CLOSE);
+		closeButton.setAction(actionMap.get(ACTION_KEY_GLOB_CLOSE));
+		closeButton.setText("close");
 	}
 
 	private void createActions(JComponent jp) {
