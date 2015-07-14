@@ -144,6 +144,8 @@ public class SearchDialog extends JDialog {
 
 	public void setFocusToText() {
 		textField.requestFocus();
+		textField.setSelectionStart(0);
+		textField.setSelectionEnd(textField.getText().length());
 	}
 
 	// --------------------------
