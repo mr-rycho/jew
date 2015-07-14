@@ -2,6 +2,7 @@ package pl.rychu.jew.gui;
 
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseWheelEvent;
@@ -36,6 +37,7 @@ import pl.rychu.jew.gui.hi.HiConfigProvider;
 import pl.rychu.jew.gui.hi.HiDialog;
 import pl.rychu.jew.gui.search.SearchDialog;
 import pl.rychu.jew.logline.LogLine;
+import pl.rychu.jew.logline.LogLine.LogLineType;
 import pl.rychu.jew.logline.LogLineFull;
 
 
@@ -61,6 +63,9 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 
 	private static final String ACTION_KEY_SEARCH_DIALOG = "jew.search.dialog";
 	private static final String ACTION_KEY_SEARCH_AGAIN = "jew.search.again";
+
+	private static final String ACTION_KEY_CAUSE_NEXT = "jew.cause.next";
+	private static final String ACTION_KEY_CAUSE_PREV = "jew.cause.prev";
 
 	private static final String ACTION_KEY_HELP_DIALOG = "jew.help.dialog";
 
@@ -257,6 +262,22 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 			}
 		});
 
+		actionMap.put(ACTION_KEY_CAUSE_NEXT, new AbstractAction(ACTION_KEY_CAUSE_NEXT) {
+			private static final long serialVersionUID = 1670930291832953057L;
+			@Override
+			public void actionPerformed(final ActionEvent e) {
+				logViewPanel.new StackSearchDelegate().gotoCause(logViewPanel.getView(), true);
+			}
+		});
+
+		actionMap.put(ACTION_KEY_CAUSE_PREV, new AbstractAction(ACTION_KEY_CAUSE_PREV) {
+			private static final long serialVersionUID = 1167187188820770875L;
+			@Override
+			public void actionPerformed(final ActionEvent e) {
+				logViewPanel.new StackSearchDelegate().gotoCause(logViewPanel.getView(), false);
+			}
+		});
+
 		actionMap.put(ACTION_KEY_HELP_DIALOG, new AbstractAction(ACTION_KEY_HELP_DIALOG) {
 			private static final long serialVersionUID = 1670930291832953057L;
 			@Override
@@ -284,6 +305,10 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		inputMap.put(KeyStroke.getKeyStroke('H'), ACTION_KEY_HI_DIALOG);
 		inputMap.put(KeyStroke.getKeyStroke("ctrl pressed F"), ACTION_KEY_SEARCH_DIALOG);
 		inputMap.put(KeyStroke.getKeyStroke("pressed F3"), ACTION_KEY_SEARCH_AGAIN);
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_PERIOD, InputEvent.CTRL_MASK)
+		 , ACTION_KEY_CAUSE_NEXT);
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_COMMA, InputEvent.CTRL_MASK)
+		 , ACTION_KEY_CAUSE_PREV);
 		inputMap.put(KeyStroke.getKeyStroke("pressed F1"), ACTION_KEY_HELP_DIALOG);
 	}
 
@@ -735,6 +760,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 			return isDownSearch;
 		}
 	}
+
 	// =======================
 
 	private class SearchDelegate {
@@ -828,6 +854,47 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 			String fullTextRaw = logLineFull.getFullText();
 			String fullText = fullTextRaw==null ? "" : fullTextRaw;
 			return pattern.matcher(fullText).find();
+		}
+
+	}
+
+	// =======================
+
+	private class StackSearchDelegate {
+		private void gotoCause(int fromIndexExc, boolean dirDown) {
+			ListModelLog model = (ListModelLog)getModel();
+			int size = model.getSize();
+			if (fromIndexExc<0 || fromIndexExc>=size) {
+				return;
+			}
+			LogLineType type = model.getIndexElementAt(fromIndexExc).getLogLineType();
+			int dirDelta = dirDown ? 1 : -1;
+			if (type==LogLineType.STACK_POS || type==LogLineType.STACK_CAUSE) {
+				for (int index=fromIndexExc+dirDelta; ; index += dirDelta) {
+					if (index < 0) {
+						focusLine(0);
+						return;
+					}
+					if (index >= size) {
+						focusLine(size-1);
+						return;
+					}
+					type = model.getIndexElementAt(index).getLogLineType();
+					if (type!=LogLineType.STACK_POS && type!=LogLineType.STACK_CAUSE) {
+						focusLine(index - dirDelta);
+						return;
+					}
+					if (type == LogLineType.STACK_CAUSE) {
+						focusLine(index);
+						return;
+					}
+				}
+			}
+		}
+
+		private void focusLine(int index) {
+			setSelectedIndex(index);
+			ensureIndexIsVisible(index);
 		}
 
 	}
