@@ -861,15 +861,16 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 	// =======================
 
 	private class StackSearchDelegate {
+		private ListModelLog model = (ListModelLog)getModel();
+
 		private void gotoCause(int fromIndexExc, boolean dirDown) {
-			ListModelLog model = (ListModelLog)getModel();
 			int size = model.getSize();
 			if (fromIndexExc<0 || fromIndexExc>=size) {
 				return;
 			}
-			LogLineType type = model.getIndexElementAt(fromIndexExc).getLogLineType();
-			int dirDelta = dirDown ? 1 : -1;
-			if (type==LogLineType.STACK_POS || type==LogLineType.STACK_CAUSE) {
+			if (isStacky(fromIndexExc)
+			 || (dirDown && fromIndexExc+1<size && isStacky(fromIndexExc+1))) {
+				int dirDelta = dirDown ? 1 : -1;
 				for (int index=fromIndexExc+dirDelta; ; index += dirDelta) {
 					if (index < 0) {
 						focusLine(0);
@@ -879,9 +880,9 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 						focusLine(size-1);
 						return;
 					}
-					type = model.getIndexElementAt(index).getLogLineType();
+					LogLineType type = model.getIndexElementAt(index).getLogLineType();
 					if (type!=LogLineType.STACK_POS && type!=LogLineType.STACK_CAUSE) {
-						focusLine(index - dirDelta);
+						focusLine(dirDown ? index-1 : index);
 						return;
 					}
 					if (type == LogLineType.STACK_CAUSE) {
@@ -890,6 +891,11 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 					}
 				}
 			}
+		}
+
+		private boolean isStacky(int index) {
+			LogLineType type = model.getIndexElementAt(index).getLogLineType();
+			return type==LogLineType.STACK_POS || type==LogLineType.STACK_CAUSE;
 		}
 
 		private void focusLine(int index) {
