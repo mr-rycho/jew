@@ -9,6 +9,7 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.io.File;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -952,7 +953,8 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 			FileNameExtensionFilter extFilter
 			 = new FileNameExtensionFilter("txt and log", "txt", "log");
 			fileChooser.setFileFilter(extFilter);
-			File prevFile = Paths.get(prevFilename).toAbsolutePath().toFile();
+			Path directory = getDirectory(prevFilename);
+			File prevFile = directory!=null ? directory.toFile() : new File(".");
 			fileChooser.setCurrentDirectory(prevFile);
 			fileChooser.setDialogType(JFileChooser.SAVE_DIALOG);
 			int result = fileChooser.showOpenDialog(parent);
@@ -963,6 +965,17 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 			}
 		}
 
+		private Path getDirectory(String prev) {
+			Path path = Paths.get(prev).toAbsolutePath();
+			while (path != null) {
+				File file = path.toFile();
+				if (file.exists() && file.isDirectory()) {
+					return path;
+				}
+				path = path.getParent();
+			}
+			return null;
+		}
 	}
 
 }
