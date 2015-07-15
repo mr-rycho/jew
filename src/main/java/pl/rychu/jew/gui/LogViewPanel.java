@@ -1,5 +1,6 @@
 package pl.rychu.jew.gui;
 
+import java.awt.Component;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
@@ -7,6 +8,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.io.File;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Pattern;
@@ -14,11 +17,13 @@ import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.Position.Bias;
 
 import org.slf4j.Logger;
@@ -64,6 +69,8 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 	private static final String ACTION_KEY_SEARCH_DIALOG = "jew.search.dialog";
 	private static final String ACTION_KEY_SEARCH_AGAIN = "jew.search.again";
 
+	private static final String ACTION_KEY_SAVE_TO_FILE = "jew.saveToFile";
+
 	private static final String ACTION_KEY_CAUSE_NEXT = "jew.cause.next";
 	private static final String ACTION_KEY_CAUSE_PREV = "jew.cause.prev";
 
@@ -83,6 +90,8 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 
 	private SearchDialog searchDialog;
 	private PrevSearch prevSearch = null;
+
+	private SaveToFileDelegate saveToFileDelegate;
 
 	private MessageConsumer messageConsumer;
 
@@ -111,6 +120,8 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		result.setModel(model);
 
 		result.searchDialog = new SearchDialog((JFrame)result.getTopLevelAncestor());
+
+		result.saveToFileDelegate = result.new SaveToFileDelegate(result);
 
 		return result;
 	}
@@ -262,6 +273,14 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 			}
 		});
 
+		actionMap.put(ACTION_KEY_SAVE_TO_FILE, new AbstractAction(ACTION_KEY_SAVE_TO_FILE) {
+		private static final long serialVersionUID = 1670930291832953057L;
+		@Override
+			public void actionPerformed(ActionEvent e) {
+				logViewPanel.saveToFileDelegate.saveToFile();
+			}
+		});
+
 		actionMap.put(ACTION_KEY_CAUSE_NEXT, new AbstractAction(ACTION_KEY_CAUSE_NEXT) {
 			private static final long serialVersionUID = 1670930291832953057L;
 			@Override
@@ -305,6 +324,8 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		inputMap.put(KeyStroke.getKeyStroke('H'), ACTION_KEY_HI_DIALOG);
 		inputMap.put(KeyStroke.getKeyStroke("ctrl pressed F"), ACTION_KEY_SEARCH_DIALOG);
 		inputMap.put(KeyStroke.getKeyStroke("pressed F3"), ACTION_KEY_SEARCH_AGAIN);
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_MASK)
+		 , ACTION_KEY_SAVE_TO_FILE);
 		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_PERIOD, InputEvent.CTRL_MASK)
 		 , ACTION_KEY_CAUSE_NEXT);
 		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_COMMA, InputEvent.CTRL_MASK)
@@ -901,6 +922,45 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		private void focusLine(int index) {
 			setSelectedIndex(index);
 			ensureIndexIsVisible(index);
+		}
+
+	}
+
+	// =======================
+
+	private class SaveToFileDelegate {
+		private String prevFilename;
+		private final Component parent;
+
+		private SaveToFileDelegate(Component parent) {
+			this.prevFilename = Paths.get(".").toAbsolutePath().toFile().getAbsolutePath();
+			this.parent = parent;
+		}
+
+		private void saveToFile() {
+			String filename = pickFilename();
+			if (filename == null) {
+				return;
+			} else {
+				prevFilename = filename;
+				System.out.println("SAVING: "+filename);
+			}
+		}
+
+		private String pickFilename() {
+			JFileChooser fileChooser = new JFileChooser();
+			FileNameExtensionFilter extFilter
+			 = new FileNameExtensionFilter("txt and log", "txt", "log");
+			fileChooser.setFileFilter(extFilter);
+			File prevFile = Paths.get(prevFilename).toAbsolutePath().toFile();
+			fileChooser.setCurrentDirectory(prevFile);
+			fileChooser.setDialogType(JFileChooser.SAVE_DIALOG);
+			int result = fileChooser.showOpenDialog(parent);
+			if (result == JFileChooser.APPROVE_OPTION) {
+				return fileChooser.getSelectedFile().getAbsolutePath();
+			} else {
+				return null;
+			}
 		}
 
 	}
