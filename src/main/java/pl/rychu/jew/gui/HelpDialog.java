@@ -112,6 +112,7 @@ public class HelpDialog extends JDialog {
 		 , "] - turn on filter to current line"
 		 , "} - turn off filter to current line"
 		 , "shift+c - toggle classname collapse"
+		 , "ctrl+s - save filtered lines to file"
 		 , "ctrl+,/. - navigate through exception causes"
 		 , ""
 		 , "wheel+ctrl - speed x 10"
