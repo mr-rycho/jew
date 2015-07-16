@@ -8,7 +8,11 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -21,6 +25,7 @@ import javax.swing.InputMap;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
@@ -944,7 +949,12 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 				return;
 			} else {
 				prevFilename = filename;
-				System.out.println("SAVING: "+filename);
+				if (!canWriteTo(filename)) {
+					return;
+				} else {
+					ListModelLog model = (ListModelLog)getModel();
+					saveToFile(model, filename);
+				}
 			}
 		}
 
@@ -975,6 +985,48 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 				path = path.getParent();
 			}
 			return null;
+		}
+
+		private boolean canWriteTo(String filename) {
+			File file = new File(filename);
+			if (!file.exists()) {
+				return true;
+			}
+			if (file.isDirectory()) {
+				String msg = "\""+filename+"\" is a directory";
+				JOptionPane.showMessageDialog(parent, msg, "Error", JOptionPane.ERROR_MESSAGE);
+				return false;
+			} else {
+				String msg = "Target file exists. Overwrite?";
+				int result = JOptionPane.showConfirmDialog(parent, msg, "File exists"
+				 , JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+				return result == JOptionPane.YES_OPTION;
+			}
+		}
+
+		private void saveToFile(ListModelLog model, String filename) {
+			try {
+				log.debug("writing text to \"{}\"", filename);
+				saveToFileInt(model, filename);
+				log.debug("file written");
+			} catch (IOException e) {
+				throw new IllegalStateException(e);
+			}
+		}
+
+		private void saveToFileInt(ListModelLog model, String filename) throws IOException {
+			try (Writer w = new FileWriter(filename)) {
+				try (BufferedWriter bw = new BufferedWriter(w)) {
+					int size = model.getSize();
+					log.debug("will write {} lines", size);
+					for (int i=0; i<size; i++) {
+						LogLineFull logLineFull = model.getElementAt(i);
+						String fullText = logLineFull.getFullText();
+						bw.write(fullText);
+						bw.newLine();
+					}
+				}
+			}
 		}
 	}
 
