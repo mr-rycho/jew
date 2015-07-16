@@ -59,11 +59,6 @@ public class LogAccessFile implements LogAccess {
 		return result;
 	}
 
-	@Override
-	public void dispose() {
-		// TODO decide if should dispose
-	}
-
 	// ---
 
 	@Override
@@ -72,13 +67,8 @@ public class LogAccessFile implements LogAccess {
 	}
 
 	@Override
-	public long sizeF(final int version) throws BadVersionException {
+	public long size(final int version) throws BadVersionException {
 		return index.size(version);
-	}
-
-	@Override
-	public long sizeB(int version) throws BadVersionException {
-		return 0;
 	}
 
 	@Override
