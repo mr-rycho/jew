@@ -31,11 +31,7 @@ import pl.rychu.jew.logline.LogLineFull;
 
 public class LogAccessFile implements LogAccess {
 
-	static final Logger log = LoggerFactory.getLogger(LogAccessFile.class);
-
-	final String pathStr;
-
-	final boolean isWindows;
+	private static final Logger log = LoggerFactory.getLogger(LogAccessFile.class);
 
 	private final GrowingListVer<LogLine> index = GrowingListVerLocked.create(65536);
 
@@ -46,17 +42,29 @@ public class LogAccessFile implements LogAccess {
 
 	// ------------------
 
-	private LogAccessFile(final String pathStr, boolean isWindows) {
-		this.pathStr = pathStr;
-		this.isWindows = isWindows;
-
-		new Thread(new LogFileReader()).start();
-	}
+	private LogAccessFile() {}
 
 	public static LogAccess create(final String pathStr, boolean isWindows) {
-		final LogAccessFile result = new LogAccessFile(pathStr, isWindows);
+		final LogAccessFile result = new LogAccessFile();
+
+		LogFileReader logFileReader = new LogFileReader(result, pathStr, result.index, isWindows);
+		new Thread(logFileReader).start();
 
 		return result;
+	}
+
+	// ---
+
+	FileChannel getFileChannel() {
+		return fileChannel;
+	}
+
+	void resetFileChannel() {
+		fileChannel = null;
+	}
+
+	void setFileChannel(FileChannel fc) {
+		fileChannel = fc;
 	}
 
 	// ---
@@ -112,20 +120,20 @@ public class LogAccessFile implements LogAccess {
 
 	// ==================
 
-	private class LogFileReader implements Runnable {
+	private static class LogFileReader implements Runnable {
 
 		private final ByteBuffer byteBuffer = ByteBuffer.allocate(100_000);
+
+		private final LogAccessFile logAccessFile;
 
 		private final LineDecoder lineTypeRecognizer
 		 = LineDecodersChainFactory.getLineDecodersChain();
 
-		private final LinePosSink indexer = new Indexer(lineTypeRecognizer, index);
+		private final LinePosSink indexer;
 
-		private final LineByteSink lineByteSink
-		 = new LineByteSinkDecoder(indexer, "UTF-8");
+		private final LineByteSink lineByteSink;
 
-		private final LineDividerUtf8 lineDivider
-		 = new LineDividerUtf8(lineByteSink);
+		private final LineDividerUtf8 lineDivider;
 
 		private final Path path;
 
@@ -133,8 +141,18 @@ public class LogAccessFile implements LogAccess {
 
 		private Long prevFileSize;
 
-		private LogFileReader() {
+		private boolean isWindows;
+
+		// --------
+
+		private LogFileReader(LogAccessFile logAccessFile
+		 , String pathStr, GrowingListVer<LogLine> index, boolean isWindows) {
+			this.logAccessFile = logAccessFile;
 			this.path = FileSystems.getDefault().getPath(pathStr);
+			this.indexer = new Indexer(lineTypeRecognizer, index);
+			this.lineByteSink = new LineByteSinkDecoder(indexer, "UTF-8");
+			this.lineDivider = new LineDividerUtf8(lineByteSink);
+			this.isWindows = isWindows;
 		}
 
 		// --------
@@ -157,13 +175,14 @@ public class LogAccessFile implements LogAccess {
 
 			checkAndOpen();
 
-			if (fileChannel == null) {
+			FileChannel fc = logAccessFile.getFileChannel();
+			if (fc == null) {
 				return 0L;
 			} else {
 				long result = 0L;
 				try {
 					while (true) {
-						final int br = fileChannel.read(byteBuffer);
+						final int br = fc.read(byteBuffer);
 						if (br < 0) {
 							break;
 						}
@@ -180,7 +199,8 @@ public class LogAccessFile implements LogAccess {
 		}
 
 		private void checkAndClose() {
-			if (fileChannel != null) {
+			FileChannel fc = logAccessFile.getFileChannel();
+			if (fc != null) {
 				final BasicFileAttributes attrs = readAttributes();
 				log.trace("attrs: {}", attrs);
 				final Object fk = attrs!=null ? attrs.fileKey() : null;
@@ -204,8 +224,8 @@ public class LogAccessFile implements LogAccess {
 
 		private void closeFileChannel() {
 			log.debug("will close file channel");
-			final FileChannel fc = fileChannel;
-			fileChannel = null;
+			final FileChannel fc = logAccessFile.getFileChannel();
+			logAccessFile.resetFileChannel();
 			if (fc == null) {
 				log.debug("file channel is null");
 			} else {
@@ -219,22 +239,24 @@ public class LogAccessFile implements LogAccess {
 		}
 
 		private void checkAndOpen() {
-			if (fileChannel == null) {
+			if (logAccessFile.getFileChannel() == null) {
 				tryOpen();
 			}
 		}
 
 		private void tryOpen() {
+			FileChannel fc = null;
 			try {
-				fileChannel = FileChannel.open(path, StandardOpenOption.READ);
+				fc = FileChannel.open(path, StandardOpenOption.READ);
 				fileKey = readAttributes().fileKey();
 				log.debug("new file key is {}", fileKey);
 			} catch (NoSuchFileException e) {
-				fileChannel = null;
+				fc = null;
 			} catch (IOException e) {
 				log.error("IOException", e);
-				fileChannel = null;
+				fc = null;
 			}
+			logAccessFile.setFileChannel(fc);
 		}
 
 		private BasicFileAttributes readAttributes() {
