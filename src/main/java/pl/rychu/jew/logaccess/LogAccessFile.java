@@ -23,6 +23,8 @@ public class LogAccessFile implements LogAccess {
 
 	private volatile FileChannel fileChannel;
 
+	private final LogAccessCache logAccessCache = new LogAccessCache();
+
 	private final Queue<LineReaderDecoder> readerPool
 	 = new ConcurrentLinkedQueue<>();
 
@@ -77,7 +79,10 @@ public class LogAccessFile implements LogAccess {
 			return null;
 		}
 
-		// TODO apply cache here
+		LogLineFull lineFromCache = logAccessCache.read(pos, version);
+		if (lineFromCache != null) {
+			return lineFromCache;
+		}
 
 		final LogLine logLine = getOrNull(pos, version);
 		if (logLine == null) {
@@ -90,7 +95,9 @@ public class LogAccessFile implements LogAccess {
 			lineReadDec = new LineReaderDecoder();
 		}
 		try {
-			return lineReadDec.readFull(fc, logLine);
+			LogLineFull result = lineReadDec.readFull(fc, logLine);
+			logAccessCache.write(pos, result, version);
+			return result;
 		} finally {
 			readerPool.add(lineReadDec);
 		}
