@@ -29,10 +29,6 @@ public class LogFileReader implements Runnable {
 	private final LineDecoder lineTypeRecognizer
 	 = LineDecodersChainFactory.getLineDecodersChain();
 
-	private final LinePosSink indexer;
-
-	private final LineByteSink lineByteSink;
-
 	private final LineDividerUtf8 lineDivider;
 
 	private final Path path;
@@ -49,8 +45,8 @@ public class LogFileReader implements Runnable {
 	 , String pathStr, GrowingListVer<LogLine> index, boolean isWindows) {
 		this.logAccessFile = logAccessFile;
 		this.path = FileSystems.getDefault().getPath(pathStr);
-		this.indexer = new Indexer(lineTypeRecognizer, index);
-		this.lineByteSink = new LineByteSinkDecoder(indexer, "UTF-8");
+		LinePosSink indexer = new Indexer(lineTypeRecognizer, index);
+		LineByteSink lineByteSink = new LineByteSinkDecoder(indexer, "UTF-8");
 		this.lineDivider = new LineDividerUtf8(lineByteSink);
 		this.isWindows = isWindows;
 	}
