@@ -42,10 +42,11 @@ public class LogFileReader implements Runnable {
 	// --------
 
 	public LogFileReader(LogAccessFile logAccessFile
-	 , String pathStr, GrowingListVer<LogLine> index, boolean isWindows) {
+	 , String pathStr, GrowingListVer<LogLine> index, boolean isWindows
+	 , LogAccessCache logReaderCache) {
 		this.logAccessFile = logAccessFile;
 		this.path = FileSystems.getDefault().getPath(pathStr);
-		LinePosSink indexer = new Indexer(lineTypeRecognizer, index);
+		LinePosSink indexer = new Indexer(lineTypeRecognizer, index, logReaderCache);
 		LineByteSink lineByteSink = new LineByteSinkDecoder(indexer, "UTF-8");
 		this.lineDivider = new LineDividerUtf8(lineByteSink);
 		this.isWindows = isWindows;

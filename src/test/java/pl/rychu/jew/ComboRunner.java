@@ -38,7 +38,7 @@ public class ComboRunner {
 
 		final LineDecoder lineDecoder = LineDecodersChainFactory.getLineDecodersChain();
 
-		final Indexer linePosSink = new Indexer(lineDecoder, index);
+		final Indexer linePosSink = new Indexer(lineDecoder, index, null);
 		// final LinePosSink linePosSink = new LinePosSinkNull();
 
 		final LineByteSink lineByteSink = new LineByteSinkDecoder(linePosSink, "UTF-8");

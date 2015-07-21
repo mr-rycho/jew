@@ -25,6 +25,8 @@ public class LogAccessFile implements LogAccess {
 
 	private final LogAccessCache logAccessCache = new LogAccessCache();
 
+	private final LogAccessCache logReaderCache = new LogAccessCache();
+
 	private final Queue<LineReaderDecoder> readerPool
 	 = new ConcurrentLinkedQueue<>();
 
@@ -35,7 +37,8 @@ public class LogAccessFile implements LogAccess {
 	public static LogAccess create(final String pathStr, boolean isWindows) {
 		final LogAccessFile result = new LogAccessFile();
 
-		LogFileReader logFileReader = new LogFileReader(result, pathStr, result.index, isWindows);
+		LogFileReader logFileReader = new LogFileReader(result, pathStr
+		 , result.index, isWindows, result.logReaderCache);
 		new Thread(logFileReader).start();
 
 		return result;
@@ -80,6 +83,11 @@ public class LogAccessFile implements LogAccess {
 		}
 
 		LogLineFull lineFromCache = logAccessCache.read(pos, version);
+		if (lineFromCache != null) {
+			return lineFromCache;
+		}
+
+		lineFromCache = logReaderCache.read(pos, version);
 		if (lineFromCache != null) {
 			return lineFromCache;
 		}

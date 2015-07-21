@@ -12,7 +12,7 @@ public class LogAccessCache {
 
 	private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
-	private final Cache cache = new Cache(100_000);
+	private final Cache cache = new Cache(50_000);
 
 	private int version = -1;
 
