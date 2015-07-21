@@ -30,6 +30,11 @@ public class LogAccessFile implements LogAccess {
 	private final Queue<LineReaderDecoder> readerPool
 	 = new ConcurrentLinkedQueue<>();
 
+	private long countAccess = 0L;
+	private long countCacheViewHit = 0L;
+	private long countCacheReadHit = 0L;
+	private long countCacheMiss = 0L;
+
 	// ------------------
 
 	private LogAccessFile() {}
@@ -82,15 +87,25 @@ public class LogAccessFile implements LogAccess {
 			return null;
 		}
 
+		if ((countAccess%1000) == 0) {
+			log.trace("acc:{};  view:{};  read:{};  miss:{}", countAccess
+			 , countCacheViewHit, countCacheReadHit, countCacheMiss);
+		}
+
+		countAccess++;
 		LogLineFull lineFromCache = logAccessCache.read(pos, version);
 		if (lineFromCache != null) {
+			countCacheViewHit++;
 			return lineFromCache;
 		}
 
 		lineFromCache = logReaderCache.read(pos, version);
 		if (lineFromCache != null) {
+			countCacheReadHit++;
 			return lineFromCache;
 		}
+
+		countCacheMiss++;
 
 		final LogLine logLine = getOrNull(pos, version);
 		if (logLine == null) {
