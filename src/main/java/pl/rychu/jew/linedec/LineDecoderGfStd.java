@@ -12,10 +12,12 @@ public class LineDecoderGfStd implements LineDecoder {
 
 	private static final Pattern PATTERN_STD
 	 = Pattern.compile(
-	  "^([-:., 0-9]+)"
-	  +"[ \\t]+"+"([A-Z]+)"
-	  +"[ \\t]+"+"\\[([^]]+)\\]"
-	  +"[ \\t]+"+"([^ :]+):[0-9]+:"
+	  "^"+"\\["+"([-+:., 0-9T]+)"+"\\]" // time
+	  +"[ \\t]+"+"\\["+"[^]]*"+"\\]" // glassfish 4.1
+	  +"[ \\t]+"+"\\["+"([^]]*)"+"\\]" // level
+	  +"[ \\t]+"+"\\["+"[^]]*"+"\\]" // sth
+	  +"[ \\t]+"+"\\["+"([^]]*)"+"\\]" // class
+	  +"[ \\t]+"+"\\["+"[^]]*ThreadName=([^]]+)"+"\\]" // thread
 	  +"[ \\t]+"+".*$"
 	 );
 
@@ -27,8 +29,8 @@ public class LineDecoderGfStd implements LineDecoder {
 		final Matcher matcherStd = PATTERN_STD.matcher(line);
 		if (matcherStd.matches()) {
 			final String levelRaw = matcherStd.group(2);
-			final String threadRaw = matcherStd.group(3);
-			final String classnameRaw = matcherStd.group(4);
+			final String classnameRaw = matcherStd.group(3);
+			final String threadRaw = matcherStd.group(4);
 
 			final String level = LogElemsCache.getOrPutLevel(levelRaw);
 			final String threadName = LogElemsCache.getOrPutThread(threadRaw);
