@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import pl.rychu.jew.conf.LoggerType;
 import pl.rychu.jew.gui.GuiMain;
+import pl.rychu.jew.util.StringUtil;
 
 
 
@@ -60,7 +61,8 @@ public class CmdLineMain {
 
 		options.addOption("?", "help", false, "prints this help");
 		options.addOption(null, "system", true, "sets system: LINUX, WINDOWS, AUTO");
-		options.addOption(null, "logger", true, "sets logger: WILDFLY_STD");
+		options.addOption(null, "logger", true
+		 , "sets logger: "+getEnumList(LoggerType.values()));
 
 		return options;
 	}
@@ -68,6 +70,10 @@ public class CmdLineMain {
 	private static void printHelp(Options options) {
 		HelpFormatter hf = new HelpFormatter();
 		hf.printHelp("java -jar ... [opts] [filename]", options);
+	}
+
+	private static <T extends Enum<T>> String getEnumList(T[] emu) {
+		return StringUtil.join(emu);
 	}
 
 	private static String getFilename(CommandLine cmdline) {
