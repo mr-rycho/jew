@@ -5,7 +5,7 @@ import pl.rychu.jew.linedec.LineDecoder;
 import pl.rychu.jew.linedec.LineDecoderEmpty;
 import pl.rychu.jew.linedec.LineDecoderStack;
 import pl.rychu.jew.linedec.LineDecoderStackCause;
-import pl.rychu.jew.linedec.LineDecoderStd;
+import pl.rychu.jew.linedec.LineDecoderWildStd;
 import pl.rychu.jew.linedec.LineDecoderText;
 import pl.rychu.jew.linedec.LineDecodersChain;
 
@@ -26,7 +26,7 @@ public class LineDecodersChainFactory {
 	private static LineDecoder getStdLineDecoder(LoggerType loggerType) {
 		switch (loggerType) {
 		case WILDFLY_STD:
-			return new LineDecoderStd();
+			return new LineDecoderWildStd();
 		default:
 		throw new IllegalArgumentException("unknown server type: "+loggerType);
 		}

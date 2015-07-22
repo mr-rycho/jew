@@ -8,7 +8,7 @@ import pl.rychu.jew.logline.LogLineStd;
 
 
 
-public class LineDecoderStd implements LineDecoder {
+public class LineDecoderWildStd implements LineDecoder {
 
 	private static final Pattern PATTERN_STD
 	 = Pattern.compile(
