@@ -59,7 +59,7 @@ public class CmdLineMain {
 		Options options = new Options();
 
 		options.addOption("?", "help", false, "prints this help");
-		options.addOption("system", true, "sets system: LINUX, WINDOWS, AUTO");
+		options.addOption(null, "system", true, "sets system: LINUX, WINDOWS, AUTO");
 		options.addOption(null, "logger", true, "sets logger: WILDFLY_STD");
 
 		return options;
