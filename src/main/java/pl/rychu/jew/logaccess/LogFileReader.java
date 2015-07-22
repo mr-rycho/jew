@@ -14,6 +14,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import pl.rychu.jew.conf.LoggerType;
 import pl.rychu.jew.gl.GrowingListVer;
 import pl.rychu.jew.linedec.LineDecoder;
 import pl.rychu.jew.logline.LogLine;
@@ -26,8 +27,7 @@ public class LogFileReader implements Runnable {
 
 	private final LogAccessFile logAccessFile;
 
-	private final LineDecoder lineTypeRecognizer
-	 = LineDecodersChainFactory.getLineDecodersChain();
+	private final LineDecoder lineTypeRecognizer;
 
 	private final LineDividerUtf8 lineDivider;
 
@@ -43,9 +43,11 @@ public class LogFileReader implements Runnable {
 
 	public LogFileReader(LogAccessFile logAccessFile
 	 , String pathStr, GrowingListVer<LogLine> index, boolean isWindows
-	 , LogAccessCache logReaderCache) {
+	 , LoggerType loggerType, LogAccessCache logReaderCache) {
 		this.logAccessFile = logAccessFile;
 		this.path = FileSystems.getDefault().getPath(pathStr);
+		this.lineTypeRecognizer
+		 = LineDecodersChainFactory.getLineDecodersChain(loggerType);
 		LinePosSink indexer = new Indexer(lineTypeRecognizer, index, logReaderCache);
 		LineByteSink lineByteSink = new LineByteSinkDecoder(indexer, "UTF-8");
 		this.lineDivider = new LineDividerUtf8(lineByteSink);

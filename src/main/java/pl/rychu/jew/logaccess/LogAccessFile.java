@@ -7,6 +7,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import pl.rychu.jew.conf.LoggerType;
 import pl.rychu.jew.gl.BadVersionException;
 import pl.rychu.jew.gl.GrowingListVer;
 import pl.rychu.jew.gl.GrowingListVerLocked;
@@ -39,11 +40,12 @@ public class LogAccessFile implements LogAccess {
 
 	private LogAccessFile() {}
 
-	public static LogAccess create(final String pathStr, boolean isWindows) {
+	public static LogAccess create(final String pathStr
+	 , boolean isWindows, LoggerType loggerType) {
 		final LogAccessFile result = new LogAccessFile();
 
 		LogFileReader logFileReader = new LogFileReader(result, pathStr
-		 , result.index, isWindows, result.logReaderCache);
+		 , result.index, isWindows, loggerType, result.logReaderCache);
 		new Thread(logFileReader).start();
 
 		return result;

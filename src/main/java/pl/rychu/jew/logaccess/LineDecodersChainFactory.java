@@ -1,5 +1,6 @@
 package pl.rychu.jew.logaccess;
 
+import pl.rychu.jew.conf.LoggerType;
 import pl.rychu.jew.linedec.LineDecoder;
 import pl.rychu.jew.linedec.LineDecoderEmpty;
 import pl.rychu.jew.linedec.LineDecoderStack;
@@ -12,14 +13,23 @@ import pl.rychu.jew.linedec.LineDecodersChain;
 
 public class LineDecodersChainFactory {
 
-	public static LineDecoder getLineDecodersChain() {
+	public static LineDecoder getLineDecodersChain(LoggerType loggerType) {
 		final LineDecoder empty = new LineDecoderEmpty();
 		final LineDecoder stack = new LineDecoderStack();
 		final LineDecoder stackCause = new LineDecoderStackCause();
-		final LineDecoder std = new LineDecoderStd();
+		final LineDecoder std = getStdLineDecoder(loggerType);
 		final LineDecoder term = new LineDecoderText();
 
 		return new LineDecodersChain(empty, stack, stackCause, std, term);
+	}
+
+	private static LineDecoder getStdLineDecoder(LoggerType loggerType) {
+		switch (loggerType) {
+		case WILDFLY_STD:
+			return new LineDecoderStd();
+		default:
+		throw new IllegalArgumentException("unknown server type: "+loggerType);
+		}
 	}
 
 }

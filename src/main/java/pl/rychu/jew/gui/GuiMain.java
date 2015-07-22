@@ -8,6 +8,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 
+import pl.rychu.jew.conf.LoggerType;
 import pl.rychu.jew.gui.hi.HiConfigProviderPer;
 import pl.rychu.jew.logaccess.LogAccess;
 import pl.rychu.jew.logaccess.LogAccessFile;
@@ -16,18 +17,21 @@ import pl.rychu.jew.logaccess.LogAccessFile;
 
 public class GuiMain {
 
-	public static void runGuiAsynchronously(String filename, boolean isWindows) {
+	public static void runGuiAsynchronously(String filename
+	 , boolean isWindows, LoggerType loggerType) {
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				final JFrame mainFrame = createFrame(filename, isWindows);
+				final JFrame mainFrame = createFrame(filename, isWindows, loggerType);
 				mainFrame.setVisible(true);
 			}
 		});
 	}
 
-	private static JFrame createFrame(String filename, boolean isWindows) {
-		final LogAccess logAccess = LogAccessFile.create(filename, isWindows);
+	private static JFrame createFrame(String filename
+	 , boolean isWindows, LoggerType loggerType) {
+		final LogAccess logAccess = LogAccessFile.create(filename
+		 , isWindows, loggerType);
 
 		final JFrame mainFrame = new JFrame("jew");
 
