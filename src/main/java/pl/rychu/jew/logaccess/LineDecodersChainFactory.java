@@ -3,6 +3,7 @@ package pl.rychu.jew.logaccess;
 import pl.rychu.jew.conf.LoggerType;
 import pl.rychu.jew.linedec.LineDecoder;
 import pl.rychu.jew.linedec.LineDecoderEmpty;
+import pl.rychu.jew.linedec.LineDecoderGfStd;
 import pl.rychu.jew.linedec.LineDecoderStack;
 import pl.rychu.jew.linedec.LineDecoderStackCause;
 import pl.rychu.jew.linedec.LineDecoderWildStd;
@@ -27,8 +28,10 @@ public class LineDecodersChainFactory {
 		switch (loggerType) {
 		case WILDFLY_STD:
 			return new LineDecoderWildStd();
+		case GLASSFISH_STD:
+			return new LineDecoderGfStd();
 		default:
-		throw new IllegalArgumentException("unknown server type: "+loggerType);
+			throw new IllegalArgumentException("unknown server type: "+loggerType);
 		}
 	}
 
