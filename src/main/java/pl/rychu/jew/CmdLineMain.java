@@ -132,10 +132,10 @@ public class CmdLineMain {
 		logOptStr = logOptStr==null||logOptStr.isEmpty()
 		 ? LoggerType.WILDFLY_STD.name() : logOptStr;
 		try {
-			return LoggerType.valueOf(logOptStr.toUpperCase());
+			return LoggerType.get(logOptStr);
 		} catch (Exception e) {
 			throw new IllegalArgumentException("bad logger: \""+logOptStr+"\". "
-			 +"available: "+Arrays.asList(LoggerType.values()));
+			 +"available: "+LoggerType.getTypes());
 		}
 	}
 
