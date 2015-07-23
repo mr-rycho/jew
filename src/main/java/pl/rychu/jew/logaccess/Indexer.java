@@ -34,6 +34,9 @@ public class Indexer implements LinePosSink {
 	@Override
 	public void put(String line, long filePos, int length) {
 		final LogLine logLine = lineDecoder.decode(filePos, line, length, prevLogLine);
+		if (logLine.getLogLineType()==LogLineType.TEXT && logLine.getLength()==0) {
+			return;
+		}
 		index.add(logLine);
 		if (logReaderCache != null) {
 			logReaderCache.write(lineNumber, new LogLineFull(logLine, line)
