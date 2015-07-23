@@ -10,7 +10,7 @@ import pl.rychu.jew.logline.LogLineStackCause;
 public class LineDecoderStackCause implements LineDecoder {
 
 	private static final Pattern PATTERN
-	 = Pattern.compile("^Caused by:[ \\t]*([^:]+):.*$");
+	 = Pattern.compile("^Caused by:[ \\t]*([^:]+)($|:.*$)");
 
 	// --------
 
