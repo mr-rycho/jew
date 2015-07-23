@@ -1,4 +1,4 @@
-package pl.rychu.jew;
+package pl.rychu.jew.logaccess;
 
 import static org.fest.assertions.Assertions.*;
 import static junitparams.JUnitParamsRunner.$;
