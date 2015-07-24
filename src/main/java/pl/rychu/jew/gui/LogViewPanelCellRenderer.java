@@ -2,13 +2,18 @@ package pl.rychu.jew.gui;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Graphics;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.Icon;
 import javax.swing.JList;
 import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
@@ -28,10 +33,18 @@ public class LogViewPanelCellRenderer extends DefaultListCellRenderer {
 
 	private ClassVisuType classVisuType = ClassVisuType.NORMAL;
 
+	private boolean threadOffsetMode = false;
+
 	private final List<HiConfigEntryGui> hiConfigEntries = new ArrayList<>();
+
+	private final FakeIcon fakeIcon = new FakeIcon();
+
+	private final Map<String, Integer> threadOffsetMap = new HashMap<>();
 
 	private final List<CellRenderedListener> listeners
 	 = new CopyOnWriteArrayList<>();
+
+	private static final Random RND = new Random();
 
 	// ----------
 
@@ -74,20 +87,34 @@ public class LogViewPanelCellRenderer extends DefaultListCellRenderer {
 		this.classVisuType = classVisuType;
 	}
 
+	// ----------
+
+	public void toggleThreadOffsetMode() {
+		setThreadOffsetMode(!threadOffsetMode);
+	}
+
+	private void setThreadOffsetMode(boolean mode) {
+		this.threadOffsetMode = mode;
+	}
+
+	// ----------
+
 	@Override
   public Component getListCellRendererComponent(final JList<?> list
    , final Object value, final int index, final boolean isSelected
    , final boolean cellHasFocus) {
 		final LogLineFull logLineFull = (LogLineFull)value;
 		final String fullText = getFullString(logLineFull);
+		int hash = getThreadHash(logLineFull.getLogLine().getThreadName());
+		int offset = threadOffsetMode ? hash & 0xff : -1;
 		final String logLineStr = getRenderedString(logLineFull);
-		return getListCellRendererComponentSuper(list, fullText, logLineStr, index
-		 , isSelected, cellHasFocus);
+		return getListCellRendererComponentSuper(list, fullText, logLineStr
+		 , isSelected, cellHasFocus, offset);
 	}
 
 	private Component getListCellRendererComponentSuper(final JList<?> list
-	 , final String fullText, final String displayedText, final int index
-	 , final boolean isSelected, final boolean cellHasFocus) {
+	 , final String fullText, final String displayedText
+	 , final boolean isSelected, final boolean cellHasFocus, int xOffset) {
 		setComponentOrientation(list.getComponentOrientation());
 
 		Color bg = null;
@@ -107,8 +134,16 @@ public class LogViewPanelCellRenderer extends DefaultListCellRenderer {
 		setBackground(bg == null ? list.getBackground() : bg);
 		setForeground(fg == null ? list.getForeground() : fg);
 
-		setIcon(null);
 		setText(displayedText);
+		if (xOffset<0 && getIcon()!=null) {
+			setIcon(null);
+		}
+		if (xOffset>=0) {
+			fakeIcon.setIconWidth(xOffset);
+			if (getIcon() == null) {
+				setIcon(fakeIcon);
+			}
+		}
 
 		setEnabled(list.isEnabled());
 		setFont(list.getFont());
@@ -172,6 +207,13 @@ public class LogViewPanelCellRenderer extends DefaultListCellRenderer {
 		} else {
 			return src;
 		}
+	}
+
+	private int getThreadHash(String threadName) {
+		if (!threadOffsetMap.containsKey(threadName)) {
+			threadOffsetMap.put(threadName, RND.nextInt());
+		}
+		return threadOffsetMap.get(threadName);
 	}
 
 	@Override
@@ -241,6 +283,30 @@ public class LogViewPanelCellRenderer extends DefaultListCellRenderer {
 
 		public String getReplacement(final String className) {
 			throw new UnsupportedOperationException();
+		}
+	}
+
+	// ==================
+
+	private static class FakeIcon implements Icon {
+
+		private int width = 0;
+
+		@Override
+		public void paintIcon(Component c, Graphics g, int x, int y) {}
+
+		@Override
+		public int getIconWidth() {
+			return width;
+		}
+
+		public void setIconWidth(int width) {
+			this.width = width;
+		}
+
+		@Override
+		public int getIconHeight() {
+			return 1;
 		}
 	}
 

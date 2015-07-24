@@ -69,6 +69,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 	private static final String ACTION_KEY_FILTER_POS_MAX_ZERO = "jew.flt.pos.max.zero";
 
 	private static final String ACTION_KEY_RNDR_TOGGLE_CLASS = "jew.rndr.toggleClass";
+	private static final String ACTION_KEY_RNDR_TOGGLE_THROFF = "jew.rndr.toggleThroff";
 
 	private static final String ACTION_KEY_HI_DIALOG = "jew.hi.dialog";
 
@@ -229,6 +230,20 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 			}
 		});
 
+		actionMap.put(ACTION_KEY_RNDR_TOGGLE_THROFF, new AbstractAction(ACTION_KEY_RNDR_TOGGLE_THROFF) {
+			private static final long serialVersionUID = -1775960056463509375L;
+			@Override
+			public void actionPerformed(final ActionEvent e) {
+				final Object sourceObj = e.getSource();
+				if (sourceObj instanceof LogViewPanel) {
+					final LogViewPanel logViewPanel = (LogViewPanel)sourceObj;
+					LogViewPanelCellRenderer cellRenderer = (LogViewPanelCellRenderer)logViewPanel.getCellRenderer();
+					cellRenderer.toggleThreadOffsetMode();
+					logViewPanel.repaint();
+				}
+			}
+		});
+
 		actionMap.put(ACTION_KEY_HI_DIALOG, new AbstractAction(ACTION_KEY_HI_DIALOG) {
 			private static final long serialVersionUID = -8346845550957257182L;
 			@Override
@@ -327,6 +342,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		inputMap.put(KeyStroke.getKeyStroke(']'), ACTION_KEY_FILTER_POS_MAX_CURRENT);
 		inputMap.put(KeyStroke.getKeyStroke('}'), ACTION_KEY_FILTER_POS_MAX_ZERO);
 		inputMap.put(KeyStroke.getKeyStroke('C'), ACTION_KEY_RNDR_TOGGLE_CLASS);
+		inputMap.put(KeyStroke.getKeyStroke('T'), ACTION_KEY_RNDR_TOGGLE_THROFF);
 		inputMap.put(KeyStroke.getKeyStroke('H'), ACTION_KEY_HI_DIALOG);
 		inputMap.put(KeyStroke.getKeyStroke("ctrl pressed F"), ACTION_KEY_SEARCH_DIALOG);
 		inputMap.put(KeyStroke.getKeyStroke("pressed F3"), ACTION_KEY_SEARCH_AGAIN);
