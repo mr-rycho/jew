@@ -68,6 +68,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 	private static final String ACTION_KEY_TOGGLE_THREAD_IN_LIST = "jew.togThreadInList";
 
 	private static final String ACTION_KEY_FILTER_TOGGLE_THREAD = "jew.flt.thread";
+	private static final String ACTION_KEY_FILTER_TOGGLE_THREAD_LIST = "jew.flt.threadList";
 	private static final String ACTION_KEY_FILTER_TOGGLE_STACK = "jew.flt.stack";
 	private static final String ACTION_KEY_FILTER_POS_MIN_CURRENT = "jew.flt.pos.min.cur";
 	private static final String ACTION_KEY_FILTER_POS_MIN_ZERO = "jew.flt.pos.min.zero";
@@ -177,6 +178,17 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 				final Object sourceObj = e.getSource();
 				if (sourceObj instanceof LogViewPanel) {
 					((LogViewPanel)sourceObj).toggleThread();
+				}
+			}
+		});
+
+		actionMap.put(ACTION_KEY_FILTER_TOGGLE_THREAD_LIST, new AbstractAction(ACTION_KEY_FILTER_TOGGLE_THREAD_LIST) {
+		private static final long serialVersionUID = -330377882983454631L;
+		@Override
+			public void actionPerformed(final ActionEvent e) {
+				final Object sourceObj = e.getSource();
+				if (sourceObj instanceof LogViewPanel) {
+					((LogViewPanel)sourceObj).toggleFilterThreadsActive();
 				}
 			}
 		});
@@ -358,6 +370,8 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_T, InputEvent.CTRL_MASK)
 		 , ACTION_KEY_TOGGLE_THREAD_IN_LIST);
 		inputMap.put(KeyStroke.getKeyStroke('t'), ACTION_KEY_FILTER_TOGGLE_THREAD);
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_T, InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK)
+		 , ACTION_KEY_FILTER_TOGGLE_THREAD_LIST);
 		inputMap.put(KeyStroke.getKeyStroke('S'), ACTION_KEY_FILTER_TOGGLE_STACK);
 		inputMap.put(KeyStroke.getKeyStroke('['), ACTION_KEY_FILTER_POS_MIN_CURRENT);
 		inputMap.put(KeyStroke.getKeyStroke('{'), ACTION_KEY_FILTER_POS_MIN_ZERO);
@@ -466,10 +480,29 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 
 	// -----
 
+	private void toggleFilterThreadsActive() {
+		if (filterThreadsActive) {
+			filterThreadsActive = false;
+			createAndSetFilter();
+		} else {
+			if (!filterThreads.isEmpty()) {
+				filterThreadsActive = true;
+				createAndSetFilter();
+			}
+		}
+	}
+
 	protected void toggleThreadInList() {
 		String threadName = getCurrentThreadName();
 		if (threadName != null) {
 			toggleThreadInList(threadName);
+			if (filterThreadsActive) {
+				if (filterThreads.isEmpty()) {
+					toggleFilterThreadsActive();
+				} else {
+					createAndSetFilter();
+				}
+			}
 			notifyPanelModelChangeListeners();
 		}
 	}
@@ -578,6 +611,12 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		if (filterThread != null) {
 			final LogLineFilter fThread = new LogLineThreadFilter(filterThread);
 			filter = createConjunction(filter, fThread);
+		}
+
+		if (filterThreadsActive) {
+			String[] threadsArray = filterThreads.toArray(new String[0]);
+			final LogLineFilter fThreads = new LogLineThreadFilter(threadsArray);
+			filter = createConjunction(filter, fThreads);
 		}
 
 		if (stacktraceShowMode != StacktraceShowMode.SHOW) {
