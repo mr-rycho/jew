@@ -2,6 +2,7 @@ package pl.rychu.jew.gui.hi;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
@@ -21,15 +22,21 @@ public class HiConfigPersistence {
 
 	private static final Logger log = LoggerFactory.getLogger(HiConfigPersistence.class);
 
-	private static final String ENV_HOME = "HOME";
+	private static final String[] ENV_HOMES = new String[]{"HOME", "USERPROFILE"};
 
 	private static final String FILENAME = ".jew.hi";
 
 	// ----------------
 
 	private static String getFilename() {
-		final String homeDir = System.getenv(ENV_HOME);
+		final String homeDir = getFirstEnv(ENV_HOMES);
+		log.debug("homeDir = {}", homeDir);
 		return (homeDir!=null?homeDir:".")+"/"+FILENAME;
+	}
+
+	private static String getFirstEnv(String... envKeys) {
+		return Arrays.asList(envKeys).stream().map(key -> System.getenv(key))
+		 .filter(val -> val!=null).findFirst().orElse(null);
 	}
 
 	public static HiConfig load() {

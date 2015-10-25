@@ -10,7 +10,7 @@ public class LineDividerUtf8 {
 
 	private long currentPos = 0L;
 
-	private boolean skipCrLf = false;
+	private boolean skipLf = false;
 
 	// -----------
 
@@ -26,7 +26,7 @@ public class LineDividerUtf8 {
 			final byte b = byteBuffer.get();
 			currentPos++;
 			if (b=='\n' || b=='\r') {
-				if (!skipCrLf) {
+				if (b=='\r' || !skipLf) {
 					view.limit(byteBuffer.position()-1);
 					if (view.hasRemaining()) {
 						lineByteSink.put(view);
@@ -36,9 +36,9 @@ public class LineDividerUtf8 {
 				view.limit(byteBuffer.limit());
 				view.position(byteBuffer.position());
 				currentLinePos = currentPos;
-				skipCrLf = true;
+				skipLf = b=='\r';
 			} else {
-				skipCrLf = false;
+				skipLf = false;
 			}
 		}
 		if (view.hasRemaining()) {
@@ -49,7 +49,7 @@ public class LineDividerUtf8 {
 	public void reset() {
 		currentLinePos = 0L;
 		currentPos = 0L;
-		skipCrLf = false;
+		skipLf = false;
 		lineByteSink.reset();
 	}
 

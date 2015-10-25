@@ -2,6 +2,8 @@ package pl.rychu.jew.gui;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -11,6 +13,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import pl.rychu.jew.filter.LogLineFilter;
+import pl.rychu.jew.util.StringUtil;
 
 
 
@@ -29,6 +32,7 @@ public class InfoPanel extends JPanel implements CyclicModelListener
 	private final JLabel rootSize;
 	private final JLabel panelProps;
 	private final JLabel modelProps;
+	private final JLabel filterThreadsLabel;
 
 	// ---------------
 
@@ -50,8 +54,14 @@ public class InfoPanel extends JPanel implements CyclicModelListener
 		topPanel.add(topRightPanel, BorderLayout.EAST);
 
 		JPanel botPanel = new JPanel();
-		botPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
 		add(botPanel, BorderLayout.SOUTH);
+		botPanel.setLayout(new BorderLayout());
+		JPanel botLeftPanel = new JPanel();
+		botLeftPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+		botPanel.add(botLeftPanel, BorderLayout.WEST);
+		JPanel botRightPanel = new JPanel();
+		botRightPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
+		botPanel.add(botRightPanel, BorderLayout.EAST);
 
 		currentLine = new JLabel("#");
 		topLeftPanel.add(currentLine);
@@ -69,7 +79,10 @@ public class InfoPanel extends JPanel implements CyclicModelListener
 		topRightPanel.add(panelProps);
 
 		modelProps = new JLabel("--");
-		botPanel.add(modelProps);
+		botLeftPanel.add(modelProps);
+
+		filterThreadsLabel = new JLabel("");
+		botRightPanel.add(filterThreadsLabel);
 	}
 
 	public static InfoPanel create(final LogViewPanel logViewPanel) {
@@ -121,6 +134,14 @@ public class InfoPanel extends JPanel implements CyclicModelListener
 		StringBuilder sb = new StringBuilder();
 		sb.append(tail ? "TAIL" : "tail-");
 		setPanelProps(sb.toString());
+		String[] thr = new ArrayList<>(logViewPanel.getFilterThreads()).toArray(new String[0]);
+		if (thr.length == 0) {
+			setThreadList("");
+		} else {
+			Arrays.sort(thr);
+			String str = StringUtil.join(thr, "{", "}", "\"", "\"", " OR ");
+			setThreadList(str);
+		}
 	}
 
 	@Override
@@ -171,6 +192,10 @@ public class InfoPanel extends JPanel implements CyclicModelListener
 
 	private void setModelProps(final String propsStr) {
 		modelProps.setText(propsStr);
+	}
+
+	private void setThreadList(String threadsStr) {
+		filterThreadsLabel.setText(threadsStr);
 	}
 
 }

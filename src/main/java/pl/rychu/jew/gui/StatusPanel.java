@@ -33,7 +33,7 @@ public class StatusPanel extends JPanel implements MessageConsumer {
 
 		setLayout(new FlowLayout(FlowLayout.LEFT));
 
-		label = new JLabel(" ");
+		label = new JLabel("Press F1 for help");
 
 		add(label);
 	}

@@ -93,13 +93,13 @@ public class SearchDialog extends JDialog {
 		JPanel butPanel = new JPanel();
 		butPanel.setLayout(new FlowLayout(FlowLayout.RIGHT, 5, 5));
 
-		JButton buttonSearch = new JButton("Search");
-		buttonSearch.addActionListener(new DialogCloser(true));
-		butPanel.add(buttonSearch);
-
 		JButton buttonClose = new JButton("close");
 		buttonClose.addActionListener(new DialogCloser(false));
 		butPanel.add(buttonClose);
+
+		JButton buttonSearch = new JButton("Search");
+		buttonSearch.addActionListener(new DialogCloser(true));
+		butPanel.add(buttonSearch);
 
 		botPanel.add(butPanel, BorderLayout.SOUTH);
 
@@ -144,6 +144,8 @@ public class SearchDialog extends JDialog {
 
 	public void setFocusToText() {
 		textField.requestFocus();
+		textField.setSelectionStart(0);
+		textField.setSelectionEnd(textField.getText().length());
 	}
 
 	// --------------------------

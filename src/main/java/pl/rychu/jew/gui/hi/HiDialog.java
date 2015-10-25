@@ -11,13 +11,18 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
+import javax.swing.InputMap;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.WindowConstants;
 import javax.swing.border.Border;
@@ -32,6 +37,11 @@ public class HiDialog extends JDialog {
 
 	private static final long serialVersionUID = -2045018991383910432L;
 
+	private static final String ACTION_KEY_GLOB_ENTER = "jew.search.enter";
+	private static final String ACTION_KEY_GLOB_ESC = "jew.search.esc";
+
+	// -------------
+
 	private final Container cp;
 	private final HiConfig origHiConfig;
 	private final DefaultListModel<HiConfigEntry> model;
@@ -45,7 +55,7 @@ public class HiDialog extends JDialog {
 		lsn = hiConfigChangeListener;
 		origHiConfig = HiConfig.clone(hiConfig);
 
-		setSize(400, 400);
+		setSize(450, 400);
 
 		cp = getContentPane();
 
@@ -58,6 +68,8 @@ public class HiDialog extends JDialog {
 		jList.setCellRenderer(new CellRenderer());
 		cp.add(jList, BorderLayout.CENTER);
 
+		createActions((JComponent)cp);
+		ActionMap am = ((JComponent)cp).getActionMap();
 		final ConfigPanel configPanel = new ConfigPanel();
 
 		final JPanel editButtonsPanel = new JPanel();
@@ -93,24 +105,28 @@ public class HiDialog extends JDialog {
 		JButton moveDownButton = new JButton("down");
 		moveDownButton.addActionListener(new ListActionMove(1));
 		editButtonsPanel.add(moveDownButton);
-
 		final JButton undoButton = new JButton("undo");
 		undoButton.addActionListener(new Undoer());
-		windowButtonsPanel.add(undoButton);
+		editButtonsPanel.add(undoButton);
+
 		final JButton closeButton = new JButton("close");
-		closeButton.addActionListener(new DialogCloser());
+		closeButton.setAction(am.get(ACTION_KEY_GLOB_ESC));
+		closeButton.setText("close");
 		windowButtonsPanel.add(closeButton);
 		JButton applyButton = new JButton("apply");
 		applyButton.addActionListener(new DialogApplier());
 		windowButtonsPanel.add(applyButton);
 		final JButton acceptButton = new JButton("OK");
-		acceptButton.addActionListener(new DialogAccepter());
+		acceptButton.setAction(am.get(ACTION_KEY_GLOB_ENTER));
+		acceptButton.setText("OK");
 		windowButtonsPanel.add(acceptButton);
 
 		jList.addListSelectionListener(new SelectionToConfig(configPanel));
 		configPanel.addHiEntryChangeListener(new ConfigToSelection(configPanel));
 
 		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+
+		createKeyBindings((JComponent)cp);
 
 		setVisible(true);
 	}
@@ -136,6 +152,39 @@ public class HiDialog extends JDialog {
 		for (int i=0; i<size; i++) {
 			model.addElement(hiConfig.get(i));
 		}
+	}
+
+	private void createActions(JComponent jp) {
+		final ActionMap actionMap = new ActionMap();
+		final ActionMap oldActionMap = jp.getActionMap();
+		actionMap.setParent(oldActionMap);
+		jp.setActionMap(actionMap);
+
+		actionMap.put(ACTION_KEY_GLOB_ENTER, new AbstractAction(ACTION_KEY_GLOB_ENTER) {
+		private static final long serialVersionUID = 6718276366669100156L;
+		@Override
+			public void actionPerformed(ActionEvent e) {
+				new DialogAccepter().actionPerformed(e);
+			}
+		});
+
+		actionMap.put(ACTION_KEY_GLOB_ESC, new AbstractAction(ACTION_KEY_GLOB_ESC) {
+		private static final long serialVersionUID = -3740814541749273051L;
+		@Override
+			public void actionPerformed(ActionEvent e) {
+				new DialogCloser().actionPerformed(e);
+			}
+		});
+	}
+
+	private void createKeyBindings(JComponent jp) {
+		final InputMap inputMap = new InputMap();
+		final InputMap oldInputMap = jp.getInputMap();
+		inputMap.setParent(oldInputMap);
+		jp.setInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, inputMap);
+
+		inputMap.put(KeyStroke.getKeyStroke("pressed ENTER"), ACTION_KEY_GLOB_ENTER);
+		inputMap.put(KeyStroke.getKeyStroke("pressed ESCAPE"), ACTION_KEY_GLOB_ESC);
 	}
 
 	// =======================

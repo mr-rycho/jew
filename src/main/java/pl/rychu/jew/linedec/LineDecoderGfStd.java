@@ -8,14 +8,17 @@ import pl.rychu.jew.logline.LogLineStd;
 
 
 
-public class LineDecoderStd implements LineDecoder {
+public class LineDecoderGfStd implements LineDecoder {
 
 	private static final Pattern PATTERN_STD
 	 = Pattern.compile(
-	  "^([-:, 0-9]+)"
-	  +"[ \\t]+"+"([A-Z]+)"
-	  +"[ \\t]+"+"\\[([^]]+)\\]"
-	  +"[ \\t]+"+"(.*)$"
+	  "^"+"\\["+"([-+:., 0-9T]+)"+"\\]" // time
+	  +"[ \\t]+"+"\\["+"[^]]*"+"\\]" // glassfish 4.1
+	  +"[ \\t]+"+"\\["+"([^]]*)"+"\\]" // level
+	  +"[ \\t]+"+"\\["+"[^]]*"+"\\]" // sth
+	  +"[ \\t]+"+"\\["+"([^]]*)"+"\\]" // class
+	  +"[ \\t]+"+"\\["+"[^]]*ThreadName=([^]]+)"+"\\]" // thread
+	  +"[ \\t]+"+".*$"
 	 );
 
 	// -----------------
@@ -27,35 +30,14 @@ public class LineDecoderStd implements LineDecoder {
 		if (matcherStd.matches()) {
 			final String levelRaw = matcherStd.group(2);
 			final String classnameRaw = matcherStd.group(3);
-			final String threadRaw = getThreadName(matcherStd.group(4));
+			final String threadRaw = matcherStd.group(4);
 
 			final String level = LogElemsCache.getOrPutLevel(levelRaw);
-			final String classname = LogElemsCache.getOrPutLogger(classnameRaw);
 			final String threadName = LogElemsCache.getOrPutThread(threadRaw);
+			final String classname = LogElemsCache.getOrPutLogger(classnameRaw);
 			return LogLineStd.create(filePos, length, 0L, level, classname, threadName);
 		} else {
 			return null;
-		}
-	}
-
-	private static String getThreadName(final String remain) {
-		if (remain.isEmpty() || !remain.startsWith("(")) {
-			return "";
-		} else {
-			final int len = remain.length();
-			int pars = 1;
-			for (int i=1; i<len; i++) {
-				final char c = remain.charAt(i);
-				if (c == ')') {
-					pars--;
-					if (pars <= 0) {
-						return remain.substring(1, i);
-					}
-				} else if (c == '(') {
-					pars++;
-				}
-			}
-			return ""; // unbalanced parentheses
 		}
 	}
 

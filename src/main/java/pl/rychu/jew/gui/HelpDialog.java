@@ -33,8 +33,8 @@ public class HelpDialog extends JDialog {
 
 		Container cp = getContentPane();
 
-		createComponents(cp);
 		createActions((JComponent)cp);
+		createComponents((JComponent)cp);
 		createKeyBindings((JComponent)cp);
 
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -42,7 +42,8 @@ public class HelpDialog extends JDialog {
 		setVisible(true);
 	}
 
-	private void createComponents(Container cp) {
+	private void createComponents(JComponent cp) {
+		ActionMap actionMap = cp.getActionMap();
 		JPanel centerPanel = new JPanel(new BorderLayout());
 		JPanel botPanel = new JPanel(new BorderLayout());
 		cp.add(centerPanel, BorderLayout.CENTER);
@@ -57,7 +58,8 @@ public class HelpDialog extends JDialog {
 		botPanel.add(buttonPanel, BorderLayout.CENTER);
 		JButton closeButton = new JButton("close");
 		buttonPanel.add(closeButton);
-		closeButton.setActionCommand(ACTION_KEY_GLOB_CLOSE);
+		closeButton.setAction(actionMap.get(ACTION_KEY_GLOB_CLOSE));
+		closeButton.setText("close");
 	}
 
 	private void createActions(JComponent jp) {
@@ -109,7 +111,12 @@ public class HelpDialog extends JDialog {
 		 , "{ - turn off filter from current line"
 		 , "] - turn on filter to current line"
 		 , "} - turn off filter to current line"
+		 , "ctrl+t - mark thread for thread list filter"
+		 , "ctrl+sh+t - activate thread list filter"
+		 , "shift+t - activate thread name distinction"
 		 , "shift+c - toggle classname collapse"
+		 , "ctrl+s - save filtered lines to file"
+		 , "ctrl+,/. - navigate through exception causes"
 		 , ""
 		 , "wheel+ctrl - speed x 10"
 		 , "wheel+ctrl+shift - speed x 100"

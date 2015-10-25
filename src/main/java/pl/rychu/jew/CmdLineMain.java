@@ -12,7 +12,9 @@ import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import pl.rychu.jew.conf.LoggerType;
 import pl.rychu.jew.gui.GuiMain;
+import pl.rychu.jew.util.StringUtil;
 
 
 
@@ -42,7 +44,9 @@ public class CmdLineMain {
 				checkFile(filename);
 				boolean isWindows = isWindows(cmdline);
 				log.debug("working operating system: {}", isWindows ? "windows" : "linux");
-				GuiMain.runGuiAsynchronously(filename, isWindows);
+				LoggerType loggerType = getLoggerType(cmdline);
+				log.debug("using logger type: {}", loggerType);
+				GuiMain.runGuiAsynchronously(filename, isWindows, loggerType);
 			} catch (Exception e) {
 				System.err.println("error: "+e.getMessage());
 				log.error("error parsing commandline", e);
@@ -56,7 +60,9 @@ public class CmdLineMain {
 		Options options = new Options();
 
 		options.addOption("?", "help", false, "prints this help");
-		options.addOption("system", true, "sets system: LINUX, WINDOWS, AUTO");
+		options.addOption(null, "system", true, "sets system: LINUX, WINDOWS, AUTO");
+		options.addOption(null, "logger", true
+		 , "sets logger: "+getEnumList(LoggerType.values()));
 
 		return options;
 	}
@@ -64,6 +70,10 @@ public class CmdLineMain {
 	private static void printHelp(Options options) {
 		HelpFormatter hf = new HelpFormatter();
 		hf.printHelp("java -jar ... [opts] [filename]", options);
+	}
+
+	private static <T extends Enum<T>> String getEnumList(T[] emu) {
+		return StringUtil.join(emu);
 	}
 
 	private static String getFilename(CommandLine cmdline) {
@@ -97,7 +107,8 @@ public class CmdLineMain {
 
 	private static SystemOption getSystemOption(String sysOptStr) {
 		try {
-			sysOptStr = sysOptStr==null || sysOptStr.isEmpty() ? "AUTO" : sysOptStr;
+			sysOptStr = sysOptStr==null || sysOptStr.isEmpty()
+			 ? SystemOption.AUTO.name() : sysOptStr;
 			return SystemOption.valueOf(sysOptStr.toUpperCase());
 		} catch (Exception e) {
 			throw new IllegalArgumentException("bad option: \""+sysOptStr+"\". "
@@ -108,6 +119,24 @@ public class CmdLineMain {
 	private static boolean detectWindows() {
 		String windir = System.getenv("windir");
 		return windir!=null && !windir.isEmpty();
+	}
+
+	// ---
+
+	private static LoggerType getLoggerType(CommandLine cmdLine) {
+		String logOptStr = cmdLine.getOptionValue("logger");
+		return getLoggerType(logOptStr);
+	}
+
+	private static LoggerType getLoggerType(String logOptStr) {
+		logOptStr = logOptStr==null||logOptStr.isEmpty()
+		 ? LoggerType.WILDFLY_STD.name() : logOptStr;
+		try {
+			return LoggerType.get(logOptStr);
+		} catch (Exception e) {
+			throw new IllegalArgumentException("bad logger: \""+logOptStr+"\". "
+			 +"available: "+LoggerType.getTypes());
+		}
 	}
 
 	// ====================

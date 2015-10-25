@@ -9,6 +9,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 
+import pl.rychu.jew.conf.LoggerType;
 import pl.rychu.jew.gl.BadVersionException;
 import pl.rychu.jew.gl.GrowingListVer;
 import pl.rychu.jew.gl.GrowingListVerLocked;
@@ -36,9 +37,10 @@ public class ComboRunner {
 
 		final GrowingListVer<LogLine> index = GrowingListVerLocked.create(1_024);
 
-		final LineDecoder lineDecoder = LineDecodersChainFactory.getLineDecodersChain();
+		final LineDecoder lineDecoder
+		 = LineDecodersChainFactory.getLineDecodersChain(LoggerType.WILDFLY_STD);
 
-		final Indexer linePosSink = new Indexer(lineDecoder, index);
+		final Indexer linePosSink = new Indexer(lineDecoder, index, null);
 		// final LinePosSink linePosSink = new LinePosSinkNull();
 
 		final LineByteSink lineByteSink = new LineByteSinkDecoder(linePosSink, "UTF-8");
