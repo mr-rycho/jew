@@ -16,8 +16,10 @@ import java.io.Writer;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Pattern;
@@ -117,7 +119,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 
 	// ---------
 
-	public static LogViewPanel create(final ListModelLog model) {
+	public static LogViewPanel create(final ListModelLog model, String initFilter) {
 		final LogViewPanel result = new LogViewPanel();
 		result.setFixedCellWidth(600);
 		result.setFixedCellHeight(14);
@@ -125,6 +127,8 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		result.setCellRenderer(cellRenderer);
 		cellRenderer.addCellRenderedListener(result);
 		result.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+		applyInitFilter(result, initFilter);
 
 		result.setTail(false);
 
@@ -141,6 +145,27 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		result.saveToFileDelegate = result.new SaveToFileDelegate(result);
 
 		return result;
+	}
+
+	private static void applyInitFilter(LogViewPanel logViewPanel, String initFilterStr) {
+		Map<String, String> initFilterMap = parseInitFilter(initFilterStr);
+
+		StacktraceShowMode stacktraceShowMode = parseStackShowMode(initFilterMap.get("stack"));
+		if (stacktraceShowMode != null) {
+			logViewPanel.stacktraceShowMode = stacktraceShowMode;
+		}
+	}
+
+	private static StacktraceShowMode parseStackShowMode(String sm) {
+		if (sm==null || sm.isEmpty()) {
+			return null;
+		}
+
+		try {
+			return StacktraceShowMode.valueOf(sm.toUpperCase());
+		} catch (Exception e) {
+			return null;
+		}
 	}
 
 	private static void createActions(final LogViewPanel logViewPanel) {
@@ -1135,6 +1160,46 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 				}
 			}
 		}
+	}
+
+	// --------------
+
+	private static Map<String, String> parseInitFilter(String initFilter) {
+		if (initFilter == null) {
+			return Collections.emptyMap();
+		}
+		initFilter = initFilter.trim();
+		if (initFilter.isEmpty()) {
+			return Collections.emptyMap();
+		}
+
+		Map<String, String> result = new HashMap<>();
+
+		String[] split = initFilter.split(";");
+		for (String str: split) {
+			if (str != null) {
+				str = str.trim();
+				if (!str.isEmpty()) {
+					int eqIndex = str.indexOf("=");
+					if (eqIndex < 0) {
+						log.warn("unknown opt: {}", str);
+					} else {
+						String key = str.substring(0, eqIndex).trim();
+						String val = str.substring(eqIndex+1).trim();
+						if (key.isEmpty()) {
+							log.warn("key is empty in: {}", str);
+						} else {
+							if (result.containsKey(key)) {
+								log.warn("duplicate key: {}", key);
+							}
+							result.put(key, val);
+						}
+					}
+				}
+			}
+		}
+
+		return result;
 	}
 
 }

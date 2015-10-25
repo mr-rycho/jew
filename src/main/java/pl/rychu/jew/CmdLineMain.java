@@ -46,7 +46,8 @@ public class CmdLineMain {
 				log.debug("working operating system: {}", isWindows ? "windows" : "linux");
 				LoggerType loggerType = getLoggerType(cmdline);
 				log.debug("using logger type: {}", loggerType);
-				GuiMain.runGuiAsynchronously(filename, isWindows, loggerType);
+				String initFilter = cmdline.getOptionValue("filter");
+				GuiMain.runGuiAsynchronously(filename, isWindows, loggerType, initFilter);
 			} catch (Exception e) {
 				System.err.println("error: "+e.getMessage());
 				log.error("error parsing commandline", e);
@@ -63,6 +64,7 @@ public class CmdLineMain {
 		options.addOption(null, "system", true, "sets system: LINUX, WINDOWS, AUTO");
 		options.addOption(null, "logger", true
 		 , "sets logger: "+getEnumList(LoggerType.values()));
+		options.addOption(null, "filter", true, "sets init filter, f.e. stack=short");
 
 		return options;
 	}

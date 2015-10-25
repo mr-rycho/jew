@@ -18,18 +18,18 @@ import pl.rychu.jew.logaccess.LogAccessFile;
 public class GuiMain {
 
 	public static void runGuiAsynchronously(String filename
-	 , boolean isWindows, LoggerType loggerType) {
+	 , boolean isWindows, LoggerType loggerType, String initFilter) {
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				final JFrame mainFrame = createFrame(filename, isWindows, loggerType);
+				final JFrame mainFrame = createFrame(filename, isWindows, loggerType, initFilter);
 				mainFrame.setVisible(true);
 			}
 		});
 	}
 
 	private static JFrame createFrame(String filename
-	 , boolean isWindows, LoggerType loggerType) {
+	 , boolean isWindows, LoggerType loggerType, String initFilter) {
 		final LogAccess logAccess = LogAccessFile.create(filename
 		 , isWindows, loggerType);
 
@@ -39,7 +39,7 @@ public class GuiMain {
 
 		final ListModelLog model = ListModelLog.create(logAccess);
 
-		final LogViewPanel logViewPanel = LogViewPanel.create(model);
+		final LogViewPanel logViewPanel = LogViewPanel.create(model, initFilter);
 		logViewPanel.setHiConfigProvider(new HiConfigProviderPer());
 
 		final JPanel topPanel = new JPanel();
