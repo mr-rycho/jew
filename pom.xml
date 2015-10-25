@@ -68,6 +68,21 @@
 					<encoding>utf-8</encoding>
 				</configuration>
 			</plugin>
+
+			<!-- mvn clean compile assembly:single -->
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifest>
+							<mainClass>pl.rychu.jew.CmdLineMain</mainClass>
+						</manifest>
+					</archive>
+					<descriptorRefs>
+						<descriptorRef>jar-with-dependencies</descriptorRef>
+					</descriptorRefs>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 </project>
