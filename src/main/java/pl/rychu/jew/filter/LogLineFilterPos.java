@@ -47,13 +47,18 @@ public class LogLineFilterPos implements LogLineFilter {
 	}
 
 	private static String asString(final long minLine, final long maxLine) {
-		if (minLine>0L && maxLine<Long.MAX_VALUE) {
-			return "line in ["+(minLine+1)+";"+(maxLine+1)+"]";
-		} else if (minLine > 0) {
-			return "line>="+(minLine+1);
+		StringBuilder sb = new StringBuilder(100);
+		sb.append("line in [");
+		sb.append(minLine + 1);
+		sb.append(";");
+		if (maxLine < Long.MAX_VALUE) {
+			sb.append(maxLine + 1);
+			sb.append("]");
 		} else {
-			return "line<="+(maxLine+1);
+			sb.append((char)0x221e);
+			sb.append(")");
 		}
+		return sb.toString();
 	}
 
 }
