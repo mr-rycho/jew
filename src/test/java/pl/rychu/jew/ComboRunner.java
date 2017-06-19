@@ -7,6 +7,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import pl.rychu.jew.conf.LoggerType;
@@ -15,11 +16,7 @@ import pl.rychu.jew.gl.GrowingListVer;
 import pl.rychu.jew.gl.GrowingListVerLocked;
 import pl.rychu.jew.linedec.LineDecoder;
 import pl.rychu.jew.linedec.LogElemsCache;
-import pl.rychu.jew.logaccess.Indexer;
-import pl.rychu.jew.logaccess.LineByteSink;
-import pl.rychu.jew.logaccess.LineByteSinkDecoder;
-import pl.rychu.jew.logaccess.LineDecodersChainFactory;
-import pl.rychu.jew.logaccess.LineDividerUtf8;
+import pl.rychu.jew.logaccess.*;
 import pl.rychu.jew.logline.LogLine;
 import pl.rychu.jew.logline.LogLine.LogLineType;
 
@@ -40,8 +37,7 @@ public class ComboRunner {
 		final LineDecoder lineDecoder
 		 = LineDecodersChainFactory.getLineDecodersChain(LoggerType.WILDFLY_STD);
 
-		final Indexer linePosSink = new Indexer(lineDecoder, index, null);
-		// final LinePosSink linePosSink = new LinePosSinkNull();
+		IndexerWithTypes linePosSink = new IndexerWithTypes(lineDecoder, index, null);
 
 		final LineByteSink lineByteSink = new LineByteSinkDecoder(linePosSink, "UTF-8");
 
@@ -101,6 +97,34 @@ public class ComboRunner {
 			System.out.println(""+lines4.size()+" lines in "+(t4-t3)+"ms");
 		}
 
+	}
+
+	// ===========
+
+	private static class IndexerWithTypes extends Indexer {
+		private final long[] typeCounter = new long[LogLineType.values().length];
+
+		public IndexerWithTypes(final LineDecoder lineDecoder, final GrowingListVer<LogLine> index,
+		 LogAccessCache logReaderCache) {
+			super(lineDecoder, index, logReaderCache);
+		}
+
+		@Override
+		public boolean put(String line, long filePos, int length) {
+			boolean put = super.put(line, filePos, length);
+			if (put) {
+				LogLine prev = getPrevLogLine();
+				if (prev != null) {
+					LogLineType logLineType = prev.getLogLineType();
+					typeCounter[logLineType.ordinal()]++;
+				}
+			}
+			return put;
+		}
+
+		public long[] getTypeCounts() {
+			return Arrays.copyOf(typeCounter, typeCounter.length);
+		}
 	}
 
 }
