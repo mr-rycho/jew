@@ -49,7 +49,9 @@ public class LogFileReader implements Runnable {
 		this.lineTypeRecognizer
 		 = LineDecodersChainFactory.getLineDecodersChain(loggerType);
 		LinePosSink indexer = new Indexer(lineTypeRecognizer, index, logReaderCache);
-		LineByteSink lineByteSink = new LineByteSinkDecoder(indexer, "UTF-8");
+		String encoding = isWindows ? "windows-1250" : "UTF-8";
+		log.debug("isWindows={};  encoding={}", isWindows, encoding);
+		LineByteSink lineByteSink = new LineByteSinkDecoder(indexer, encoding);
 		this.lineDivider = new LineDividerUtf8(lineByteSink);
 		this.isWindows = isWindows;
 	}
