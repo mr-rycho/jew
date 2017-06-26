@@ -34,6 +34,8 @@ import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.Position.Bias;
 
@@ -59,7 +61,7 @@ import pl.rychu.jew.logline.LogLineFull;
 
 
 public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListener
- , KeyListener, MouseWheelListener, CellRenderedListener {
+ , KeyListener, MouseWheelListener, ListSelectionListener, CellRenderedListener {
 
 	private static final long serialVersionUID = -6731368974272464443L;
 
@@ -143,6 +145,8 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		result.searchDialog = new SearchDialog((JFrame)result.getTopLevelAncestor());
 
 		result.saveToFileDelegate = result.new SaveToFileDelegate(result);
+
+		result.addListSelectionListener(result);
 
 		return result;
 	}
@@ -876,6 +880,19 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 			setTail(false);
 		}
 		getParent().dispatchEvent(eventToDispatch);
+	}
+
+	@Override
+	public void valueChanged(ListSelectionEvent e) {
+		if (e.getValueIsAdjusting()) {
+			int sel = getSelectedIndex();
+			int mods = getModel().getSize();
+			if (sel>=0 && sel+1<mods) {
+				if (isTail()) {
+					setTail(false);
+				}
+			}
+		}
 	}
 
 	// =======================
