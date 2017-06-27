@@ -869,8 +869,10 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 					rotMulti *= 2;
 				}
 			}
+			int mod = e.getModifiers() & ~InputEvent.CTRL_MASK & ~InputEvent.SHIFT_MASK;
+			int modEx = e.getModifiersEx() & ~MouseWheelEvent.CTRL_DOWN_MASK & ~MouseWheelEvent.SHIFT_DOWN_MASK;
 			eventToDispatch = new MouseWheelEvent(this, e.getID(), e.getWhen()
-			 , e.getModifiers() | e.getModifiersEx(), e.getX(), e.getY()
+			 , mod | modEx, e.getX(), e.getY()
 			 , e.getXOnScreen(), e.getYOnScreen(), e.getClickCount(), e.isPopupTrigger()
 			 , e.getScrollType(), e.getScrollAmount()*amountMulti, e.getWheelRotation()*rotMulti
 			 , e.getPreciseWheelRotation()*amountMulti*rotMulti);
