@@ -86,6 +86,8 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 
 	private static final String ACTION_KEY_SEARCH_DIALOG = "jew.search.dialog";
 	private static final String ACTION_KEY_SEARCH_AGAIN = "jew.search.again";
+	private static final String ACTION_KEY_SEARCH_DOWN = "jew.search.down";
+	private static final String ACTION_KEY_SEARCH_UP = "jew.search.up";
 
 	private static final String ACTION_KEY_SAVE_TO_FILE = "jew.saveToFile";
 
@@ -355,6 +357,22 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 			}
 		});
 
+		actionMap.put(ACTION_KEY_SEARCH_DOWN, new AbstractAction(ACTION_KEY_SEARCH_DOWN) {
+			@Override
+			public void actionPerformed(final ActionEvent e) {
+				PrevSearch ps = logViewPanel.prevSearch;
+				logViewPanel.search(ps!=null ? ps.getDownSearch() : null);
+			}
+		});
+
+		actionMap.put(ACTION_KEY_SEARCH_UP, new AbstractAction(ACTION_KEY_SEARCH_UP) {
+			@Override
+			public void actionPerformed(final ActionEvent e) {
+				PrevSearch ps = logViewPanel.prevSearch;
+				logViewPanel.search(ps!=null ? ps.getUpSearch() : null);
+			}
+		});
+
 		actionMap.put(ACTION_KEY_SAVE_TO_FILE, new AbstractAction(ACTION_KEY_SAVE_TO_FILE) {
 		private static final long serialVersionUID = 1670930291832953057L;
 		@Override
@@ -411,11 +429,15 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		inputMap.put(KeyStroke.getKeyStroke('H'), ACTION_KEY_HI_DIALOG);
 		inputMap.put(KeyStroke.getKeyStroke("ctrl pressed F"), ACTION_KEY_SEARCH_DIALOG);
 		inputMap.put(KeyStroke.getKeyStroke("pressed F3"), ACTION_KEY_SEARCH_AGAIN);
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_PERIOD, InputEvent.CTRL_MASK)
+		 , ACTION_KEY_SEARCH_DOWN);
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_COMMA, InputEvent.CTRL_MASK)
+		 , ACTION_KEY_SEARCH_UP);
 		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_MASK)
 		 , ACTION_KEY_SAVE_TO_FILE);
-		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_PERIOD, InputEvent.CTRL_MASK)
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_PERIOD, InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK)
 		 , ACTION_KEY_CAUSE_NEXT);
-		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_COMMA, InputEvent.CTRL_MASK)
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_COMMA, InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK)
 		 , ACTION_KEY_CAUSE_PREV);
 		inputMap.put(KeyStroke.getKeyStroke("pressed F1"), ACTION_KEY_HELP_DIALOG);
 	}
@@ -924,6 +946,22 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 			this.text = text;
 			this.isRegexp = isRegexp;
 			this.isDownSearch = isDownSearch;
+		}
+
+		private PrevSearch getDownSearch() {
+			if (isDownSearch) {
+				return this;
+			} else {
+				return new PrevSearch(text, isRegexp, true);
+			}
+		}
+
+		private PrevSearch getUpSearch() {
+			if (!isDownSearch) {
+				return this;
+			} else {
+				return new PrevSearch(text, isRegexp, false);
+			}
 		}
 
 		private String getText() {
