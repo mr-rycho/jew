@@ -881,15 +881,12 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		boolean isShift = (e.getModifiersEx() & MouseWheelEvent.SHIFT_DOWN_MASK) != 0;
 
 		MouseWheelEvent eventToDispatch = e;
-		if (isCtrl || isShift) {
-			int amountMulti = 1;
+		if (isCtrl) {
+			int amountMulti = 10;
 			int rotMulti = 1;
-			if (isCtrl) {
-				amountMulti *= 10;
-				if (isShift) {
-					amountMulti *= 5;
-					rotMulti *= 2;
-				}
+			if (isShift) {
+				amountMulti *= 5;
+				rotMulti *= 2;
 			}
 			int mod = e.getModifiers() & ~InputEvent.CTRL_MASK & ~InputEvent.SHIFT_MASK;
 			int modEx = e.getModifiersEx() & ~MouseWheelEvent.CTRL_DOWN_MASK & ~MouseWheelEvent.SHIFT_DOWN_MASK;
@@ -898,6 +895,12 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 			 , e.getXOnScreen(), e.getYOnScreen(), e.getClickCount(), e.isPopupTrigger()
 			 , e.getScrollType(), e.getScrollAmount()*amountMulti, e.getWheelRotation()*rotMulti
 			 , e.getPreciseWheelRotation()*amountMulti*rotMulti);
+		} else if (isShift) {
+			eventToDispatch = new MouseWheelEvent(this, e.getID(), e.getWhen()
+			 , e.getModifiers() | e.getModifiersEx(), e.getX(), e.getY()
+			 , e.getXOnScreen(), e.getYOnScreen(), e.getClickCount(), e.isPopupTrigger()
+			 , e.getScrollType(), e.getScrollAmount()*3, e.getWheelRotation()
+			 , e.getPreciseWheelRotation()*3);
 		}
 
 		if (tail) {
