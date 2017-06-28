@@ -1,13 +1,14 @@
 package pl.rychu.jew.gui;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
+import java.awt.*;
+import java.io.IOException;
+import java.io.InputStream;
 
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.SwingUtilities;
+import javax.imageio.ImageIO;
+import javax.swing.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.rychu.jew.conf.LoggerType;
 import pl.rychu.jew.gui.hi.HiConfigProviderPer;
 import pl.rychu.jew.logaccess.LogAccess;
@@ -17,14 +18,13 @@ import pl.rychu.jew.logaccess.LogAccessFile;
 
 public class GuiMain {
 
+	private static final Logger log = LoggerFactory.getLogger(GuiMain.class);
+
 	public static void runGuiAsynchronously(String filename
 	 , boolean isWindows, LoggerType loggerType, String initFilter) {
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				final JFrame mainFrame = createFrame(filename, isWindows, loggerType, initFilter);
-				mainFrame.setVisible(true);
-			}
+		SwingUtilities.invokeLater(() -> {
+			JFrame mainFrame = createFrame(filename, isWindows, loggerType, initFilter);
+			mainFrame.setVisible(true);
 		});
 	}
 
@@ -68,7 +68,31 @@ public class GuiMain {
 		mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		mainFrame.setTitle("Java log viEW");
 
+		Image image = loadImage();
+		if (image != null) {
+			mainFrame.setIconImage(image);
+		}
+
 		return mainFrame;
+	}
+
+	private static Image loadImage() {
+		InputStream is = GuiMain.class.getResourceAsStream("/pile_128.png");
+		if (is == null) {
+			return null;
+		}
+		try {
+			return ImageIO.read(is);
+		} catch (IOException e) {
+			log.warn("cannot load image");
+			return null;
+		} finally {
+			try {
+				is.close();
+			} catch (IOException e) {
+				log.warn("cannot close image stream", e);
+			}
+		}
 	}
 
 	// ==============
