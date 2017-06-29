@@ -90,6 +90,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 	private static final String ACTION_KEY_SEARCH_UP = "jew.search.up";
 
 	private static final String ACTION_KEY_SAVE_TO_FILE = "jew.saveToFile";
+	private static final String ACTION_KEY_COPY_TO_CLIPBOARD = "jew.copyToClipboard";
 
 	private static final String ACTION_KEY_CAUSE_NEXT = "jew.cause.next";
 	private static final String ACTION_KEY_CAUSE_PREV = "jew.cause.prev";
@@ -115,6 +116,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 	private PrevSearch prevSearch = null;
 
 	private SaveToFileDelegate saveToFileDelegate;
+	private CopyToClipDelegate copyToClipDelegate;
 
 	private MessageConsumer messageConsumer;
 
@@ -147,6 +149,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		result.searchDialog = new SearchDialog((JFrame)result.getTopLevelAncestor());
 
 		result.saveToFileDelegate = result.new SaveToFileDelegate(result);
+		result.copyToClipDelegate = result.new CopyToClipDelegate();
 
 		result.addListSelectionListener(result);
 
@@ -358,6 +361,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		});
 
 		actionMap.put(ACTION_KEY_SEARCH_DOWN, new AbstractAction(ACTION_KEY_SEARCH_DOWN) {
+			// TODO gen serial
 			@Override
 			public void actionPerformed(final ActionEvent e) {
 				PrevSearch ps = logViewPanel.prevSearch;
@@ -366,6 +370,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		});
 
 		actionMap.put(ACTION_KEY_SEARCH_UP, new AbstractAction(ACTION_KEY_SEARCH_UP) {
+			// TODO gen serial
 			@Override
 			public void actionPerformed(final ActionEvent e) {
 				PrevSearch ps = logViewPanel.prevSearch;
@@ -378,6 +383,14 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		@Override
 			public void actionPerformed(ActionEvent e) {
 				logViewPanel.saveToFileDelegate.saveToFile();
+			}
+		});
+
+		actionMap.put(ACTION_KEY_COPY_TO_CLIPBOARD, new AbstractAction(ACTION_KEY_COPY_TO_CLIPBOARD) {
+		// TODO gen serial
+		@Override
+			public void actionPerformed(ActionEvent e) {
+				logViewPanel.copyToClipDelegate.copyToClip();
 			}
 		});
 
@@ -435,6 +448,8 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		 , ACTION_KEY_SEARCH_UP);
 		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_MASK)
 		 , ACTION_KEY_SAVE_TO_FILE);
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_MASK)
+		 , ACTION_KEY_COPY_TO_CLIPBOARD);
 		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_PERIOD, InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK)
 		 , ACTION_KEY_CAUSE_NEXT);
 		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_COMMA, InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK)
@@ -1219,6 +1234,12 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 					}
 				}
 			}
+		}
+	}
+
+	private class CopyToClipDelegate {
+		private void copyToClip() {
+			System.out.println("hello, world");
 		}
 	}
 
