@@ -1,7 +1,8 @@
 package pl.rychu.jew.gui;
 
-import java.awt.Component;
-import java.awt.Rectangle;
+import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -1231,7 +1232,28 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 
 	private class CopyToClipDelegate {
 		private void copyToClip() {
-			System.out.println("hello, world");
+			ListModelLog model = (ListModelLog)getModel();
+			if (model.getSize() > 195900) {
+				String msg = "You will copy "+model.getSize()+" lines of text. Continue?";
+				int result = JOptionPane.showConfirmDialog(LogViewPanel.this, msg
+				 , "Oversize load", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+				if (result != JOptionPane.YES_OPTION) {
+					return;
+				}
+			}
+
+			Toolkit toolkit = Toolkit.getDefaultToolkit();
+			Clipboard clipboard = toolkit.getSystemClipboard();
+			StringBuilder sb = new StringBuilder();
+
+			int size = model.getSize();
+			log.debug("will write {} lines", size);
+			for (int i=0; i<size; i++) {
+				LogLineFull logLineFull = model.getElementAt(i);
+				sb.append(logLineFull.getFullText()).append("\n");
+			}
+			StringSelection strSel = new StringSelection(sb.toString());
+			clipboard.setContents(strSel, null);
 		}
 	}
 

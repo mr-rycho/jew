@@ -117,6 +117,7 @@ public class HelpDialog extends JDialog {
 		 , "shift+t - activate thread name distinction"
 		 , "shift+c - toggle classname collapse"
 		 , "ctrl+s - save filtered lines to file"
+		 , "ctrl+c - copy filtered lines to clipboard"
 		 , "ctrl+sh+,/. - navigate through exception causes"
 		 , ""
 		 , "wheel+ctrl - speed x 10"
