@@ -314,13 +314,10 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 			private static final long serialVersionUID = -8346845550957257182L;
 			@Override
 			public void actionPerformed(final ActionEvent e) {
-				HiConfigChangeListener lsn = new HiConfigChangeListener() {
-					@Override
-					public void hiConfigChanged(HiConfig hiConfig) {
-						logViewPanel.setHiConfig(hiConfig);
-						logViewPanel.hiConfigProvider.put(hiConfig);
-						logViewPanel.repaint();
-					}
+				HiConfigChangeListener lsn = hiConfig -> {
+					logViewPanel.setHiConfig(hiConfig);
+					logViewPanel.hiConfigProvider.put(hiConfig);
+					logViewPanel.repaint();
 				};
 				HiDialog hiDialog
 				 = new HiDialog((JFrame)logViewPanel.getTopLevelAncestor(), logViewPanel.hiConfig, lsn);
@@ -334,12 +331,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 			@Override
 			public void actionPerformed(final ActionEvent e) {
 				SearchDialog sd = logViewPanel.searchDialog;
-				SwingUtilities.invokeLater(new Runnable() {
-					@Override
-					public void run() {
-						sd.setFocusToText();
-					}
-				});
+				SwingUtilities.invokeLater(sd::setFocusToText);
 				sd.setVisible(true);
 				// execution continues here after closing the dialog
 				if (sd.isOkPressed()) {
@@ -361,7 +353,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		});
 
 		actionMap.put(ACTION_KEY_SEARCH_DOWN, new AbstractAction(ACTION_KEY_SEARCH_DOWN) {
-			// TODO gen serial
+			private static final long serialVersionUID = 4802121507678166304L;
 			@Override
 			public void actionPerformed(final ActionEvent e) {
 				PrevSearch ps = logViewPanel.prevSearch;
@@ -370,7 +362,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		});
 
 		actionMap.put(ACTION_KEY_SEARCH_UP, new AbstractAction(ACTION_KEY_SEARCH_UP) {
-			// TODO gen serial
+			private static final long serialVersionUID = 8282485380380463874L;
 			@Override
 			public void actionPerformed(final ActionEvent e) {
 				PrevSearch ps = logViewPanel.prevSearch;
@@ -387,7 +379,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		});
 
 		actionMap.put(ACTION_KEY_COPY_TO_CLIPBOARD, new AbstractAction(ACTION_KEY_COPY_TO_CLIPBOARD) {
-		// TODO gen serial
+		private static final long serialVersionUID = 4032184701130416723L;
 		@Override
 			public void actionPerformed(ActionEvent e) {
 				logViewPanel.copyToClipDelegate.copyToClip();
@@ -502,7 +494,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		return tail;
 	}
 
-	protected void setTail(final boolean tail) {
+	private void setTail(final boolean tail) {
 		this.tail = tail;
 		if (tail) {
 			tail(getModel().getSize());
@@ -510,7 +502,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		notifyPanelModelChangeListeners();
 	}
 
-	protected void toggleTail() {
+	private void toggleTail() {
 		setTail(!isTail());
 	}
 
@@ -529,11 +521,11 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 
 	// -----
 
-	protected void toggleThread() {
+	private void toggleThread() {
 		setThreadName(getToggleThread());
 	}
 
-	protected String getToggleThread() {
+	private String getToggleThread() {
 		return filterThread!=null ? null : getCurrentThreadName();
 	}
 
@@ -667,11 +659,11 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 
 	// -----
 
-	protected void createAndSetFilter() {
+	private void createAndSetFilter() {
 		setFilter(createFilter());
 	}
 
-	protected LogLineFilter createFilter() {
+	private LogLineFilter createFilter() {
 		LogLineFilter filter = null;
 
 		if (filterThread != null) {
@@ -959,7 +951,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		private final boolean isRegexp;
 		private final boolean isDownSearch;
 
-		public PrevSearch(String text, boolean isRegexp, boolean isDownSearch) {
+		PrevSearch(String text, boolean isRegexp, boolean isDownSearch) {
 			super();
 			this.text = text;
 			this.isRegexp = isRegexp;
