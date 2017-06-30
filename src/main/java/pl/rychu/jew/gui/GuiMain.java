@@ -1,8 +1,11 @@
 package pl.rychu.jew.gui;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -57,7 +60,8 @@ public class GuiMain {
 		model.addCyclicModelListener(infoPanel);
 		model.addPanelModelChangeListener(infoPanel);
 		model.addCyclicModelListener(logViewPanel);
-		model.addCyclicModelListener(new TitleHandler(mainFrame, filename));
+		TitleHandler titleHandler = new TitleHandler(mainFrame, filename);
+		model.addCyclicModelListener(titleHandler);
 
 		final JScrollPane scrollPane = new JScrollPane(logViewPanel);
 		scrollPane.setPreferredSize(new Dimension(900, 600));
@@ -72,6 +76,18 @@ public class GuiMain {
 		if (image != null) {
 			mainFrame.setIconImage(image);
 		}
+
+		Map<KeyStroke, Action> actions = new HashMap<>();
+		{
+			actions.put(KeyStroke.getKeyStroke('I'), new AbstractAction("frame.titleToggle") {
+				private static final long serialVersionUID = 4836966177487679465L;
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					titleHandler.toggleTitleMode();
+				}
+			});
+		}
+		setKeysAndActions(scrollPane, actions);
 
 		return mainFrame;
 	}
@@ -95,16 +111,39 @@ public class GuiMain {
 		}
 	}
 
+	private static void setKeysAndActions(JComponent c, Map<KeyStroke, Action> actions) {
+		ActionMap actionMap = new ActionMap();
+		ActionMap oldActionMap = c.getActionMap();
+		actionMap.setParent(oldActionMap);
+		c.setActionMap(actionMap);
+
+		InputMap inputMap = new InputMap();
+		InputMap oldInputMap = c.getInputMap();
+		inputMap.setParent(oldInputMap);
+		c.setInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, inputMap);
+
+		actions.forEach((keyStroke, action) -> {
+			Object key = action.getValue(Action.NAME);
+			actionMap.put(key, action);
+			inputMap.put(keyStroke, key);
+		});
+	}
+
 	// ==============
 
 	private static class TitleHandler implements CyclicModelListener {
 
 		private final JFrame mainFrame;
 		private final String filename;
+		private final String path;
+		private int mode = 0;
 
-		private TitleHandler(JFrame mainFrame, String filename) {
+		private long prevNumber = -1;
+
+		private TitleHandler(JFrame mainFrame, String path) {
 			this.mainFrame = mainFrame;
-			this.filename = Math.abs(0)==0 ? filename : getFilename(filename);
+			this.path = path;
+			this.filename = getFilename(path);
 		}
 
 		@Override
@@ -118,8 +157,31 @@ public class GuiMain {
 
 		@Override
 		public void sourceChanged(long number) {
-			final String numStr = number < 0 ? "-" : Long.toString(number);
-			mainFrame.setTitle(numStr+" - "+filename);
+			prevNumber = number;
+			computeAndSetTitle();
+		}
+
+		public void toggleTitleMode() {
+			mode = (mode + 1) % 5;
+			computeAndSetTitle();
+		}
+
+		private void computeAndSetTitle() {
+			mainFrame.setTitle(computeTitle(prevNumber));
+		}
+
+		private String computeTitle(long number) {
+			String numStr = number < 0 ? "-" : Long.toString(number);
+			switch (mode) {
+				case 0:
+					return numStr+" - "+path;
+				case 1: return numStr+" - "+filename;
+				case 2: return numStr;
+				case 3: return filename+" - "+numStr;
+				case 4: return filename;
+				default:
+					return numStr;
+			}
 		}
 
 		private String getFilename(String fullPath) {
