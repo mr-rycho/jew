@@ -37,8 +37,8 @@ public class HiDialog extends JDialog {
 
 	private static final long serialVersionUID = -2045018991383910432L;
 
-	private static final String ACTION_KEY_GLOB_ENTER = "jew.search.enter";
-	private static final String ACTION_KEY_GLOB_ESC = "jew.search.esc";
+	private static final String ACTION_KEY_GLOB_ENTER = "jew.hi.enter";
+	private static final String ACTION_KEY_GLOB_ESC = "jew.hi.esc";
 
 	// -------------
 
