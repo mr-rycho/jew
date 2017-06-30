@@ -11,20 +11,7 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.AbstractAction;
-import javax.swing.ActionMap;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.DefaultListModel;
-import javax.swing.InputMap;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.KeyStroke;
-import javax.swing.ListSelectionModel;
-import javax.swing.WindowConstants;
+import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 import javax.swing.event.ListSelectionEvent;
@@ -66,7 +53,7 @@ public class HiDialog extends JDialog {
 		jList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		jList.setFixedCellHeight(14);
 		jList.setCellRenderer(new CellRenderer());
-		cp.add(jList, BorderLayout.CENTER);
+		cp.add(new JScrollPane(jList), BorderLayout.CENTER);
 
 		createActions((JComponent)cp);
 		ActionMap am = ((JComponent)cp).getActionMap();
