@@ -34,6 +34,7 @@ public class HiDialog extends JDialog {
 	private final DefaultListModel<HiConfigEntry> model;
 	private final JList<HiConfigEntry> jList;
 	private final HiConfigChangeListener lsn;
+	private JButton dupNewButton;
 
 	public HiDialog(final JFrame fr, final HiConfig hiConfig
 	 , HiConfigChangeListener hiConfigChangeListener) {
@@ -80,9 +81,10 @@ public class HiDialog extends JDialog {
 
 		cp.add(bottomPanel, BorderLayout.SOUTH);
 
-		JButton duplicateButton = new JButton("duplicate");
-		duplicateButton.addActionListener(new ListActionDup());
-		editButtonsPanel.add(duplicateButton);
+		dupNewButton = new JButton("duplicate");
+		dupNewButton.addActionListener(new ListActionDupNew());
+		editButtonsPanel.add(dupNewButton);
+		updateDupNewButton();
 		JButton removeButton = new JButton("remove");
 		removeButton.addActionListener(new ListActionRemove());
 		editButtonsPanel.add(removeButton);
@@ -92,13 +94,13 @@ public class HiDialog extends JDialog {
 		JButton moveDownButton = new JButton("down");
 		moveDownButton.addActionListener(new ListActionMove(1));
 		editButtonsPanel.add(moveDownButton);
-		final JButton undoButton = new JButton("undo");
+		JButton undoButton = new JButton("undo");
 		undoButton.addActionListener(new Undoer());
 		editButtonsPanel.add(undoButton);
 
-		final JButton closeButton = new JButton("close");
+		JButton closeButton = new JButton("cancel");
 		closeButton.setAction(am.get(ACTION_KEY_GLOB_ESC));
-		closeButton.setText("close");
+		closeButton.setText("cancel");
 		windowButtonsPanel.add(closeButton);
 		JButton applyButton = new JButton("apply");
 		applyButton.addActionListener(new DialogApplier());
@@ -141,6 +143,10 @@ public class HiDialog extends JDialog {
 		}
 	}
 
+	private void updateDupNewButton() {
+		dupNewButton.setText(model.isEmpty() ? "new" : "duplicate");
+	}
+
 	private void createActions(JComponent jp) {
 		final ActionMap actionMap = new ActionMap();
 		final ActionMap oldActionMap = jp.getActionMap();
@@ -176,17 +182,19 @@ public class HiDialog extends JDialog {
 
 	// =======================
 
-	private class ListActionDup implements ActionListener {
+	private class ListActionDupNew implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			if (model.isEmpty()) {
 				model.add(0, new HiConfigEntry("", 0xffffff, 0x000000));
+				jList.setSelectedIndex(0);
 			} else {
 				int index = jList.getMinSelectionIndex();
 				if (index >= 0) {
 					model.add(index+1, model.get(index));
 				}
 			}
+			updateDupNewButton();
 		}
 	}
 
@@ -223,6 +231,7 @@ public class HiDialog extends JDialog {
 			if (index >= 0) {
 				model.remove(index);
 			}
+			updateDupNewButton();
 		}
 	}
 
@@ -256,6 +265,7 @@ public class HiDialog extends JDialog {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			fillModel(model, origHiConfig);
+			updateDupNewButton();
 		}
 	}
 
