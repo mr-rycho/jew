@@ -62,7 +62,7 @@ public class HiDialog extends JDialog {
 		cp.setLayout(new BorderLayout());
 
 		model = createModel(hiConfig);
-		jList = new JList<HiConfigEntry>(model);
+		jList = new JList<>(model);
 		jList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		jList.setFixedCellHeight(14);
 		jList.setCellRenderer(new CellRenderer());
@@ -331,9 +331,8 @@ public class HiDialog extends JDialog {
 			return getListCellRendererComponentSuper(list, value, index, isSelected, cellHasFocus);
 		}
 
-		public Component getListCellRendererComponentSuper(final JList<?> list
-		 , final Object valueObj, final int index
-		 , final boolean isSelected, final boolean cellHasFocus) {
+		Component getListCellRendererComponentSuper(final JList<?> list, final Object valueObj,
+		 final int index, final boolean isSelected, final boolean cellHasFocus) {
 
 			final HiConfigEntry value = (HiConfigEntry)valueObj;
 
