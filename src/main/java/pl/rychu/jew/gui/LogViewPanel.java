@@ -503,6 +503,12 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		notifyPanelModelChangeListeners();
 	}
 
+	private void offTail() {
+		if (isTail()) {
+			setTail(false);
+		}
+	}
+
 	private void toggleTail() {
 		setTail(!isTail());
 	}
@@ -877,9 +883,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 
 		if ((noMod && (keyCode==KeyEvent.VK_UP || keyCode==KeyEvent.VK_PAGE_UP))
 		 || keyCode==KeyEvent.VK_HOME) {
-			if (tail) {
-				setTail(false);
-			}
+			offTail();
 		}
 	}
 
@@ -911,9 +915,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 			 , e.getPreciseWheelRotation()*3);
 		}
 
-		if (tail) {
-			setTail(false);
-		}
+		offTail();
 		getParent().dispatchEvent(eventToDispatch);
 	}
 
@@ -923,9 +925,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 			int sel = getSelectedIndex();
 			int mods = getModel().getSize();
 			if (sel>=0 && sel+1<mods) {
-				if (isTail()) {
-					setTail(false);
-				}
+				offTail();
 			}
 		}
 	}
