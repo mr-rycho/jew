@@ -138,7 +138,8 @@ public class GuiMain {
 		private final String path;
 		private int mode = 0;
 
-		private long prevNumber = -1;
+		private long linesSource = -1;
+		private long linesFiltered = -1;
 
 		private TitleHandler(JFrame mainFrame, String path) {
 			this.mainFrame = mainFrame;
@@ -147,40 +148,51 @@ public class GuiMain {
 		}
 
 		@Override
-		public void linesAddedStart(int numberOfLinesAdded, long totalLines) {}
+		public void linesAddedStart(int numberOfLinesAdded, long totalLines) {
+			linesFiltered = totalLines;
+			computeAndSetTitle();
+		}
 
 		@Override
-		public void linesAddedEnd(int numberOfLinesAdded, long totalLines) {}
+		public void linesAddedEnd(int numberOfLinesAdded, long totalLines) {
+			linesFiltered = totalLines;
+			computeAndSetTitle();
+		}
 
 		@Override
 		public void listReset(boolean sourceReset) {}
 
 		@Override
 		public void sourceChanged(long number) {
-			prevNumber = number;
+			linesSource = number;
 			computeAndSetTitle();
 		}
 
 		public void toggleTitleMode() {
-			mode = (mode + 1) % 5;
+			mode = (mode + 1) % 10;
 			computeAndSetTitle();
 		}
 
 		private void computeAndSetTitle() {
-			mainFrame.setTitle(computeTitle(prevNumber));
+			mainFrame.setTitle(computeTitle(linesSource, linesFiltered));
 		}
 
-		private String computeTitle(long number) {
-			String numStr = number < 0 ? "-" : Long.toString(number);
+		private String computeTitle(long linesSource, long linesFiltered) {
+			String linesSrcStr = linesSource < 0 ? "-" : Long.toString(linesSource);
+			String linesFltStr = linesFiltered < 0 ? "-" : Long.toString(linesFiltered);
 			switch (mode) {
-				case 0:
-					return numStr+" - "+path;
-				case 1: return numStr+" - "+filename;
-				case 2: return numStr;
-				case 3: return filename+" - "+numStr;
+				case 0: return linesSrcStr+" - "+path;
+				case 1: return linesSrcStr+" - "+filename;
+				case 2: return linesSrcStr;
+				case 3: return filename+" - "+linesSrcStr;
 				case 4: return filename;
+				case 5: return linesFltStr+" - "+path;
+				case 6: return linesFltStr+" - "+filename;
+				case 7: return linesFltStr;
+				case 8: return filename+" - "+linesFltStr;
+				case 9: return filename;
 				default:
-					return numStr;
+					return linesSrcStr;
 			}
 		}
 
