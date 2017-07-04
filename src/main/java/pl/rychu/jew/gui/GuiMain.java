@@ -93,7 +93,7 @@ public class GuiMain {
 	}
 
 	private static Image loadImage() {
-		InputStream is = GuiMain.class.getResourceAsStream("/pile_128.png");
+		InputStream is = GuiMain.class.getResourceAsStream("/pile_mag_128.png");
 		if (is == null) {
 			return null;
 		}
