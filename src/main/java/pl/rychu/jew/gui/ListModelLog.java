@@ -9,8 +9,7 @@ import javax.swing.SwingUtilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import pl.rychu.jew.filter.LogLineFilter;
-import pl.rychu.jew.filter.LogLineFilterAll;
+import pl.rychu.jew.filter.LogLineFilterChain;
 import pl.rychu.jew.gl.BadVersionException;
 import pl.rychu.jew.gui.mapper.Mapper;
 import pl.rychu.jew.logaccess.LogAccess;
@@ -38,7 +37,7 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 
 	private final ModelFacade facade = new ModelFacade(this);
 
-	private LogLineFilter logLineFilter;
+	private LogLineFilterChain filterChain;
 
 	private final List<PanelModelChangeListener> pmcLsns
 	 = new CopyOnWriteArrayList<>();
@@ -53,7 +52,7 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 	public static ListModelLog create(final LogAccess logAccess) {
 		final ListModelLog result = new ListModelLog(logAccess);
 
-		result.setFiltering(0L, new LogLineFilterAll());
+		result.setFiltering(0L, new LogLineFilterChain());
 
 		return result;
 	}
@@ -74,14 +73,14 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 		pmcLsns.remove(listener);
 	}
 
-	public LogLineFilter getFilter() {
-		return logLineFilter;
+	public LogLineFilterChain getFilterChain() {
+		return filterChain;
 	}
 
-	public void setFiltering(final long startIndex, final LogLineFilter filter) {
+	public void setFiltering(long startIndex, LogLineFilterChain filterChain) {
 		stopModNotifierAndWait();
 
-		this.logLineFilter = filter;
+		this.filterChain = filterChain;
 
 		for (final PanelModelChangeListener lsn: pmcLsns) {
 			lsn.modelChanged();
@@ -92,7 +91,7 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 			public void run() {
 				clear(logAccessVersion, false);
 
-				setupModNotifierAndStart(startIndex, filter);
+				setupModNotifierAndStart(startIndex, filterChain);
 			}
 		});
 	}
@@ -110,9 +109,9 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 		}
 	}
 
-	private void setupModNotifierAndStart(final long startIndex, final LogLineFilter filter) {
+	private void setupModNotifierAndStart(long startIndex, LogLineFilterChain filterChain) {
 		final ModNotifier modNotifier = new ModNotifier(logAccess, logAccessVersion
-		 , startIndex, filter, facade);
+		 , startIndex, filterChain, facade);
 		modNotifierThread = new Thread(modNotifier);
 		modNotifierThread.start();
 	}

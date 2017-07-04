@@ -18,6 +18,7 @@ import javax.swing.border.LineBorder;
 
 import pl.rychu.jew.gui.hi.HiConfig;
 import pl.rychu.jew.gui.hi.HiConfigEntry;
+import pl.rychu.jew.logline.LogLine;
 import pl.rychu.jew.logline.LogLineFull;
 
 
@@ -103,7 +104,9 @@ public class LogViewPanelCellRenderer extends DefaultListCellRenderer {
    , final boolean cellHasFocus) {
 		final LogLineFull logLineFull = (LogLineFull)value;
 		final String fullText = getFullString(logLineFull);
-		int hash = getThreadHash(logLineFull.getLogLine().getThreadName());
+		LogLine logLine = logLineFull.getLogLine();
+		String threadName = logLine.getThreadName();
+		int hash = getThreadHash(threadName);
 		int offset = threadOffsetMode ? hash & 0xff : -1;
 		final String logLineStr = getRenderedString(logLineFull);
 		return getListCellRendererComponentSuper(list, fullText, logLineStr

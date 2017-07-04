@@ -16,12 +16,8 @@ import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Pattern;
 
@@ -43,13 +39,7 @@ import javax.swing.text.Position.Bias;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import pl.rychu.jew.filter.LogLineFilter;
-import pl.rychu.jew.filter.LogLineFilterAll;
-import pl.rychu.jew.filter.LogLineFilterAnd;
-import pl.rychu.jew.filter.LogLineFilterPos;
-import pl.rychu.jew.filter.LogLineFilterStackCollapse;
-import pl.rychu.jew.filter.LogLineFilterStackShort;
-import pl.rychu.jew.filter.LogLineThreadFilter;
+import pl.rychu.jew.filter.*;
 import pl.rychu.jew.gui.hi.HiConfig;
 import pl.rychu.jew.gui.hi.HiConfigChangeListener;
 import pl.rychu.jew.gui.hi.HiConfigProvider;
@@ -541,7 +531,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 	protected void setThreadName(final String newName) {
 		if ((newName==null&&filterThread!=null) || (newName!=null&&!newName.equals(filterThread))) {
 			filterThread = newName;
-			createAndSetFilter();
+			createAndSetFilterChain();
 		}
 	}
 
@@ -550,11 +540,11 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 	private void toggleFilterThreadsActive() {
 		if (filterThreadsActive) {
 			filterThreadsActive = false;
-			createAndSetFilter();
+			createAndSetFilterChain();
 		} else {
 			if (!filterThreads.isEmpty()) {
 				filterThreadsActive = true;
-				createAndSetFilter();
+				createAndSetFilterChain();
 			}
 		}
 	}
@@ -567,7 +557,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 				if (filterThreads.isEmpty()) {
 					toggleFilterThreadsActive();
 				} else {
-					createAndSetFilter();
+					createAndSetFilterChain();
 				}
 			}
 			notifyPanelModelChangeListeners();
@@ -610,7 +600,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 	private void setStacktraceShowMode(StacktraceShowMode newMode) {
 		if (newMode != stacktraceShowMode) {
 			stacktraceShowMode = newMode;
-			createAndSetFilter();
+			createAndSetFilterChain();
 		}
 	}
 
@@ -654,7 +644,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		if (newMinFilePos!=minFilePosFilter || newMinLine!=minLineFilter) {
 			minFilePosFilter = newMinFilePos;
 			minLineFilter = newMinLine;
-			createAndSetFilter();
+			createAndSetFilterChain();
 		}
 	}
 
@@ -662,54 +652,38 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		if (newMaxFilePos!=maxFilePosFilter || newMaxLine!=maxLineFilter) {
 			maxFilePosFilter = newMaxFilePos;
 			maxLineFilter = newMaxLine;
-			createAndSetFilter();
+			createAndSetFilterChain();
 		}
 	}
 
 	// -----
 
-	private void createAndSetFilter() {
-		setFilter(createFilter());
+	private void createAndSetFilterChain() {
+		setFilterChain(createFilterChain());
 	}
 
-	private LogLineFilter createFilter() {
-		LogLineFilter filter = null;
+	private LogLineFilterChain createFilterChain() {
+		List<LogLineFilter> filters = new ArrayList<>();
 
 		if (filterThread != null) {
-			final LogLineFilter fThread = new LogLineThreadFilter(filterThread);
-			filter = createConjunction(filter, fThread);
+			filters.add(new LogLineThreadFilter(filterThread));
 		}
 
 		if (filterThreadsActive) {
 			String[] threadsArray = filterThreads.toArray(new String[0]);
-			final LogLineFilter fThreads = new LogLineThreadFilter(threadsArray);
-			filter = createConjunction(filter, fThreads);
+			filters.add(new LogLineThreadFilter(threadsArray));
 		}
 
 		if (stacktraceShowMode != StacktraceShowMode.SHOW) {
-			LogLineFilter fStack = createFilter(stacktraceShowMode);
-			filter = createConjunction(filter, fStack);
+			filters.add(createFilter(stacktraceShowMode));
 		}
 
 		if (minFilePosFilter!=0L || maxFilePosFilter!=Long.MAX_VALUE) {
-			LogLineFilter fPos = new LogLineFilterPos(minFilePosFilter, minLineFilter
-			 , maxFilePosFilter, maxLineFilter);
-			filter = createConjunction(filter, fPos);
+			filters.add(new LogLineFilterPos(minFilePosFilter, minLineFilter
+			 , maxFilePosFilter, maxLineFilter));
 		}
 
-		return filter!=null ? filter : new LogLineFilterAll();
-	}
-
-	private LogLineFilter createConjunction(LogLineFilter filterOne, LogLineFilter filterTwo) {
-		if (filterOne==null && filterTwo==null) {
-			return null;
-		} else if (filterOne!=null && filterTwo==null) {
-			return filterOne;
-		} else if (filterOne==null && filterTwo!=null) {
-			return filterTwo;
-		} else {
-			return new LogLineFilterAnd(filterOne, filterTwo);
-		}
+		return new LogLineFilterChain(filters);
 	}
 
 	private LogLineFilter createFilter(StacktraceShowMode mode) {
@@ -721,11 +695,11 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		throw new IllegalStateException("unsupported: "+mode);
 	}
 
-	protected void setFilter(final LogLineFilter filter) {
-		final ListModelLog model = (ListModelLog)getModel();
-		final int view = getView();
-		final long rootIndex = model.getRootIndex(view);
-		model.setFiltering(rootIndex, filter);
+	protected void setFilterChain(LogLineFilterChain filterChain) {
+		ListModelLog model = (ListModelLog)getModel();
+		int view = getView();
+		long rootIndex = model.getRootIndex(view);
+		model.setFiltering(rootIndex, filterChain);
 	}
 
 	private int getView() {
@@ -801,7 +775,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		setTail(true);
 		setFixedCellWidth(600);
 		resetFilterSilent();
-		createAndSetFilter();
+		createAndSetFilterChain();
 	}
 
 	// ----

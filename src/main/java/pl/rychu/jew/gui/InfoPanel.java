@@ -12,7 +12,7 @@ import javax.swing.ListModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import pl.rychu.jew.filter.LogLineFilter;
+import pl.rychu.jew.filter.LogLineFilterChain;
 import pl.rychu.jew.util.StringUtil;
 
 
@@ -146,9 +146,9 @@ public class InfoPanel extends JPanel implements CyclicModelListener
 
 	@Override
 	public void modelChanged() {
-		final ListModelLog model = (ListModelLog)logViewPanel.getModel();
-		final LogLineFilter filter = model.getFilter();
-		setModelProps(filter.toString());
+		ListModelLog model = (ListModelLog)logViewPanel.getModel();
+		LogLineFilterChain filterChain = model.getFilterChain();
+		setModelProps(filterChain.toString());
 	}
 
 	// --------------
