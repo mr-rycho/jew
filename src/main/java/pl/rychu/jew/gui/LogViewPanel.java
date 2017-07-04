@@ -485,6 +485,8 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 			boolean found = new SearchDelegate().search(ps, getView());
 			if (!found) {
 				sendMessage("\""+ps.getText()+"\" not found");
+			} else {
+				offTail();
 			}
 		}
 	}
