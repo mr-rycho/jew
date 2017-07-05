@@ -94,6 +94,7 @@ public class LogFileReader implements Runnable {
 				}
 				return result;
 			} catch (IOException e) {
+				log.error("{}: {}", e.getClass().getName(), e.getMessage());
 				throw new IllegalStateException(e);
 			}
 		}
