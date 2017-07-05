@@ -33,6 +33,7 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 	private final List<CyclicModelListener> listeners
 	 = new CopyOnWriteArrayList<>();
 
+	private ModNotifier modNotifier;
 	private Thread modNotifierThread;
 
 	private final ModelFacade facade = new ModelFacade(this);
@@ -98,7 +99,7 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 
 	private void stopModNotifierAndWait() {
 		if (modNotifierThread != null) {
-			modNotifierThread.interrupt();
+			modNotifier.stopRunning();
 			try {
 				modNotifierThread.join();
 			} catch (InterruptedException e) {
@@ -106,13 +107,14 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 				return;
 			}
 			modNotifierThread = null;
+			modNotifier = null;
 		}
 	}
 
 	private void setupModNotifierAndStart(long startIndex, LogLineFilterChain filterChain) {
-		final ModNotifier modNotifier = new ModNotifier(logAccess, logAccessVersion
+		modNotifier = new ModNotifier(logAccess, logAccessVersion
 		 , startIndex, filterChain, facade);
-		modNotifierThread = new Thread(modNotifier);
+		modNotifierThread = new Thread(modNotifier, "mod-notifier-thread");
 		modNotifierThread.start();
 	}
 	// -----------
@@ -167,7 +169,7 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 	// -------------
 
 	public void clear(final int newSourceVer, final boolean sourceReset) {
-		log.debug("reset start; new version is {}", newSourceVer);
+		log.debug("reset start; new version is {} (new={})", newSourceVer, sourceReset);
 		mapper.clear();
 		fireIntervalRemoved(this, 0, Integer.MAX_VALUE>>1);
 		for (final CyclicModelListener listener: listeners) {

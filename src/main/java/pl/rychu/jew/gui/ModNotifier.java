@@ -7,6 +7,8 @@ import pl.rychu.jew.filter.LogLineFilterChain;
 import pl.rychu.jew.gl.BadVersionException;
 import pl.rychu.jew.logaccess.LogAccess;
 
+import java.nio.ByteBuffer;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 
 public class ModNotifier implements Runnable {
@@ -23,6 +25,8 @@ public class ModNotifier implements Runnable {
 
 	private final LogLineFilterChain filterChain;
 
+	private final AtomicBoolean continueRunning = new AtomicBoolean(true);
+
 	// -------
 
 	ModNotifier(LogAccess logAccess, int logAccessVersion
@@ -37,10 +41,17 @@ public class ModNotifier implements Runnable {
 
 	// -------
 
+	/**
+	 * This method is used instead of {@link Thread#interrupt()} because the latter when invoked during {@link java.nio.channels.FileChannel#read(ByteBuffer, long)} closes the channel (!).
+	 */
+	public void stopRunning() {
+		continueRunning.set(false);
+	}
+
 	@Override
 	public void run() {
 		log.debug("running");
-		while (!Thread.interrupted()) {
+		while (continueRunning.get()) {
 			try {
 				process();
 			} catch (RuntimeException e) {
@@ -80,8 +91,7 @@ public class ModNotifier implements Runnable {
 				break;
 			}
 
-			if (Thread.interrupted()) {
-				Thread.currentThread().interrupt();
+			if (!continueRunning.get()) {
 				break;
 			}
 
