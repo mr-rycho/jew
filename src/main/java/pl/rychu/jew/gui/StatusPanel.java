@@ -45,7 +45,7 @@ public class StatusPanel extends JPanel implements MessageConsumer {
 	public static StatusPanel create(boolean useQueue) {
 		StatusPanel result = new StatusPanel(useQueue);
 
-		new Thread(result.new Timer()).start();
+		new Thread(result.new Timer(), "status-panel-thread").start();
 
 		return result;
 	}
