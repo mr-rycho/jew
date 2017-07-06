@@ -1,7 +1,8 @@
 package pl.rychu.jew.gui;
 
-import java.awt.Component;
-import java.awt.Rectangle;
+import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -15,12 +16,8 @@ import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Pattern;
 
@@ -34,19 +31,15 @@ import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.Position.Bias;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import pl.rychu.jew.filter.LogLineFilter;
-import pl.rychu.jew.filter.LogLineFilterAll;
-import pl.rychu.jew.filter.LogLineFilterAnd;
-import pl.rychu.jew.filter.LogLineFilterPos;
-import pl.rychu.jew.filter.LogLineFilterStackCollapse;
-import pl.rychu.jew.filter.LogLineFilterStackShort;
-import pl.rychu.jew.filter.LogLineThreadFilter;
+import pl.rychu.jew.filter.*;
 import pl.rychu.jew.gui.hi.HiConfig;
 import pl.rychu.jew.gui.hi.HiConfigChangeListener;
 import pl.rychu.jew.gui.hi.HiConfigProvider;
@@ -59,7 +52,7 @@ import pl.rychu.jew.logline.LogLineFull;
 
 
 public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListener
- , KeyListener, MouseWheelListener, CellRenderedListener {
+ , KeyListener, MouseWheelListener, ListSelectionListener, CellRenderedListener {
 
 	private static final long serialVersionUID = -6731368974272464443L;
 
@@ -84,8 +77,11 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 
 	private static final String ACTION_KEY_SEARCH_DIALOG = "jew.search.dialog";
 	private static final String ACTION_KEY_SEARCH_AGAIN = "jew.search.again";
+	private static final String ACTION_KEY_SEARCH_DOWN = "jew.search.down";
+	private static final String ACTION_KEY_SEARCH_UP = "jew.search.up";
 
 	private static final String ACTION_KEY_SAVE_TO_FILE = "jew.saveToFile";
+	private static final String ACTION_KEY_COPY_TO_CLIPBOARD = "jew.copyToClipboard";
 
 	private static final String ACTION_KEY_CAUSE_NEXT = "jew.cause.next";
 	private static final String ACTION_KEY_CAUSE_PREV = "jew.cause.prev";
@@ -111,6 +107,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 	private PrevSearch prevSearch = null;
 
 	private SaveToFileDelegate saveToFileDelegate;
+	private CopyToClipDelegate copyToClipDelegate;
 
 	private MessageConsumer messageConsumer;
 
@@ -143,6 +140,9 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		result.searchDialog = new SearchDialog((JFrame)result.getTopLevelAncestor());
 
 		result.saveToFileDelegate = result.new SaveToFileDelegate(result);
+		result.copyToClipDelegate = result.new CopyToClipDelegate();
+
+		result.addListSelectionListener(result);
 
 		return result;
 	}
@@ -305,13 +305,10 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 			private static final long serialVersionUID = -8346845550957257182L;
 			@Override
 			public void actionPerformed(final ActionEvent e) {
-				HiConfigChangeListener lsn = new HiConfigChangeListener() {
-					@Override
-					public void hiConfigChanged(HiConfig hiConfig) {
-						logViewPanel.setHiConfig(hiConfig);
-						logViewPanel.hiConfigProvider.put(hiConfig);
-						logViewPanel.repaint();
-					}
+				HiConfigChangeListener lsn = hiConfig -> {
+					logViewPanel.setHiConfig(hiConfig);
+					logViewPanel.hiConfigProvider.put(hiConfig);
+					logViewPanel.repaint();
 				};
 				HiDialog hiDialog
 				 = new HiDialog((JFrame)logViewPanel.getTopLevelAncestor(), logViewPanel.hiConfig, lsn);
@@ -325,12 +322,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 			@Override
 			public void actionPerformed(final ActionEvent e) {
 				SearchDialog sd = logViewPanel.searchDialog;
-				SwingUtilities.invokeLater(new Runnable() {
-					@Override
-					public void run() {
-						sd.setFocusToText();
-					}
-				});
+				SwingUtilities.invokeLater(sd::setFocusToText);
 				sd.setVisible(true);
 				// execution continues here after closing the dialog
 				if (sd.isOkPressed()) {
@@ -351,11 +343,37 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 			}
 		});
 
+		actionMap.put(ACTION_KEY_SEARCH_DOWN, new AbstractAction(ACTION_KEY_SEARCH_DOWN) {
+			private static final long serialVersionUID = 4802121507678166304L;
+			@Override
+			public void actionPerformed(final ActionEvent e) {
+				PrevSearch ps = logViewPanel.prevSearch;
+				logViewPanel.search(ps!=null ? ps.getDownSearch() : null);
+			}
+		});
+
+		actionMap.put(ACTION_KEY_SEARCH_UP, new AbstractAction(ACTION_KEY_SEARCH_UP) {
+			private static final long serialVersionUID = 8282485380380463874L;
+			@Override
+			public void actionPerformed(final ActionEvent e) {
+				PrevSearch ps = logViewPanel.prevSearch;
+				logViewPanel.search(ps!=null ? ps.getUpSearch() : null);
+			}
+		});
+
 		actionMap.put(ACTION_KEY_SAVE_TO_FILE, new AbstractAction(ACTION_KEY_SAVE_TO_FILE) {
 		private static final long serialVersionUID = 1670930291832953057L;
 		@Override
 			public void actionPerformed(ActionEvent e) {
 				logViewPanel.saveToFileDelegate.saveToFile();
+			}
+		});
+
+		actionMap.put(ACTION_KEY_COPY_TO_CLIPBOARD, new AbstractAction(ACTION_KEY_COPY_TO_CLIPBOARD) {
+		private static final long serialVersionUID = 4032184701130416723L;
+		@Override
+			public void actionPerformed(ActionEvent e) {
+				logViewPanel.copyToClipDelegate.copyToClip();
 			}
 		});
 
@@ -407,11 +425,17 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		inputMap.put(KeyStroke.getKeyStroke('H'), ACTION_KEY_HI_DIALOG);
 		inputMap.put(KeyStroke.getKeyStroke("ctrl pressed F"), ACTION_KEY_SEARCH_DIALOG);
 		inputMap.put(KeyStroke.getKeyStroke("pressed F3"), ACTION_KEY_SEARCH_AGAIN);
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_PERIOD, InputEvent.CTRL_MASK)
+		 , ACTION_KEY_SEARCH_DOWN);
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_COMMA, InputEvent.CTRL_MASK)
+		 , ACTION_KEY_SEARCH_UP);
 		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_MASK)
 		 , ACTION_KEY_SAVE_TO_FILE);
-		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_PERIOD, InputEvent.CTRL_MASK)
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_MASK)
+		 , ACTION_KEY_COPY_TO_CLIPBOARD);
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_PERIOD, InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK)
 		 , ACTION_KEY_CAUSE_NEXT);
-		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_COMMA, InputEvent.CTRL_MASK)
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_COMMA, InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK)
 		 , ACTION_KEY_CAUSE_PREV);
 		inputMap.put(KeyStroke.getKeyStroke("pressed F1"), ACTION_KEY_HELP_DIALOG);
 	}
@@ -451,6 +475,8 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 			boolean found = new SearchDelegate().search(ps, getView());
 			if (!found) {
 				sendMessage("\""+ps.getText()+"\" not found");
+			} else {
+				offTail();
 			}
 		}
 	}
@@ -461,7 +487,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		return tail;
 	}
 
-	protected void setTail(final boolean tail) {
+	private void setTail(final boolean tail) {
 		this.tail = tail;
 		if (tail) {
 			tail(getModel().getSize());
@@ -469,7 +495,13 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		notifyPanelModelChangeListeners();
 	}
 
-	protected void toggleTail() {
+	private void offTail() {
+		if (isTail()) {
+			setTail(false);
+		}
+	}
+
+	private void toggleTail() {
 		setTail(!isTail());
 	}
 
@@ -488,18 +520,18 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 
 	// -----
 
-	protected void toggleThread() {
+	private void toggleThread() {
 		setThreadName(getToggleThread());
 	}
 
-	protected String getToggleThread() {
+	private String getToggleThread() {
 		return filterThread!=null ? null : getCurrentThreadName();
 	}
 
 	protected void setThreadName(final String newName) {
 		if ((newName==null&&filterThread!=null) || (newName!=null&&!newName.equals(filterThread))) {
 			filterThread = newName;
-			createAndSetFilter();
+			createAndSetFilterChain();
 		}
 	}
 
@@ -508,11 +540,11 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 	private void toggleFilterThreadsActive() {
 		if (filterThreadsActive) {
 			filterThreadsActive = false;
-			createAndSetFilter();
+			createAndSetFilterChain();
 		} else {
 			if (!filterThreads.isEmpty()) {
 				filterThreadsActive = true;
-				createAndSetFilter();
+				createAndSetFilterChain();
 			}
 		}
 	}
@@ -525,7 +557,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 				if (filterThreads.isEmpty()) {
 					toggleFilterThreadsActive();
 				} else {
-					createAndSetFilter();
+					createAndSetFilterChain();
 				}
 			}
 			notifyPanelModelChangeListeners();
@@ -568,7 +600,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 	private void setStacktraceShowMode(StacktraceShowMode newMode) {
 		if (newMode != stacktraceShowMode) {
 			stacktraceShowMode = newMode;
-			createAndSetFilter();
+			createAndSetFilterChain();
 		}
 	}
 
@@ -612,7 +644,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		if (newMinFilePos!=minFilePosFilter || newMinLine!=minLineFilter) {
 			minFilePosFilter = newMinFilePos;
 			minLineFilter = newMinLine;
-			createAndSetFilter();
+			createAndSetFilterChain();
 		}
 	}
 
@@ -620,54 +652,38 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		if (newMaxFilePos!=maxFilePosFilter || newMaxLine!=maxLineFilter) {
 			maxFilePosFilter = newMaxFilePos;
 			maxLineFilter = newMaxLine;
-			createAndSetFilter();
+			createAndSetFilterChain();
 		}
 	}
 
 	// -----
 
-	protected void createAndSetFilter() {
-		setFilter(createFilter());
+	private void createAndSetFilterChain() {
+		setFilterChain(createFilterChain());
 	}
 
-	protected LogLineFilter createFilter() {
-		LogLineFilter filter = null;
+	private LogLineFilterChain createFilterChain() {
+		List<LogLineFilter> filters = new ArrayList<>();
 
 		if (filterThread != null) {
-			final LogLineFilter fThread = new LogLineThreadFilter(filterThread);
-			filter = createConjunction(filter, fThread);
+			filters.add(new LogLineThreadFilter(filterThread));
 		}
 
 		if (filterThreadsActive) {
 			String[] threadsArray = filterThreads.toArray(new String[0]);
-			final LogLineFilter fThreads = new LogLineThreadFilter(threadsArray);
-			filter = createConjunction(filter, fThreads);
+			filters.add(new LogLineThreadFilter(threadsArray));
 		}
 
 		if (stacktraceShowMode != StacktraceShowMode.SHOW) {
-			LogLineFilter fStack = createFilter(stacktraceShowMode);
-			filter = createConjunction(filter, fStack);
+			filters.add(createFilter(stacktraceShowMode));
 		}
 
 		if (minFilePosFilter!=0L || maxFilePosFilter!=Long.MAX_VALUE) {
-			LogLineFilter fPos = new LogLineFilterPos(minFilePosFilter, minLineFilter
-			 , maxFilePosFilter, maxLineFilter);
-			filter = createConjunction(filter, fPos);
+			filters.add(new LogLineFilterPos(minFilePosFilter, minLineFilter
+			 , maxFilePosFilter, maxLineFilter));
 		}
 
-		return filter!=null ? filter : new LogLineFilterAll();
-	}
-
-	private LogLineFilter createConjunction(LogLineFilter filterOne, LogLineFilter filterTwo) {
-		if (filterOne==null && filterTwo==null) {
-			return null;
-		} else if (filterOne!=null && filterTwo==null) {
-			return filterOne;
-		} else if (filterOne==null && filterTwo!=null) {
-			return filterTwo;
-		} else {
-			return new LogLineFilterAnd(filterOne, filterTwo);
-		}
+		return new LogLineFilterChain(filters);
 	}
 
 	private LogLineFilter createFilter(StacktraceShowMode mode) {
@@ -679,11 +695,11 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		throw new IllegalStateException("unsupported: "+mode);
 	}
 
-	protected void setFilter(final LogLineFilter filter) {
-		final ListModelLog model = (ListModelLog)getModel();
-		final int view = getView();
-		final long rootIndex = model.getRootIndex(view);
-		model.setFiltering(rootIndex, filter);
+	protected void setFilterChain(LogLineFilterChain filterChain) {
+		ListModelLog model = (ListModelLog)getModel();
+		int view = getView();
+		long rootIndex = model.getRootIndex(view);
+		model.setFiltering(rootIndex, filterChain);
 	}
 
 	private int getView() {
@@ -759,7 +775,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		setTail(true);
 		setFixedCellWidth(600);
 		resetFilterSilent();
-		createAndSetFilter();
+		createAndSetFilterChain();
 	}
 
 	// ----
@@ -843,9 +859,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 
 		if ((noMod && (keyCode==KeyEvent.VK_UP || keyCode==KeyEvent.VK_PAGE_UP))
 		 || keyCode==KeyEvent.VK_HOME) {
-			if (tail) {
-				setTail(false);
-			}
+			offTail();
 		}
 	}
 
@@ -855,27 +869,41 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		boolean isShift = (e.getModifiersEx() & MouseWheelEvent.SHIFT_DOWN_MASK) != 0;
 
 		MouseWheelEvent eventToDispatch = e;
-		if (isCtrl || isShift) {
-			int amountMulti = 1;
+		if (isCtrl) {
+			int amountMulti = 10;
 			int rotMulti = 1;
-			if (isCtrl) {
-				amountMulti *= 10;
-				if (isShift) {
-					amountMulti *= 5;
-					rotMulti *= 2;
-				}
+			if (isShift) {
+				amountMulti *= 5;
+				rotMulti *= 2;
 			}
+			int mod = e.getModifiers() & ~InputEvent.CTRL_MASK & ~InputEvent.SHIFT_MASK;
+			int modEx = e.getModifiersEx() & ~MouseWheelEvent.CTRL_DOWN_MASK & ~MouseWheelEvent.SHIFT_DOWN_MASK;
 			eventToDispatch = new MouseWheelEvent(this, e.getID(), e.getWhen()
-			 , e.getModifiers() | e.getModifiersEx(), e.getX(), e.getY()
+			 , mod | modEx, e.getX(), e.getY()
 			 , e.getXOnScreen(), e.getYOnScreen(), e.getClickCount(), e.isPopupTrigger()
 			 , e.getScrollType(), e.getScrollAmount()*amountMulti, e.getWheelRotation()*rotMulti
 			 , e.getPreciseWheelRotation()*amountMulti*rotMulti);
+		} else if (isShift) {
+			eventToDispatch = new MouseWheelEvent(this, e.getID(), e.getWhen()
+			 , e.getModifiers() | e.getModifiersEx(), e.getX(), e.getY()
+			 , e.getXOnScreen(), e.getYOnScreen(), e.getClickCount(), e.isPopupTrigger()
+			 , e.getScrollType(), e.getScrollAmount()*3, e.getWheelRotation()
+			 , e.getPreciseWheelRotation()*3);
 		}
 
-		if (tail) {
-			setTail(false);
-		}
+		offTail();
 		getParent().dispatchEvent(eventToDispatch);
+	}
+
+	@Override
+	public void valueChanged(ListSelectionEvent e) {
+		if (e.getValueIsAdjusting()) {
+			int sel = getSelectedIndex();
+			int mods = getModel().getSize();
+			if (sel>=0 && sel+1<mods) {
+				offTail();
+			}
+		}
 	}
 
 	// =======================
@@ -900,11 +928,27 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		private final boolean isRegexp;
 		private final boolean isDownSearch;
 
-		public PrevSearch(String text, boolean isRegexp, boolean isDownSearch) {
+		PrevSearch(String text, boolean isRegexp, boolean isDownSearch) {
 			super();
 			this.text = text;
 			this.isRegexp = isRegexp;
 			this.isDownSearch = isDownSearch;
+		}
+
+		private PrevSearch getDownSearch() {
+			if (isDownSearch) {
+				return this;
+			} else {
+				return new PrevSearch(text, isRegexp, true);
+			}
+		}
+
+		private PrevSearch getUpSearch() {
+			if (!isDownSearch) {
+				return this;
+			} else {
+				return new PrevSearch(text, isRegexp, false);
+			}
 		}
 
 		private String getText() {
@@ -1159,6 +1203,33 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 					}
 				}
 			}
+		}
+	}
+
+	private class CopyToClipDelegate {
+		private void copyToClip() {
+			ListModelLog model = (ListModelLog)getModel();
+			if (model.getSize() > 195900) {
+				String msg = "You will copy "+model.getSize()+" lines of text. Continue?";
+				int result = JOptionPane.showConfirmDialog(LogViewPanel.this, msg
+				 , "Oversize load", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+				if (result != JOptionPane.YES_OPTION) {
+					return;
+				}
+			}
+
+			Toolkit toolkit = Toolkit.getDefaultToolkit();
+			Clipboard clipboard = toolkit.getSystemClipboard();
+			StringBuilder sb = new StringBuilder();
+
+			int size = model.getSize();
+			log.debug("will write {} lines", size);
+			for (int i=0; i<size; i++) {
+				LogLineFull logLineFull = model.getElementAt(i);
+				sb.append(logLineFull.getFullText()).append("\n");
+			}
+			StringSelection strSel = new StringSelection(sb.toString());
+			clipboard.setContents(strSel, null);
 		}
 	}
 

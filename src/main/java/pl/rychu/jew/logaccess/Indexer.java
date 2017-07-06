@@ -1,7 +1,5 @@
 package pl.rychu.jew.logaccess;
 
-import java.util.Arrays;
-
 import pl.rychu.jew.gl.GrowingListVer;
 import pl.rychu.jew.linedec.LineDecoder;
 import pl.rychu.jew.logline.LogLine;
@@ -15,8 +13,6 @@ public class Indexer implements LinePosSink {
 	private final LineDecoder lineDecoder;
 
 	private final LogAccessCache logReaderCache;
-
-	private final long[] typeCounter = new long[LogLineType.values().length];
 
 	private LogLine prevLogLine = null;
 
@@ -32,10 +28,10 @@ public class Indexer implements LinePosSink {
 	}
 
 	@Override
-	public void put(String line, long filePos, int length) {
-		final LogLine logLine = lineDecoder.decode(filePos, line, length, prevLogLine);
+	public boolean put(String line, long filePos, int length) {
+		LogLine logLine = lineDecoder.decode(filePos, line, length, prevLogLine);
 		if (logLine.getLogLineType()==LogLineType.TEXT && logLine.getLength()==0) {
-			return;
+			return false;
 		}
 		index.add(logLine);
 		if (logReaderCache != null) {
@@ -43,9 +39,8 @@ public class Indexer implements LinePosSink {
 			 , index.getVersion());
 		}
 		lineNumber++;
-		final LogLineType logLineType = logLine.getLogLineType();
-		typeCounter[logLineType.ordinal()]++;
 		prevLogLine = logLine;
+		return true;
 	}
 
 	@Override
@@ -55,7 +50,8 @@ public class Indexer implements LinePosSink {
 		prevLogLine = null;
 	}
 
-	public long[] getTypeCounts() {
-		return Arrays.copyOf(typeCounter, typeCounter.length);
+	protected LogLine getPrevLogLine() {
+		return prevLogLine;
 	}
+
 }

@@ -1,18 +1,14 @@
 package pl.rychu.jew.logaccess;
 
-import static org.fest.assertions.Assertions.*;
-import static junitparams.JUnitParamsRunner.$;
+import org.junit.Test;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Test;
-
-import pl.rychu.jew.logaccess.LineByteSink;
-import pl.rychu.jew.logaccess.LineByteSinkDecoder;
-import pl.rychu.jew.logaccess.LinePosSink;
+import static junitparams.JUnitParamsRunner.$;
+import static org.fest.assertions.Assertions.assertThat;
 
 
 
@@ -234,9 +230,10 @@ public class LineByteSinkDecoderTest {
 		}
 
 		@Override
-		public void put(String line, long filePos, int length) {
+		public boolean put(String line, long filePos, int length) {
 			final StringPosPair spp = new StringPosPair(line, filePos, length);
 			list.add(spp);
+			return true;
 		}
 
 		@Override

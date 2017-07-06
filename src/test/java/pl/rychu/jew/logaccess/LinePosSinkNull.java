@@ -1,13 +1,14 @@
 package pl.rychu.jew.logaccess;
 
-import pl.rychu.jew.logaccess.LinePosSink;
-
 public class LinePosSinkNull implements LinePosSink {
 
 	@Override
-	public void put(String line, long filePos, int length) {}
+	public boolean put(String line, long filePos, int length) {
+		return false;
+	}
 
 	@Override
-	public void reset() {}
+	public void reset() {
+	}
 
 }

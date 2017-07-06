@@ -3,10 +3,12 @@ package pl.rychu.jew.gui;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import pl.rychu.jew.filter.LogLineFilter;
+import pl.rychu.jew.filter.LogLineFilterChain;
 import pl.rychu.jew.gl.BadVersionException;
 import pl.rychu.jew.logaccess.LogAccess;
 
+import java.nio.ByteBuffer;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 
 public class ModNotifier implements Runnable {
@@ -21,27 +23,35 @@ public class ModNotifier implements Runnable {
 
 	private final ModelFacade modelFacade;
 
-	private final LogLineFilter filter;
+	private final LogLineFilterChain filterChain;
+
+	private final AtomicBoolean continueRunning = new AtomicBoolean(true);
 
 	// -------
 
-	ModNotifier(final LogAccess logAccess, final int logAccessVersion
-	 , final long startIndex, final LogLineFilter filter
-	 , final ModelFacade modelFacade) {
+	ModNotifier(LogAccess logAccess, int logAccessVersion
+	 , long startIndex, LogLineFilterChain filterChain, ModelFacade modelFacade) {
 		this.logAccess = logAccess;
 		this.logAccessVersion = logAccessVersion;
 		this.prevMaxIndexF = startIndex;
 		this.prevMinIndexB = startIndex;
-		this.filter = filter;
+		this.filterChain = filterChain;
 		this.modelFacade = modelFacade;
 	}
 
 	// -------
 
+	/**
+	 * This method is used instead of {@link Thread#interrupt()} because the latter when invoked during {@link java.nio.channels.FileChannel#read(ByteBuffer, long)} closes the channel (!).
+	 */
+	public void stopRunning() {
+		continueRunning.set(false);
+	}
+
 	@Override
 	public void run() {
 		log.debug("running");
-		while (!Thread.interrupted()) {
+		while (continueRunning.get()) {
 			try {
 				process();
 			} catch (RuntimeException e) {
@@ -81,8 +91,7 @@ public class ModNotifier implements Runnable {
 				break;
 			}
 
-			if (Thread.interrupted()) {
-				Thread.currentThread().interrupt();
+			if (!continueRunning.get()) {
 				break;
 			}
 
@@ -97,10 +106,9 @@ public class ModNotifier implements Runnable {
 				final long[] slice = new long[maxSize];
 				int indexSlice = 0;
 				for (long index=prevMaxIndexF; index<maxF; index++) {
-					final boolean applies
-					 = filter.needsFullLine()
-					 ? filter.apply(logAccess.getFull(index, version))
-					 : filter.apply(logAccess.get(index, version));
+					boolean applies = filterChain.apply(logAccess.get(index, version))
+					 && (!filterChain.needsFullLine()
+					 || filterChain.apply(logAccess.getFull(index, version)));
 					if (applies) {
 						slice[indexSlice++] = index;
 					}
@@ -118,10 +126,9 @@ public class ModNotifier implements Runnable {
 				final long[] slice = new long[maxSize];
 				int indexSlice = 0;
 				for (long index=prevMinIndexB-1; index>=minB; index--) {
-					final boolean applies
-					 = filter.needsFullLine()
-					 ? filter.apply(logAccess.getFull(index, version))
-					 : filter.apply(logAccess.get(index, version));
+					boolean applies = filterChain.apply(logAccess.get(index, version))
+					 && (!filterChain.needsFullLine() ||
+					 filterChain.apply(logAccess.getFull(index, version)));
 					if (applies) {
 						slice[indexSlice++] = index;
 					}

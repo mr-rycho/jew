@@ -11,20 +11,7 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.AbstractAction;
-import javax.swing.ActionMap;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.DefaultListModel;
-import javax.swing.InputMap;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.KeyStroke;
-import javax.swing.ListSelectionModel;
-import javax.swing.WindowConstants;
+import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 import javax.swing.event.ListSelectionEvent;
@@ -37,8 +24,8 @@ public class HiDialog extends JDialog {
 
 	private static final long serialVersionUID = -2045018991383910432L;
 
-	private static final String ACTION_KEY_GLOB_ENTER = "jew.search.enter";
-	private static final String ACTION_KEY_GLOB_ESC = "jew.search.esc";
+	private static final String ACTION_KEY_GLOB_ENTER = "jew.hi.enter";
+	private static final String ACTION_KEY_GLOB_ESC = "jew.hi.esc";
 
 	// -------------
 
@@ -47,6 +34,7 @@ public class HiDialog extends JDialog {
 	private final DefaultListModel<HiConfigEntry> model;
 	private final JList<HiConfigEntry> jList;
 	private final HiConfigChangeListener lsn;
+	private JButton dupNewButton;
 
 	public HiDialog(final JFrame fr, final HiConfig hiConfig
 	 , HiConfigChangeListener hiConfigChangeListener) {
@@ -62,11 +50,11 @@ public class HiDialog extends JDialog {
 		cp.setLayout(new BorderLayout());
 
 		model = createModel(hiConfig);
-		jList = new JList<HiConfigEntry>(model);
+		jList = new JList<>(model);
 		jList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		jList.setFixedCellHeight(14);
 		jList.setCellRenderer(new CellRenderer());
-		cp.add(jList, BorderLayout.CENTER);
+		cp.add(new JScrollPane(jList), BorderLayout.CENTER);
 
 		createActions((JComponent)cp);
 		ActionMap am = ((JComponent)cp).getActionMap();
@@ -93,9 +81,10 @@ public class HiDialog extends JDialog {
 
 		cp.add(bottomPanel, BorderLayout.SOUTH);
 
-		JButton duplicateButton = new JButton("duplicate");
-		duplicateButton.addActionListener(new ListActionDup());
-		editButtonsPanel.add(duplicateButton);
+		dupNewButton = new JButton("duplicate");
+		dupNewButton.addActionListener(new ListActionDupNew());
+		editButtonsPanel.add(dupNewButton);
+		updateDupNewButton();
 		JButton removeButton = new JButton("remove");
 		removeButton.addActionListener(new ListActionRemove());
 		editButtonsPanel.add(removeButton);
@@ -105,13 +94,13 @@ public class HiDialog extends JDialog {
 		JButton moveDownButton = new JButton("down");
 		moveDownButton.addActionListener(new ListActionMove(1));
 		editButtonsPanel.add(moveDownButton);
-		final JButton undoButton = new JButton("undo");
+		JButton undoButton = new JButton("undo");
 		undoButton.addActionListener(new Undoer());
 		editButtonsPanel.add(undoButton);
 
-		final JButton closeButton = new JButton("close");
+		JButton closeButton = new JButton("cancel");
 		closeButton.setAction(am.get(ACTION_KEY_GLOB_ESC));
-		closeButton.setText("close");
+		closeButton.setText("cancel");
 		windowButtonsPanel.add(closeButton);
 		JButton applyButton = new JButton("apply");
 		applyButton.addActionListener(new DialogApplier());
@@ -154,6 +143,10 @@ public class HiDialog extends JDialog {
 		}
 	}
 
+	private void updateDupNewButton() {
+		dupNewButton.setText(model.isEmpty() ? "new" : "duplicate");
+	}
+
 	private void createActions(JComponent jp) {
 		final ActionMap actionMap = new ActionMap();
 		final ActionMap oldActionMap = jp.getActionMap();
@@ -189,17 +182,19 @@ public class HiDialog extends JDialog {
 
 	// =======================
 
-	private class ListActionDup implements ActionListener {
+	private class ListActionDupNew implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			if (model.isEmpty()) {
 				model.add(0, new HiConfigEntry("", 0xffffff, 0x000000));
+				jList.setSelectedIndex(0);
 			} else {
 				int index = jList.getMinSelectionIndex();
 				if (index >= 0) {
 					model.add(index+1, model.get(index));
 				}
 			}
+			updateDupNewButton();
 		}
 	}
 
@@ -236,6 +231,7 @@ public class HiDialog extends JDialog {
 			if (index >= 0) {
 				model.remove(index);
 			}
+			updateDupNewButton();
 		}
 	}
 
@@ -269,6 +265,7 @@ public class HiDialog extends JDialog {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			fillModel(model, origHiConfig);
+			updateDupNewButton();
 		}
 	}
 
@@ -331,9 +328,8 @@ public class HiDialog extends JDialog {
 			return getListCellRendererComponentSuper(list, value, index, isSelected, cellHasFocus);
 		}
 
-		public Component getListCellRendererComponentSuper(final JList<?> list
-		 , final Object valueObj, final int index
-		 , final boolean isSelected, final boolean cellHasFocus) {
+		Component getListCellRendererComponentSuper(final JList<?> list, final Object valueObj,
+		 final int index, final boolean isSelected, final boolean cellHasFocus) {
 
 			final HiConfigEntry value = (HiConfigEntry)valueObj;
 

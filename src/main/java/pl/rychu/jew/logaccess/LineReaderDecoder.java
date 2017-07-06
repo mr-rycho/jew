@@ -8,12 +8,16 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CodingErrorAction;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.rychu.jew.logline.LogLine;
 import pl.rychu.jew.logline.LogLineFull;
 
 
 
 public class LineReaderDecoder {
+
+	private static final Logger log = LoggerFactory.getLogger(LineReaderDecoder.class);
 
 	private ByteBuffer byteBuffer = ByteBuffer.allocate(1000);
 	private CharBuffer charBuffer = CharBuffer.allocate(1000);
@@ -47,6 +51,7 @@ public class LineReaderDecoder {
 				}
 			}
 		} catch (IOException e) {
+			log.warn("{}: {}", e.getClass().getName(), e.getMessage());
 			return null;
 		}
 

@@ -1,13 +1,17 @@
 package pl.rychu.jew.gui;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.SwingUtilities;
+import javax.imageio.ImageIO;
+import javax.swing.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.rychu.jew.conf.LoggerType;
 import pl.rychu.jew.gui.hi.HiConfigProviderPer;
 import pl.rychu.jew.logaccess.LogAccess;
@@ -17,14 +21,13 @@ import pl.rychu.jew.logaccess.LogAccessFile;
 
 public class GuiMain {
 
+	private static final Logger log = LoggerFactory.getLogger(GuiMain.class);
+
 	public static void runGuiAsynchronously(String filename
 	 , boolean isWindows, LoggerType loggerType, String initFilter) {
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				final JFrame mainFrame = createFrame(filename, isWindows, loggerType, initFilter);
-				mainFrame.setVisible(true);
-			}
+		SwingUtilities.invokeLater(() -> {
+			JFrame mainFrame = createFrame(filename, isWindows, loggerType, initFilter);
+			mainFrame.setVisible(true);
 		});
 	}
 
@@ -57,7 +60,8 @@ public class GuiMain {
 		model.addCyclicModelListener(infoPanel);
 		model.addPanelModelChangeListener(infoPanel);
 		model.addCyclicModelListener(logViewPanel);
-		model.addCyclicModelListener(new TitleHandler(mainFrame, filename));
+		TitleHandler titleHandler = new TitleHandler(mainFrame, filename);
+		model.addCyclicModelListener(titleHandler);
 
 		final JScrollPane scrollPane = new JScrollPane(logViewPanel);
 		scrollPane.setPreferredSize(new Dimension(900, 600));
@@ -68,7 +72,61 @@ public class GuiMain {
 		mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		mainFrame.setTitle("Java log viEW");
 
+		Image image = loadImage();
+		if (image != null) {
+			mainFrame.setIconImage(image);
+		}
+
+		Map<KeyStroke, Action> actions = new HashMap<>();
+		{
+			actions.put(KeyStroke.getKeyStroke('I'), new AbstractAction("frame.titleToggle") {
+				private static final long serialVersionUID = 4836966177487679465L;
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					titleHandler.toggleTitleMode();
+				}
+			});
+		}
+		setKeysAndActions(scrollPane, actions);
+
 		return mainFrame;
+	}
+
+	private static Image loadImage() {
+		InputStream is = GuiMain.class.getResourceAsStream("/pile_mag_128.png");
+		if (is == null) {
+			return null;
+		}
+		try {
+			return ImageIO.read(is);
+		} catch (IOException e) {
+			log.warn("cannot load image");
+			return null;
+		} finally {
+			try {
+				is.close();
+			} catch (IOException e) {
+				log.warn("cannot close image stream", e);
+			}
+		}
+	}
+
+	private static void setKeysAndActions(JComponent c, Map<KeyStroke, Action> actions) {
+		ActionMap actionMap = new ActionMap();
+		ActionMap oldActionMap = c.getActionMap();
+		actionMap.setParent(oldActionMap);
+		c.setActionMap(actionMap);
+
+		InputMap inputMap = new InputMap();
+		InputMap oldInputMap = c.getInputMap();
+		inputMap.setParent(oldInputMap);
+		c.setInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, inputMap);
+
+		actions.forEach((keyStroke, action) -> {
+			Object key = action.getValue(Action.NAME);
+			actionMap.put(key, action);
+			inputMap.put(keyStroke, key);
+		});
 	}
 
 	// ==============
@@ -77,25 +135,65 @@ public class GuiMain {
 
 		private final JFrame mainFrame;
 		private final String filename;
+		private final String path;
+		private int mode = 0;
 
-		private TitleHandler(JFrame mainFrame, String filename) {
+		private long linesSource = -1;
+		private long linesFiltered = -1;
+
+		private TitleHandler(JFrame mainFrame, String path) {
 			this.mainFrame = mainFrame;
-			this.filename = Math.abs(0)==0 ? filename : getFilename(filename);
+			this.path = path;
+			this.filename = getFilename(path);
 		}
 
 		@Override
-		public void linesAddedStart(int numberOfLinesAdded, long totalLines) {}
+		public void linesAddedStart(int numberOfLinesAdded, long totalLines) {
+			linesFiltered = totalLines;
+			computeAndSetTitle();
+		}
 
 		@Override
-		public void linesAddedEnd(int numberOfLinesAdded, long totalLines) {}
+		public void linesAddedEnd(int numberOfLinesAdded, long totalLines) {
+			linesFiltered = totalLines;
+			computeAndSetTitle();
+		}
 
 		@Override
 		public void listReset(boolean sourceReset) {}
 
 		@Override
 		public void sourceChanged(long number) {
-			final String numStr = number < 0 ? "-" : Long.toString(number);
-			mainFrame.setTitle(numStr+" - "+filename);
+			linesSource = number;
+			computeAndSetTitle();
+		}
+
+		public void toggleTitleMode() {
+			mode = (mode + 1) % 10;
+			computeAndSetTitle();
+		}
+
+		private void computeAndSetTitle() {
+			mainFrame.setTitle(computeTitle(linesSource, linesFiltered));
+		}
+
+		private String computeTitle(long linesSource, long linesFiltered) {
+			String linesSrcStr = linesSource < 0 ? "-" : Long.toString(linesSource);
+			String linesFltStr = linesFiltered < 0 ? "-" : Long.toString(linesFiltered);
+			switch (mode) {
+				case 0: return linesSrcStr+" - "+path;
+				case 1: return linesSrcStr+" - "+filename;
+				case 2: return linesSrcStr;
+				case 3: return filename+" - "+linesSrcStr;
+				case 4: return filename;
+				case 5: return linesFltStr+" - "+path;
+				case 6: return linesFltStr+" - "+filename;
+				case 7: return linesFltStr;
+				case 8: return filename+" - "+linesFltStr;
+				case 9: return filename;
+				default:
+					return linesSrcStr;
+			}
 		}
 
 		private String getFilename(String fullPath) {

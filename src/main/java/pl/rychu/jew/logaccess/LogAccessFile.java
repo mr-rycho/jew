@@ -46,7 +46,7 @@ public class LogAccessFile implements LogAccess {
 
 		LogFileReader logFileReader = new LogFileReader(result, pathStr
 		 , result.index, isWindows, loggerType, result.logReaderCache);
-		new Thread(logFileReader).start();
+		new Thread(logFileReader, "log-file-reader-thread").start();
 
 		return result;
 	}

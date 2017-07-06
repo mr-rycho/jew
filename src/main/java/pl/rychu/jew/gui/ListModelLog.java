@@ -9,8 +9,7 @@ import javax.swing.SwingUtilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import pl.rychu.jew.filter.LogLineFilter;
-import pl.rychu.jew.filter.LogLineFilterAll;
+import pl.rychu.jew.filter.LogLineFilterChain;
 import pl.rychu.jew.gl.BadVersionException;
 import pl.rychu.jew.gui.mapper.Mapper;
 import pl.rychu.jew.logaccess.LogAccess;
@@ -34,11 +33,12 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 	private final List<CyclicModelListener> listeners
 	 = new CopyOnWriteArrayList<>();
 
+	private ModNotifier modNotifier;
 	private Thread modNotifierThread;
 
 	private final ModelFacade facade = new ModelFacade(this);
 
-	private LogLineFilter logLineFilter;
+	private LogLineFilterChain filterChain;
 
 	private final List<PanelModelChangeListener> pmcLsns
 	 = new CopyOnWriteArrayList<>();
@@ -53,7 +53,7 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 	public static ListModelLog create(final LogAccess logAccess) {
 		final ListModelLog result = new ListModelLog(logAccess);
 
-		result.setFiltering(0L, new LogLineFilterAll());
+		result.setFiltering(0L, new LogLineFilterChain());
 
 		return result;
 	}
@@ -74,14 +74,14 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 		pmcLsns.remove(listener);
 	}
 
-	public LogLineFilter getFilter() {
-		return logLineFilter;
+	public LogLineFilterChain getFilterChain() {
+		return filterChain;
 	}
 
-	public void setFiltering(final long startIndex, final LogLineFilter filter) {
+	public void setFiltering(long startIndex, LogLineFilterChain filterChain) {
 		stopModNotifierAndWait();
 
-		this.logLineFilter = filter;
+		this.filterChain = filterChain;
 
 		for (final PanelModelChangeListener lsn: pmcLsns) {
 			lsn.modelChanged();
@@ -92,14 +92,14 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 			public void run() {
 				clear(logAccessVersion, false);
 
-				setupModNotifierAndStart(startIndex, filter);
+				setupModNotifierAndStart(startIndex, filterChain);
 			}
 		});
 	}
 
 	private void stopModNotifierAndWait() {
 		if (modNotifierThread != null) {
-			modNotifierThread.interrupt();
+			modNotifier.stopRunning();
 			try {
 				modNotifierThread.join();
 			} catch (InterruptedException e) {
@@ -107,13 +107,14 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 				return;
 			}
 			modNotifierThread = null;
+			modNotifier = null;
 		}
 	}
 
-	private void setupModNotifierAndStart(final long startIndex, final LogLineFilter filter) {
-		final ModNotifier modNotifier = new ModNotifier(logAccess, logAccessVersion
-		 , startIndex, filter, facade);
-		modNotifierThread = new Thread(modNotifier);
+	private void setupModNotifierAndStart(long startIndex, LogLineFilterChain filterChain) {
+		modNotifier = new ModNotifier(logAccess, logAccessVersion
+		 , startIndex, filterChain, facade);
+		modNotifierThread = new Thread(modNotifier, "mod-notifier-thread");
 		modNotifierThread.start();
 	}
 	// -----------
@@ -168,7 +169,7 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 	// -------------
 
 	public void clear(final int newSourceVer, final boolean sourceReset) {
-		log.debug("reset start; new version is {}", newSourceVer);
+		log.debug("reset start; new version is {} (new={})", newSourceVer, sourceReset);
 		mapper.clear();
 		fireIntervalRemoved(this, 0, Integer.MAX_VALUE>>1);
 		for (final CyclicModelListener listener: listeners) {

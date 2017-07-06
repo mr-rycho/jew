@@ -1,8 +1,6 @@
 package pl.rychu.jew.gui;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Graphics;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,6 +18,7 @@ import javax.swing.border.LineBorder;
 
 import pl.rychu.jew.gui.hi.HiConfig;
 import pl.rychu.jew.gui.hi.HiConfigEntry;
+import pl.rychu.jew.logline.LogLine;
 import pl.rychu.jew.logline.LogLineFull;
 
 
@@ -27,7 +26,7 @@ import pl.rychu.jew.logline.LogLineFull;
 public class LogViewPanelCellRenderer extends DefaultListCellRenderer {
 	private static final long serialVersionUID = 7313136726313412175L;
 
-	private static final Border SEL_BORDER = new LineBorder(Color.BLACK, 1);
+	private static final Border SEL_BORDER = new DashedToo(Color.BLACK);
 
 	private static final ClassVisuType[] VISU_TYPES = ClassVisuType.values();
 
@@ -105,7 +104,9 @@ public class LogViewPanelCellRenderer extends DefaultListCellRenderer {
    , final boolean cellHasFocus) {
 		final LogLineFull logLineFull = (LogLineFull)value;
 		final String fullText = getFullString(logLineFull);
-		int hash = getThreadHash(logLineFull.getLogLine().getThreadName());
+		LogLine logLine = logLineFull.getLogLine();
+		String threadName = logLine.getThreadName();
+		int hash = getThreadHash(threadName);
 		int offset = threadOffsetMode ? hash & 0xff : -1;
 		final String logLineStr = getRenderedString(logLineFull);
 		return getListCellRendererComponentSuper(list, fullText, logLineStr
@@ -245,6 +246,25 @@ public class LogViewPanelCellRenderer extends DefaultListCellRenderer {
 		private Color getColorF() {
 			return colorF;
 		}
+	}
+
+	private static class DashedToo extends LineBorder {
+		public DashedToo(Color color)  {
+			super(color, 1);
+		}
+
+		public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+			Color oldColor = g.getColor();
+
+			g.setColor(lineColor);
+			for (int vx = x; vx < x+width; vx++) {
+				int off = vx & 1;
+				g.fillRect(vx, y+off, 1, 1);
+				g.fillRect(vx, y+height-1-off, 1, 1);
+			}
+			g.setColor(oldColor);
+		}
+
 	}
 
 	// ==================
