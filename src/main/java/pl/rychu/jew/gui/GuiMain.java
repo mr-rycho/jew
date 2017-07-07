@@ -4,6 +4,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDate;
+import java.time.Month;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -95,7 +97,10 @@ public class GuiMain {
 	}
 
 	private static Image loadImage() {
-		InputStream is = GuiMain.class.getResourceAsStream("/pile_mag_128.png");
+		LocalDate date = LocalDate.now();
+		boolean isDay = date.getDayOfMonth()==28 && date.getMonth()== Month.OCTOBER;
+		String iconStr = isDay ? "/yep.png" : "/pile_mag_128.png";
+		InputStream is = GuiMain.class.getResourceAsStream(iconStr);
 		if (is == null) {
 			return null;
 		}
