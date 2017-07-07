@@ -40,6 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import pl.rychu.jew.filter.*;
+import pl.rychu.jew.gui.dlgs.FilterRegexDialog;
 import pl.rychu.jew.gui.dlgs.HelpDialog;
 import pl.rychu.jew.gui.hi.HiConfig;
 import pl.rychu.jew.gui.hi.HiConfigChangeListener;
@@ -71,6 +72,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 	private static final String ACTION_KEY_FILTER_POS_MIN_ZERO = "jew.flt.pos.min.zero";
 	private static final String ACTION_KEY_FILTER_POS_MAX_CURRENT = "jew.flt.pos.max.cur";
 	private static final String ACTION_KEY_FILTER_POS_MAX_ZERO = "jew.flt.pos.max.zero";
+	private static final String ACTION_KEY_FILTER_REGEX = "jew.flt.regex";
 
 	private static final String ACTION_KEY_RNDR_TOGGLE_CLASS = "jew.rndr.toggleClass";
 	private static final String ACTION_KEY_RNDR_TOGGLE_THROFF = "jew.rndr.toggleThroff";
@@ -101,6 +103,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 	private long minLineFilter = 0L;
 	private long maxFilePosFilter = Long.MAX_VALUE;
 	private long maxLineFilter = Long.MAX_VALUE;
+	private FilterRegexDialog filterRegexDialog;
 
 	private HiConfig hiConfig;
 	private HiConfigProvider hiConfigProvider;
@@ -140,6 +143,8 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		result.setModel(model);
 
 		result.searchDialog = new SearchDialog((JFrame)result.getTopLevelAncestor());
+
+		result.filterRegexDialog = new FilterRegexDialog((JFrame)result.getTopLevelAncestor());
 
 		result.saveToFileDelegate = result.new SaveToFileDelegate(result);
 		result.copyToClipDelegate = result.new CopyToClipDelegate();
@@ -271,6 +276,29 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 				final Object sourceObj = e.getSource();
 				if (sourceObj instanceof LogViewPanel) {
 					((LogViewPanel)sourceObj).setMaxFilePosToZero();
+				}
+			}
+		});
+
+		actionMap.put(ACTION_KEY_FILTER_REGEX, new AbstractAction(ACTION_KEY_FILTER_REGEX) {
+			private static final long serialVersionUID = 4477246101414560523L;
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Object sourceObj = e.getSource();
+				if (sourceObj instanceof LogViewPanel) {
+					LogViewPanel logViewPanel = (LogViewPanel) sourceObj;
+					FilterRegexDialog dialog = logViewPanel.filterRegexDialog;
+					if (!dialog.getRegexPatternOpt().isPresent()) {
+						dialog.setVisible(true);
+						// execution continues here after closing the dialog - when this happens
+						// the dialog.getRegexPatternOpt either is empty or contains valid pattern
+						if (dialog.getRegexPatternOpt().isPresent()) {
+							logViewPanel.createAndSetFilterChain();
+						}
+					} else {
+						dialog.turnOffRegex();
+						logViewPanel.createAndSetFilterChain();
+					}
 				}
 			}
 		});
@@ -422,6 +450,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		inputMap.put(KeyStroke.getKeyStroke('{'), ACTION_KEY_FILTER_POS_MIN_ZERO);
 		inputMap.put(KeyStroke.getKeyStroke(']'), ACTION_KEY_FILTER_POS_MAX_CURRENT);
 		inputMap.put(KeyStroke.getKeyStroke('}'), ACTION_KEY_FILTER_POS_MAX_ZERO);
+		inputMap.put(KeyStroke.getKeyStroke('R'), ACTION_KEY_FILTER_REGEX);
 		inputMap.put(KeyStroke.getKeyStroke('C'), ACTION_KEY_RNDR_TOGGLE_CLASS);
 		inputMap.put(KeyStroke.getKeyStroke('T'), ACTION_KEY_RNDR_TOGGLE_THROFF);
 		inputMap.put(KeyStroke.getKeyStroke('H'), ACTION_KEY_HI_DIALOG);
@@ -683,6 +712,10 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		if (minFilePosFilter!=0L || maxFilePosFilter!=Long.MAX_VALUE) {
 			filters.add(new LogLineFilterPos(minFilePosFilter, minLineFilter
 			 , maxFilePosFilter, maxLineFilter));
+		}
+
+		if (filterRegexDialog.getRegexPatternOpt().isPresent()) {
+			filters.add(new LogLineFilterRegex(filterRegexDialog.getRegexPatternOpt().get()));
 		}
 
 		return new LogLineFilterChain(filters);
