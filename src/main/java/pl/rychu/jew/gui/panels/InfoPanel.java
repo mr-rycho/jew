@@ -1,4 +1,4 @@
-package pl.rychu.jew.gui;
+package pl.rychu.jew.gui.panels;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
@@ -13,6 +13,10 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import pl.rychu.jew.filter.LogLineFilterChain;
+import pl.rychu.jew.gui.CyclicModelListener;
+import pl.rychu.jew.gui.ListModelLog;
+import pl.rychu.jew.gui.LogViewPanel;
+import pl.rychu.jew.gui.PanelModelChangeListener;
 import pl.rychu.jew.util.StringUtil;
 
 

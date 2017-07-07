@@ -14,6 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.rychu.jew.conf.LoggerType;
 import pl.rychu.jew.gui.hi.HiConfigProviderPer;
+import pl.rychu.jew.gui.panels.InfoPanel;
+import pl.rychu.jew.gui.panels.StatusPanel;
 import pl.rychu.jew.logaccess.LogAccess;
 import pl.rychu.jew.logaccess.LogAccessFile;
 

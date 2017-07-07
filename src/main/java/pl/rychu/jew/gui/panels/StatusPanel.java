@@ -1,4 +1,4 @@
-package pl.rychu.jew.gui;
+package pl.rychu.jew.gui.panels;
 
 import java.awt.FlowLayout;
 import java.util.LinkedList;

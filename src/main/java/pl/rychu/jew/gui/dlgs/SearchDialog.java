@@ -1,4 +1,4 @@
-package pl.rychu.jew.gui.search;
+package pl.rychu.jew.gui.dlgs;
 
 import java.awt.BorderLayout;
 import java.awt.Container;

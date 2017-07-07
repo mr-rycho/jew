@@ -40,11 +40,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import pl.rychu.jew.filter.*;
+import pl.rychu.jew.gui.dlgs.HelpDialog;
 import pl.rychu.jew.gui.hi.HiConfig;
 import pl.rychu.jew.gui.hi.HiConfigChangeListener;
 import pl.rychu.jew.gui.hi.HiConfigProvider;
 import pl.rychu.jew.gui.hi.HiDialog;
-import pl.rychu.jew.gui.search.SearchDialog;
+import pl.rychu.jew.gui.dlgs.SearchDialog;
+import pl.rychu.jew.gui.panels.MessageConsumer;
 import pl.rychu.jew.logline.LogLine;
 import pl.rychu.jew.logline.LogLine.LogLineType;
 import pl.rychu.jew.logline.LogLineFull;
@@ -572,7 +574,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		}
 	}
 
-	Set<String> getFilterThreads() {
+	public Set<String> getFilterThreads() {
 		return filterThreadsView;
 	}
 
