@@ -30,8 +30,8 @@ public class LogLineFilterChain {
 			if (filters.size() == 1) {
 				asString = filters.get(0).toString();
 			} else {
-				asString = filters.stream().map(Object::toString)
-				 .collect(Collectors.joining(" AND ", "(", ")"));
+				asString = filters.stream().map(Object::toString).map(s -> "("+s+")")
+				 .collect(Collectors.joining(" AND "));
 			}
 		} else {
 			asString = "no filter";
