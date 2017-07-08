@@ -100,6 +100,7 @@ public class FilterRegexDialog extends JDialog {
 		});
 
 		actionMap.put(ACTION_KEY_TURN_OFF, new AbstractAction(ACTION_KEY_TURN_OFF) {
+			private static final long serialVersionUID = -7259707891823295350L;
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				new FilterOffturner().actionPerformed(e);
@@ -163,7 +164,14 @@ public class FilterRegexDialog extends JDialog {
 				wasCancelled = false;
 				setVisible(false);
 			} catch (PatternSyntaxException e) {
-				// TODO okienko
+				String message = "Error in regular expression:\n"+e.getClass().getName()+": "+e.getMessage();
+				JLabel label = new JLabel(message);
+				label.setForeground(Color.RED);
+				JTextArea jTextArea = new JTextArea(message);
+				jTextArea.setEditable(false);
+				jTextArea.setOpaque(false);
+				jTextArea.setFont(new Font("monospaced", Font.PLAIN, 12));
+				JOptionPane.showMessageDialog(FilterRegexDialog.this, jTextArea);
 				int minIndex = Math.max(0, e.getIndex());
 				textField.setSelectionStart(minIndex);
 				textField.setSelectionEnd(text.length());
