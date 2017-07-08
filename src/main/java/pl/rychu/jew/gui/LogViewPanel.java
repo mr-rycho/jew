@@ -288,15 +288,10 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 				if (sourceObj instanceof LogViewPanel) {
 					LogViewPanel logViewPanel = (LogViewPanel) sourceObj;
 					FilterRegexDialog dialog = logViewPanel.filterRegexDialog;
-					if (!dialog.getRegexPatternOpt().isPresent()) {
-						dialog.setVisible(true);
-						// execution continues here after closing the dialog - when this happens
-						// the dialog.getRegexPatternOpt either is empty or contains valid pattern
-						if (dialog.getRegexPatternOpt().isPresent()) {
-							logViewPanel.createAndSetFilterChain();
-						}
-					} else {
-						dialog.turnOffRegex();
+					dialog.setVisible(true);
+					// execution continues here after closing the dialog - when this happens
+					// the dialog.getRegexPatternOpt either is empty or contains valid pattern
+					if (!dialog.isWasCancelled()) {
 						logViewPanel.createAndSetFilterChain();
 					}
 				}
