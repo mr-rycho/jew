@@ -17,7 +17,7 @@ public class LogLineFilterRegex implements LogLineFilter {
 	public LogLineFilterRegex(Pattern pattern, boolean invert) {
 		this.pattern = pattern;
 		this.invert = invert;
-		this.asString = "~ '"+pattern+"'";
+		this.asString = ""+(invert?"!":"")+"~ '"+pattern+"'";
 	}
 
 	@Override
