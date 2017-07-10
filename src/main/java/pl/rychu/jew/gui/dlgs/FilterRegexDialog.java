@@ -74,6 +74,7 @@ public class FilterRegexDialog extends JDialog {
 
 		JButton buttonTurnOff = new JButton("turn off");
 		buttonTurnOff.addActionListener(new FilterOffturner());
+		buttonTurnOff.setToolTipText("shift + esc");
 		butPanel.add(buttonTurnOff);
 
 		JButton buttonFilter = new JButton("Filter");
@@ -125,6 +126,7 @@ public class FilterRegexDialog extends JDialog {
 
 		inputMap.put(KeyStroke.getKeyStroke("pressed ENTER"), ACTION_KEY_APPLY_FILTER);
 		inputMap.put(KeyStroke.getKeyStroke("pressed ESCAPE"), ACTION_KEY_CANCEL);
+		inputMap.put(KeyStroke.getKeyStroke("shift pressed ESCAPE"), ACTION_KEY_TURN_OFF);
 	}
 
 	// --------------------------
