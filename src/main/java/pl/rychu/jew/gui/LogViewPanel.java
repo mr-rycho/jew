@@ -711,7 +711,8 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		}
 
 		if (filterRegexDialog.getRegexPatternOpt().isPresent()) {
-			filters.add(new LogLineFilterRegex(filterRegexDialog.getRegexPatternOpt().get()));
+			filters.add(new LogLineFilterRegex(filterRegexDialog.getRegexPatternOpt().get()
+			 , filterRegexDialog.isInverted()));
 		}
 
 		return new LogLineFilterChain(filters);

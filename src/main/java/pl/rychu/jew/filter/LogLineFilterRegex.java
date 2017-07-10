@@ -11,10 +11,12 @@ import java.util.regex.Pattern;
  */
 public class LogLineFilterRegex implements LogLineFilter {
 	private final Pattern pattern;
+	private final boolean invert;
 	private final String asString;
 
-	public LogLineFilterRegex(Pattern pattern) {
+	public LogLineFilterRegex(Pattern pattern, boolean invert) {
 		this.pattern = pattern;
+		this.invert = invert;
 		this.asString = "~ '"+pattern+"'";
 	}
 
@@ -33,7 +35,7 @@ public class LogLineFilterRegex implements LogLineFilter {
 		String fullTextRaw = logLineFull.getFullText();
 		String fullText = fullTextRaw != null ? fullTextRaw : "";
 		Matcher matcher = pattern.matcher(fullText);
-		return matcher.find();
+		return matcher.find() ^ invert;
 	}
 
 	@Override

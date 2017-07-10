@@ -23,6 +23,8 @@ public class FilterRegexDialog extends JDialog {
 
 	private Optional<Pattern> regexPatternOpt = Optional.empty();
 	private boolean wasCancelled;
+	private JCheckBox chInvert;
+	private JCheckBox chCaseSens;
 
 	// --------------------------
 
@@ -53,7 +55,13 @@ public class FilterRegexDialog extends JDialog {
 		botPanel.setLayout(new BorderLayout());
 
 		JPanel optsPanel = new JPanel();
-		optsPanel.setLayout(new BorderLayout());
+		optsPanel.setLayout(new FlowLayout());// new BorderLayout());
+
+		chInvert = new JCheckBox("invert");
+		optsPanel.add(chInvert);
+
+		chCaseSens = new JCheckBox("case sensitive");
+		optsPanel.add(chCaseSens);
 
 		botPanel.add(optsPanel, BorderLayout.NORTH);
 
@@ -135,6 +143,10 @@ public class FilterRegexDialog extends JDialog {
 		return wasCancelled;
 	}
 
+	public boolean isInverted() {
+		return chInvert.isSelected();
+	}
+
 	// ========================
 
 	private class DialogCanceller implements ActionListener {
@@ -159,7 +171,8 @@ public class FilterRegexDialog extends JDialog {
 		public void actionPerformed(ActionEvent event) {
 			String text = textField.getText();
 			try {
-				Pattern pattern = Pattern.compile(text);
+				int caseSens = chCaseSens.isSelected() ? 0 : Pattern.CASE_INSENSITIVE;
+				Pattern pattern = Pattern.compile(text, caseSens);
 				regexPatternOpt = Optional.of(pattern);
 				wasCancelled = false;
 				setVisible(false);
