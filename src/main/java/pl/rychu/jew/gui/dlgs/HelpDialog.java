@@ -29,7 +29,7 @@ public class HelpDialog extends JDialog {
 
 		setLayout(new BorderLayout());
 
-		setSize(500, 400);
+		setSize(500, 450);
 
 		Container cp = getContentPane();
 
@@ -103,7 +103,6 @@ public class HelpDialog extends JDialog {
 		return new String[] {
 		 "` - toggle tail"
 		 , "shift+h - open highlighting dialog"
-		 , "t - toggle thread filter"
 		 , "shift+s - toggle stack collapse"
 		 , "ctrl+f - open search dialog"
 		 , "f3 - search again"
@@ -112,6 +111,8 @@ public class HelpDialog extends JDialog {
 		 , "{ - turn off filter from current line"
 		 , "] - turn on filter to current line"
 		 , "} - turn off filter to current line"
+		 , "t - toggle thread filter"
+		 , "shift+r - configure filter by regular expression"
 		 , "ctrl+t - mark thread for thread list filter"
 		 , "ctrl+sh+t - activate thread list filter"
 		 , "shift+t - activate indenting by thread name"
