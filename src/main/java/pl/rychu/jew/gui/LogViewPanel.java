@@ -86,6 +86,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 
 	private static final String ACTION_KEY_SAVE_TO_FILE = "jew.saveToFile";
 	private static final String ACTION_KEY_COPY_TO_CLIPBOARD = "jew.copyToClipboard";
+	private static final String ACTION_KEY_COPY_TO_CLIPBOARD_SINGLE = "jew.copyToClipboardSingle";
 
 	private static final String ACTION_KEY_CAUSE_NEXT = "jew.cause.next";
 	private static final String ACTION_KEY_CAUSE_PREV = "jew.cause.prev";
@@ -403,6 +404,14 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 			}
 		});
 
+		actionMap.put(ACTION_KEY_COPY_TO_CLIPBOARD_SINGLE, new AbstractAction(ACTION_KEY_COPY_TO_CLIPBOARD_SINGLE) {
+			private static final long serialVersionUID = 4032184701130416723L;
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				logViewPanel.copyToClipDelegate.copyToClipSingle();
+			}
+		});
+
 		actionMap.put(ACTION_KEY_CAUSE_NEXT, new AbstractAction(ACTION_KEY_CAUSE_NEXT) {
 			private static final long serialVersionUID = 1670930291832953057L;
 			@Override
@@ -460,6 +469,8 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		 , ACTION_KEY_SAVE_TO_FILE);
 		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_MASK)
 		 , ACTION_KEY_COPY_TO_CLIPBOARD);
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK)
+		 , ACTION_KEY_COPY_TO_CLIPBOARD_SINGLE);
 		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_PERIOD, InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK)
 		 , ACTION_KEY_CAUSE_NEXT);
 		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_COMMA, InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK)
@@ -1261,6 +1272,19 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 				sb.append(logLineFull.getFullText()).append("\n");
 			}
 			StringSelection strSel = new StringSelection(sb.toString());
+			clipboard.setContents(strSel, null);
+		}
+
+		private void copyToClipSingle() {
+			int sel = getSelectedIndex();
+			if (sel < 0) {
+				return;
+			}
+			ListModelLog model = (ListModelLog)getModel();
+			LogLineFull logLineFull = model.getElementAt(sel);
+			Toolkit toolkit = Toolkit.getDefaultToolkit();
+			Clipboard clipboard = toolkit.getSystemClipboard();
+			StringSelection strSel = new StringSelection(logLineFull.getFullText());
 			clipboard.setContents(strSel, null);
 		}
 	}

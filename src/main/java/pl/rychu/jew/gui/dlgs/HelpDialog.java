@@ -119,6 +119,7 @@ public class HelpDialog extends JDialog {
 		 , "shift+c - toggle classname collapse"
 		 , "ctrl+s - save filtered lines to file"
 		 , "ctrl+c - copy filtered lines to clipboard"
+		 , "ctrl+sh+c - copy current line to clipboard"
 		 , "ctrl+sh+,/. - navigate through exception causes"
 		 , "shift+i - toggle window title"
 		 , ""
