@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import pl.rychu.jew.conf.LoggerType;
 import pl.rychu.jew.gl.GrowingListVer;
-import pl.rychu.jew.linedec.LineDecoder;
+import pl.rychu.jew.linedec.LineDecoderFull;
 import pl.rychu.jew.logline.LogLine;
 
 public class LogFileReader implements Runnable {
@@ -27,7 +27,7 @@ public class LogFileReader implements Runnable {
 
 	private final LogAccessFile logAccessFile;
 
-	private final LineDecoder lineTypeRecognizer;
+	private final LineDecoderFull lineDecoderFull;
 
 	private final LineDividerUtf8 lineDivider;
 
@@ -46,9 +46,8 @@ public class LogFileReader implements Runnable {
 	 , LoggerType loggerType, LogAccessCache logReaderCache) {
 		this.logAccessFile = logAccessFile;
 		this.path = FileSystems.getDefault().getPath(pathStr);
-		this.lineTypeRecognizer
-		 = LineDecodersChainFactory.getLineDecodersChain(loggerType);
-		LinePosSink indexer = new Indexer(lineTypeRecognizer, index, logReaderCache);
+		this.lineDecoderFull = new LineDecoderFull(loggerType);
+		LinePosSink indexer = new Indexer(lineDecoderFull, index, logReaderCache);
 		String encoding = isWindows ? "windows-1250" : "UTF-8";
 		log.debug("isWindows={};  encoding={}", isWindows, encoding);
 		LineByteSink lineByteSink = new LineByteSinkDecoder(indexer, encoding);
