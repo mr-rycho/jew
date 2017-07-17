@@ -1,25 +1,17 @@
 package pl.rychu.jew.logaccess;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.LinkOption;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.util.regex.Pattern;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import pl.rychu.jew.conf.LoggerType;
 import pl.rychu.jew.gl.GrowingListVer;
 import pl.rychu.jew.linedec.LineDecoderCfg;
 import pl.rychu.jew.linedec.LineDecoderFull;
 import pl.rychu.jew.logline.LogLine;
+
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 
 public class LogFileReader implements Runnable {
 
@@ -45,18 +37,9 @@ public class LogFileReader implements Runnable {
 
 	public LogFileReader(LogAccessFile logAccessFile
 	 , String pathStr, GrowingListVer<LogLine> index, boolean isWindows
-	 , LoggerType loggerType, LogAccessCache logReaderCache) {
+	 , LineDecoderCfg lineDecoderCfg, LogAccessCache logReaderCache) {
 		this.logAccessFile = logAccessFile;
 		this.path = FileSystems.getDefault().getPath(pathStr);
-		String regexThread1 = "[^()]+";
-		String regexThread2 = "[^()]*"+"\\("+"[^)]*"+"\\)"+"[^()]*";
-		String lineDecoderPattern = "^([-+:, 0-9]+)"
-		 +"[ \\t]+"+"([A-Z]+)"
-		 +"[ \\t]+"+"\\[([^]]+)\\]"
-		 +"[ \\t]+"+"\\("+"("+regexThread1+"|"+regexThread2+")"+"\\)"
-		 +"[ \\t]+"+"(.*)$";
-		LineDecoderCfg lineDecoderCfg = new LineDecoderCfg(Pattern.compile(lineDecoderPattern)
-		 , 1, 2, 3, 4, 5);
 		this.lineDecoderFull = new LineDecoderFull(lineDecoderCfg);
 		LinePosSink indexer = new Indexer(lineDecoderFull, index, logReaderCache);
 		String encoding = isWindows ? "windows-1250" : "UTF-8";

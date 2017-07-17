@@ -1,20 +1,17 @@
 package pl.rychu.jew;
 
+import org.apache.commons.cli.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import pl.rychu.jew.conf.LoggerType;
+import pl.rychu.jew.gui.GuiMain;
+import pl.rychu.jew.linedec.LineDecoderCfg;
+import pl.rychu.jew.util.StringUtil;
+
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
-
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import pl.rychu.jew.conf.LoggerType;
-import pl.rychu.jew.gui.GuiMain;
-import pl.rychu.jew.util.StringUtil;
+import java.util.regex.Pattern;
 
 
 
@@ -44,10 +41,17 @@ public class CmdLineMain {
 				checkFile(filename);
 				boolean isWindows = isWindows(cmdline);
 				log.debug("working operating system: {}", isWindows ? "windows" : "linux");
-				LoggerType loggerType = getLoggerType(cmdline);
-				log.debug("using logger type: {}", loggerType);
+				String regexThread1 = "[^()]+";
+				String regexThread2 = "[^()]*"+"\\("+"[^)]*"+"\\)"+"[^()]*";
+				String lineDecoderPattern = "^([-+:, 0-9]+)"
+				 +"[ \\t]+"+"([A-Z]+)"
+				 +"[ \\t]+"+"\\[([^]]+)\\]"
+				 +"[ \\t]+"+"\\("+"("+regexThread1+"|"+regexThread2+")"+"\\)"
+				 +"[ \\t]+"+"(.*)$";
+				LineDecoderCfg lineDecoderCfg = new LineDecoderCfg(Pattern.compile(lineDecoderPattern)
+				 , 1, 2, 3, 4, 5);
 				String initFilter = cmdline.getOptionValue("filter");
-				GuiMain.runGuiAsynchronously(filename, isWindows, loggerType, initFilter);
+				GuiMain.runGuiAsynchronously(filename, isWindows, lineDecoderCfg, initFilter);
 			} catch (Exception e) {
 				System.err.println("error: "+e.getMessage());
 				log.error("error parsing commandline", e);

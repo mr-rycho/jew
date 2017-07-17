@@ -1,18 +1,17 @@
 package pl.rychu.jew.logaccess;
 
-import java.nio.channels.FileChannel;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import pl.rychu.jew.conf.LoggerType;
 import pl.rychu.jew.gl.BadVersionException;
 import pl.rychu.jew.gl.GrowingListVer;
 import pl.rychu.jew.gl.GrowingListVerLocked;
+import pl.rychu.jew.linedec.LineDecoderCfg;
 import pl.rychu.jew.logline.LogLine;
 import pl.rychu.jew.logline.LogLineFull;
+
+import java.nio.channels.FileChannel;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 
 
@@ -41,11 +40,11 @@ public class LogAccessFile implements LogAccess {
 	private LogAccessFile() {}
 
 	public static LogAccess create(final String pathStr
-	 , boolean isWindows, LoggerType loggerType) {
+	 , boolean isWindows, LineDecoderCfg lineDecoderCfg) {
 		final LogAccessFile result = new LogAccessFile();
 
 		LogFileReader logFileReader = new LogFileReader(result, pathStr
-		 , result.index, isWindows, loggerType, result.logReaderCache);
+		 , result.index, isWindows, lineDecoderCfg, result.logReaderCache);
 		new Thread(logFileReader, "log-file-reader-thread").start();
 
 		return result;
