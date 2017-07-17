@@ -1,5 +1,16 @@
 package pl.rychu.jew;
 
+import pl.rychu.jew.gl.BadVersionException;
+import pl.rychu.jew.gl.GrowingListVer;
+import pl.rychu.jew.gl.GrowingListVerLocked;
+import pl.rychu.jew.linedec.LineDecoder;
+import pl.rychu.jew.linedec.LineDecoderCfg;
+import pl.rychu.jew.linedec.LineDecoderFull;
+import pl.rychu.jew.linedec.LogElemsCache;
+import pl.rychu.jew.logaccess.*;
+import pl.rychu.jew.logline.LogLine;
+import pl.rychu.jew.logline.LogLine.LogLineType;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
@@ -9,16 +20,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import pl.rychu.jew.conf.LoggerType;
-import pl.rychu.jew.gl.BadVersionException;
-import pl.rychu.jew.gl.GrowingListVer;
-import pl.rychu.jew.gl.GrowingListVerLocked;
-import pl.rychu.jew.linedec.LineDecoder;
-import pl.rychu.jew.linedec.LogElemsCache;
-import pl.rychu.jew.logaccess.*;
-import pl.rychu.jew.logline.LogLine;
-import pl.rychu.jew.logline.LogLine.LogLineType;
+import java.util.regex.Pattern;
 
 
 
@@ -34,8 +36,17 @@ public class ComboRunner {
 
 		final GrowingListVer<LogLine> index = GrowingListVerLocked.create(1_024);
 
-		final LineDecoder lineDecoder
-		 = LineDecodersChainFactory.getLineDecodersChain(LoggerType.WILDFLY_STD);
+		String regexThread1 = "[^()]+";
+		String regexThread2 = "[^()]*"+"\\("+"[^)]*"+"\\)"+"[^()]*";
+		String lineDecoderPattern = "^([-+:, 0-9]+)"
+		 +"[ \\t]+"+"([A-Z]+)"
+		 +"[ \\t]+"+"\\[([^]]+)\\]"
+		 +"[ \\t]+"+"\\("+"("+regexThread1+"|"+regexThread2+")"+"\\)"
+		 +"[ \\t]+"+"(.*)$";
+		LineDecoderCfg lineDecoderCfg = new LineDecoderCfg(Pattern.compile(lineDecoderPattern)
+		 , 1, 2, 3, 4, 5);
+
+		LineDecoder lineDecoder = new LineDecoderFull(lineDecoderCfg);
 
 		IndexerWithTypes linePosSink = new IndexerWithTypes(lineDecoder, index, null);
 
