@@ -10,7 +10,7 @@ public class HiConfigProviderPer implements HiConfigProvider {
 		this(null);
 	}
 
-	public HiConfigProviderPer(final String filename) {
+	private HiConfigProviderPer(final String filename) {
 		super();
 		this.filename = filename;
 	}
@@ -29,6 +29,6 @@ public class HiConfigProviderPer implements HiConfigProvider {
 		} else {
 			HiConfigPersistence.save(hiConfig);
 		}
-	};
+	}
 
 }

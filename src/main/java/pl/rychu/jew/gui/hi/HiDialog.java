@@ -29,7 +29,6 @@ public class HiDialog extends JDialog {
 
 	// -------------
 
-	private final Container cp;
 	private final HiConfig origHiConfig;
 	private final DefaultListModel<HiConfigEntry> model;
 	private final JList<HiConfigEntry> jList;
@@ -45,7 +44,7 @@ public class HiDialog extends JDialog {
 
 		setSize(450, 400);
 
-		cp = getContentPane();
+		Container cp = getContentPane();
 
 		cp.setLayout(new BorderLayout());
 
@@ -56,8 +55,8 @@ public class HiDialog extends JDialog {
 		jList.setCellRenderer(new CellRenderer());
 		cp.add(new JScrollPane(jList), BorderLayout.CENTER);
 
-		createActions((JComponent)cp);
-		ActionMap am = ((JComponent)cp).getActionMap();
+		createActions((JComponent) cp);
+		ActionMap am = ((JComponent) cp).getActionMap();
 		final ConfigPanel configPanel = new ConfigPanel();
 
 		final JPanel editButtonsPanel = new JPanel();
@@ -115,7 +114,7 @@ public class HiDialog extends JDialog {
 
 		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
-		createKeyBindings((JComponent)cp);
+		createKeyBindings((JComponent) cp);
 
 		setVisible(true);
 	}
@@ -328,8 +327,8 @@ public class HiDialog extends JDialog {
 			return getListCellRendererComponentSuper(list, value, index, isSelected, cellHasFocus);
 		}
 
-		Component getListCellRendererComponentSuper(final JList<?> list, final Object valueObj,
-		 final int index, final boolean isSelected, final boolean cellHasFocus) {
+		Component getListCellRendererComponentSuper(JList<?> list, Object valueObj,
+		 int index, boolean isSelected, boolean cellHasFocus) {
 
 			final HiConfigEntry value = (HiConfigEntry)valueObj;
 

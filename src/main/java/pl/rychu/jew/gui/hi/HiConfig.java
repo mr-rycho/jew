@@ -12,13 +12,11 @@ public class HiConfig {
 
 	// -----------
 
-	protected HiConfig() {};
-
-	protected HiConfig(final Collection<HiConfigEntry> entries) {
+	HiConfig(final Collection<HiConfigEntry> entries) {
 		this.entries.addAll(entries);
 	}
 
-	public static HiConfig clone(HiConfig hiConfig) {
+	static HiConfig clone(HiConfig hiConfig) {
 		return new HiConfig(hiConfig.entries);
 	}
 

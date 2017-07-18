@@ -8,7 +8,7 @@ public class HiConfigEntry {
 	private final int colorB;
 	private final int colorF;
 
-	public HiConfigEntry(final String regexp, final int colorB, final int colorF) {
+	HiConfigEntry(final String regexp, final int colorB, final int colorF) {
 		this.regexp = regexp;
 		this.colorB = colorB;
 		this.colorF = colorF;

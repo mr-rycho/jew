@@ -1,24 +1,20 @@
 package pl.rychu.jew.gui.hi;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import pl.rychu.jew.util.ColorUtil;
+import pl.rychu.jew.util.FileUtil;
+
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import pl.rychu.jew.util.ColorUtil;
-import pl.rychu.jew.util.FileUtil;
 
 
-
-public class HiConfigPersistence {
+class HiConfigPersistence {
 
 	private static final Logger log = LoggerFactory.getLogger(HiConfigPersistence.class);
 
@@ -35,17 +31,17 @@ public class HiConfigPersistence {
 	}
 
 	private static String getFirstEnv(String... envKeys) {
-		return Arrays.asList(envKeys).stream().map(key -> System.getenv(key))
-		 .filter(val -> val!=null).findFirst().orElse(null);
+		return Arrays.stream(envKeys).map(System::getenv)
+		 .filter(Objects::nonNull).findFirst().orElse(null);
 	}
 
-	public static HiConfig load() {
+	static HiConfig load() {
 		final String filename = getFilename();
 		log.debug("loading hi config from \"{}\"", filename);
 		return load(filename);
 	}
 
-	public static HiConfig load(final String filename) {
+	static HiConfig load(final String filename) {
 		try {
 			return new HiConfig(FileUtil.loadLines(filename).stream().map(new ToHiConfigEntry())
 			 .collect(Collectors.toList()));
@@ -54,13 +50,14 @@ public class HiConfigPersistence {
 		}
 	}
 
-	public static void save(HiConfig hiConfig) {
+	static void save(HiConfig hiConfig) {
 		final String filename = getFilename();
 		log.debug("saving hi config to \"{}\"", filename);
 		save(hiConfig, filename);
 	}
 
-	public static void save(HiConfig hiConfig, String filename) {
+
+	static void save(HiConfig hiConfig, String filename) {
 		Iterator<String> lineIterator = getEntries(hiConfig).stream()
 		 .map(new HiConfigEntryToLine()).collect(Collectors.toList()).iterator();
 		FileUtil.saveLines(lineIterator, filename);

@@ -1,25 +1,17 @@
 package pl.rychu.jew.gui.hi;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import pl.rychu.jew.util.ColorUtil;
+
+import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArrayList;
-
-import javax.swing.JButton;
-import javax.swing.JColorChooser;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import pl.rychu.jew.util.ColorUtil;
 
 
 
@@ -41,7 +33,7 @@ public class ConfigPanel extends JPanel {
 
 	// -----------------
 
-	public ConfigPanel() {
+	ConfigPanel() {
 		final JPanel regexEditPanel = new JPanel();
 		regexEditPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
 		regexEditField = new JTextField(20);
@@ -107,7 +99,7 @@ public class ConfigPanel extends JPanel {
 
 	// ---
 
-	public void addHiEntryChangeListener(HiEntryChangeListener lsn) {
+	void addHiEntryChangeListener(HiEntryChangeListener lsn) {
 		listeners.add(lsn);
 	}
 
