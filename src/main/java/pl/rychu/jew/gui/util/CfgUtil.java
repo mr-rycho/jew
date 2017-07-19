@@ -1,14 +1,34 @@
 package pl.rychu.jew.gui.util;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
  * Created on 19.07.2017.
  */
 public class CfgUtil {
+
+	private static final Logger log = LoggerFactory.getLogger(CfgUtil.class);
+
+	private static final String[] ENV_HOMES = new String[]{"HOME", "USERPROFILE"};
+
+	// ----------
+
+	public static String getFilename(String filename) {
+		String homeDir = getFirstEnv(ENV_HOMES);
+		log.debug("homeDir = {}", homeDir);
+		return (homeDir != null ? homeDir : ".") + "/" + filename;
+	}
+
+	private static String getFirstEnv(String... envKeys) {
+		return Arrays.stream(envKeys).map(System::getenv).filter(Objects::nonNull).findFirst().orElse
+		 (null);
+	}
+
+	// ----------
 
 	public static List<String> unescape(String s) {
 		List<String> result = new ArrayList<>();

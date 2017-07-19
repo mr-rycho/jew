@@ -15,25 +15,12 @@ class ParsConfigPersistence {
 
 	private static final Logger log = LoggerFactory.getLogger(ParsConfigPersistence.class);
 
-	private static final String[] ENV_HOMES = new String[]{"HOME", "USERPROFILE"};
-
 	private static final String FILENAME = ".jew.pars";
 
 	// ----------------
 
-	private static String getFilename() {
-		String homeDir = getFirstEnv(ENV_HOMES);
-		log.debug("homeDir = {}", homeDir);
-		return (homeDir != null ? homeDir : ".") + "/" + FILENAME;
-	}
-
-	private static String getFirstEnv(String... envKeys) {
-		return Arrays.stream(envKeys).map(System::getenv).filter(Objects::nonNull).findFirst().orElse
-		 (null);
-	}
-
 	static ParsConfig load() {
-		String filename = getFilename();
+		String filename = CfgUtil.getFilename(FILENAME);
 		log.debug("loading pars config from \"{}\"", filename);
 		return load(filename);
 	}
@@ -48,7 +35,7 @@ class ParsConfigPersistence {
 	}
 
 	static void save(ParsConfig parsConfig) {
-		String filename = getFilename();
+		String filename = CfgUtil.getFilename(FILENAME);
 		log.debug("saving pars config to \"{}\"", filename);
 		save(parsConfig, filename);
 	}
