@@ -2,6 +2,7 @@ package pl.rychu.jew.gui.pars;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -23,16 +24,16 @@ public class ParsConfig {
 
 	// ----------
 
-	public void add(ParsConfigEntry parsConfigEntry) {
-		entries.add(parsConfigEntry);
-	}
-
 	public int size() {
 		return entries.size();
 	}
 
 	public ParsConfigEntry get(int index) {
 		return entries.get(index);
+	}
+
+	public List<ParsConfigEntry> getEntries() {
+		return Collections.unmodifiableList(entries);
 	}
 
 }

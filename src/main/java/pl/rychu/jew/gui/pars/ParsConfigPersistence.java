@@ -6,9 +6,11 @@ import pl.rychu.jew.gui.util.CfgUtil;
 import pl.rychu.jew.util.FileUtil;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.Function;
-import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
 
 
 class ParsConfigPersistence {
@@ -28,7 +30,7 @@ class ParsConfigPersistence {
 	static ParsConfig load(String filename) {
 		try {
 			return new ParsConfig(FileUtil.loadLines(filename).stream().map(new ToParsConfigEntry())
-			 .collect(Collectors.toList()));
+			 .collect(toList()));
 		} catch (IOException e) {
 			throw new IllegalStateException(e);
 		}
@@ -40,23 +42,13 @@ class ParsConfigPersistence {
 		save(parsConfig, filename);
 	}
 
-
 	static void save(ParsConfig parsConfig, String filename) {
-		Iterator<String> lineIterator = getEntries(parsConfig).stream().map(new ParsConfigEntryToLine
-		 ()).collect(Collectors.toList()).iterator();
-		FileUtil.saveLines(lineIterator, filename);
+		List<String> lines = parsConfig.getEntries().stream().map(new ParsConfigEntryToLine()).collect
+		 (toList());
+		FileUtil.saveLines(lines, filename);
 	}
 
 	// ===========
-
-	private static List<ParsConfigEntry> getEntries(ParsConfig parsConfig) {
-		int size = parsConfig.size();
-		List<ParsConfigEntry> result = new ArrayList<>(size);
-		for (int i = 0; i < size; i++) {
-			result.add(parsConfig.get(i));
-		}
-		return result;
-	}
 
 	private static class ParsConfigEntryToLine implements Function<ParsConfigEntry, String> {
 		@Override

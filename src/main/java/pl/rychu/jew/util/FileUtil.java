@@ -9,11 +9,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
 import org.slf4j.Logger;
@@ -83,6 +79,10 @@ public class FileUtil {
 	}
 
 	// --------
+
+	public static void saveLines(Collection<String> lines, String filename) {
+		saveLines(lines.iterator(), filename);
+	}
 
 	public static void saveLines(Iterator<String> lines, String filename) {
 		try {
