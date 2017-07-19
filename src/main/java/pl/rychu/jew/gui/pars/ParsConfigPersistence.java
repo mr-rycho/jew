@@ -2,6 +2,7 @@ package pl.rychu.jew.gui.pars;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pl.rychu.jew.gui.util.CfgUtil;
 import pl.rychu.jew.util.FileUtil;
 
 import java.io.IOException;
@@ -73,7 +74,7 @@ class ParsConfigPersistence {
 	private static class ParsConfigEntryToLine implements Function<ParsConfigEntry, String> {
 		@Override
 		public String apply(ParsConfigEntry t) {
-			return escape(Arrays.asList(t.getName(), t.getGroupTime(), t.getGroupLevel(), t
+			return CfgUtil.escape(Arrays.asList(t.getName(), t.getGroupTime(), t.getGroupLevel(), t
 			 .getGroupClass(), t.getGroupThread(), t.getGroupMessage(), t.getPattern()));
 		}
 	}
@@ -81,56 +82,11 @@ class ParsConfigPersistence {
 	private static class ToParsConfigEntry implements Function<String, ParsConfigEntry> {
 		@Override
 		public ParsConfigEntry apply(String line) {
-			List<String> fields = unescape(line);
+			List<String> fields = CfgUtil.unescape(line);
 			return new ParsConfigEntry(fields.get(0), fields.get(6), Integer.parseInt(fields.get(1)),
 			 Integer.parseInt(fields.get(2)), Integer.parseInt(fields.get(3)), Integer.parseInt(fields
 			 .get(4)), Integer.parseInt(fields.get(5)));
 		}
-	}
-
-	private static String escape(Collection<Object> strs) {
-		return strs.stream().map(o -> o != null ? o.toString() : "").map
-		 (ParsConfigPersistence::escape).collect(Collectors.joining(":"));
-	}
-
-	private static String escape(String s) {
-		StringBuilder sb = new StringBuilder();
-		for (char c : s.toCharArray()) {
-			if (c == '\n') {
-				sb.append("\\n");
-			} else {
-				if (c == '\\' || c == ':') {
-					sb.append("\\");
-				}
-				sb.append(c);
-			}
-		}
-		return sb.toString();
-	}
-
-	private static List<String> unescape(String s) {
-		List<String> result = new ArrayList<>();
-		StringBuilder field = new StringBuilder();
-		int len = s.length();
-		int index = 0;
-		while (index < len) {
-			char c = s.charAt(index++);
-			if (c == '\\') {
-				char b = s.charAt(index++);
-				if (b == 'n') {
-					field.append('\n');
-				} else {
-					field.append(b);
-				}
-			} else if (c == ':') {
-				result.add(field.toString());
-				field.setLength(0);
-			} else {
-				field.append(c);
-			}
-		}
-		result.add(field.toString());
-		return result;
 	}
 
 }
