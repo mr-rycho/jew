@@ -5,10 +5,7 @@ import org.slf4j.LoggerFactory;
 import pl.rychu.jew.gui.hi.HiConfigProviderPer;
 import pl.rychu.jew.gui.panels.InfoPanel;
 import pl.rychu.jew.gui.panels.StatusPanel;
-import pl.rychu.jew.gui.pars.ParsConfig;
-import pl.rychu.jew.gui.pars.ParsConfigEntry;
-import pl.rychu.jew.gui.pars.ParsConfigProvider;
-import pl.rychu.jew.gui.pars.ParsConfigProviderPer;
+import pl.rychu.jew.gui.pars.*;
 import pl.rychu.jew.linedec.LineDecoderCfg;
 import pl.rychu.jew.logaccess.LogAccess;
 import pl.rychu.jew.logaccess.LogAccessFile;
@@ -17,6 +14,7 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDate;
@@ -99,6 +97,18 @@ public class GuiMain {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					titleHandler.toggleTitleMode();
+				}
+			});
+			actions.put(KeyStroke.getKeyStroke('P', InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK), new
+			 AbstractAction("jew.pars.dialog") {
+				private static final long serialVersionUID = -8360999122789471879L;
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					ParsConfig pc = parsConfigProvider.get();
+					ParsDialog dialog = new ParsDialog((JFrame) logViewPanel.getTopLevelAncestor(), pc,
+					 null);
+					// execution continues here after closing the dialog
+					dialog.dispose();
 				}
 			});
 		}
