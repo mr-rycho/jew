@@ -14,7 +14,6 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 
-
 public class LogAccessFile implements LogAccess {
 
 	private static final Logger log = LoggerFactory.getLogger(LogAccessFile.class);
@@ -23,12 +22,12 @@ public class LogAccessFile implements LogAccess {
 
 	private volatile FileChannel fileChannel;
 
-	private final LogAccessCache logAccessCache = new LogAccessCache();
+	private LogFileReader logFileReader;
 
+	private final LogAccessCache logAccessCache = new LogAccessCache();
 	private final LogAccessCache logReaderCache = new LogAccessCache();
 
-	private final Queue<LineReaderDecoder> readerPool
-	 = new ConcurrentLinkedQueue<>();
+	private final Queue<LineReaderDecoder> readerPool = new ConcurrentLinkedQueue<>();
 
 	private long countAccess = 0L;
 	private long countCacheViewHit = 0L;
@@ -37,14 +36,18 @@ public class LogAccessFile implements LogAccess {
 
 	// ------------------
 
-	private LogAccessFile() {}
+	private LogAccessFile() {
+	}
 
-	public static LogAccess create(final String pathStr
-	 , boolean isWindows, LineDecoderCfg lineDecoderCfg) {
+	public static LogAccess create(final String pathStr, boolean isWindows,
+	 LineDecoderCfg lineDecoderCfg) {
 		final LogAccessFile result = new LogAccessFile();
 
-		LogFileReader logFileReader = new LogFileReader(result, pathStr
-		 , result.index, isWindows, lineDecoderCfg, result.logReaderCache);
+		LogFileReader logFileReader = new LogFileReader(result, pathStr, result.index, isWindows,
+		 lineDecoderCfg, result.logReaderCache);
+
+		result.logFileReader = logFileReader;
+
 		new Thread(logFileReader, "log-file-reader-thread").start();
 
 		return result;
@@ -77,6 +80,11 @@ public class LogAccessFile implements LogAccess {
 	}
 
 	@Override
+	public void reconfig(LineDecoderCfg lineDecoderCfg) {
+		logFileReader.reconfig(lineDecoderCfg);
+	}
+
+	@Override
 	public LogLine get(final long pos, final int version) throws BadVersionException {
 		return index.get(pos, version);
 	}
@@ -88,9 +96,9 @@ public class LogAccessFile implements LogAccess {
 			return null;
 		}
 
-		if ((countAccess%1000) == 0) {
-			log.trace("acc:{};  view:{};  read:{};  miss:{}", countAccess
-			 , countCacheViewHit, countCacheReadHit, countCacheMiss);
+		if ((countAccess % 1000) == 0) {
+			log.trace("acc:{};  view:{};  read:{};  miss:{}", countAccess, countCacheViewHit,
+			 countCacheReadHit, countCacheMiss);
 		}
 
 		countAccess++;

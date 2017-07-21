@@ -24,7 +24,7 @@ public class LineReaderDecoder {
 	private final CharsetDecoder decoder;
 
 	public LineReaderDecoder() {
-		final Charset charset = Charset.forName("UTF-8");
+		final Charset charset = Charset.forName("UTF-8"); // TODO change
 		decoder = charset.newDecoder();
 		decoder.onMalformedInput(CodingErrorAction.REPLACE);
 		decoder.onUnmappableCharacter(CodingErrorAction.REPLACE);

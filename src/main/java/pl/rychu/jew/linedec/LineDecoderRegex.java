@@ -16,6 +16,10 @@ public class LineDecoderRegex implements LineDecoder {
 		this.lineDecoderCfg = lineDecoderCfg;
 	}
 
+	public void reconfig(LineDecoderCfg lineDecoderCfg) {
+		this.lineDecoderCfg = lineDecoderCfg;
+	}
+
 	@Override
 	public LogLine decode(long filePos, String line, int length, LogLine prevLine) {
 		if (line == null || line.isEmpty()) {

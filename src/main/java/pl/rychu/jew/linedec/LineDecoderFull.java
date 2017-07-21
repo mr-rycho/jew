@@ -6,7 +6,7 @@ import pl.rychu.jew.logline.LogLine;
  * Created on 14.07.2017.
  */
 public class LineDecoderFull implements LineDecoder {
-	private final LineDecoder std;
+	private final LineDecoderRegex std;
 	private final LineDecoder chain;
 
 	public LineDecoderFull(LineDecoderCfg lineDecoderCfg) {
@@ -17,6 +17,10 @@ public class LineDecoderFull implements LineDecoder {
 
 		this.std = new LineDecoderRegex(lineDecoderCfg);
 		this.chain = new LineDecodersChain(empty, stack, stackCause, std, term);
+	}
+
+	public void reconfig(LineDecoderCfg lineDecoderCfg) {
+		std.reconfig(lineDecoderCfg);
 	}
 
 	@Override

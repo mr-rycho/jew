@@ -12,6 +12,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class LogFileReader implements Runnable {
 
@@ -33,11 +34,12 @@ public class LogFileReader implements Runnable {
 
 	private boolean isWindows;
 
+	private AtomicReference<LineDecoderCfg> reconfigDecoder = new AtomicReference<>(null);
+
 	// --------
 
-	public LogFileReader(LogAccessFile logAccessFile
-	 , String pathStr, GrowingListVer<LogLine> index, boolean isWindows
-	 , LineDecoderCfg lineDecoderCfg, LogAccessCache logReaderCache) {
+	public LogFileReader(LogAccessFile logAccessFile, String pathStr, GrowingListVer<LogLine> index,
+	 boolean isWindows, LineDecoderCfg lineDecoderCfg, LogAccessCache logReaderCache) {
 		this.logAccessFile = logAccessFile;
 		this.path = FileSystems.getDefault().getPath(pathStr);
 		this.lineDecoderFull = new LineDecoderFull(lineDecoderCfg);
@@ -47,6 +49,12 @@ public class LogFileReader implements Runnable {
 		LineByteSink lineByteSink = new LineByteSinkDecoder(indexer, encoding);
 		this.lineDivider = new LineDividerUtf8(lineByteSink);
 		this.isWindows = isWindows;
+	}
+
+	// --------
+
+	public void reconfig(LineDecoderCfg lineDecoderCfg) {
+		reconfigDecoder.set(lineDecoderCfg);
 	}
 
 	// --------
@@ -98,13 +106,14 @@ public class LogFileReader implements Runnable {
 		if (fc != null) {
 			final BasicFileAttributes attrs = readAttributes();
 			log.trace("attrs: {}", attrs);
-			final Object fk = attrs!=null ? attrs.fileKey() : null;
+			final Object fk = attrs != null ? attrs.fileKey() : null;
 			log.trace("fk: {}", fk);
-			final Long fs = attrs!=null ? attrs.size() : null;
+			final Long fs = attrs != null ? attrs.size() : null;
 			log.trace("fs: {}", fs);
-			boolean fileKeyChanged = !isWindows && (fk==null || !fk.equals(fileKey));
-			boolean fileSizeChanged = fs==null || (prevFileSize!=null && fs<prevFileSize);
-			log.trace("change: {} / {}", fileKeyChanged, fileSizeChanged);
+			boolean fileKeyChanged = !isWindows && (fk == null || !fk.equals(fileKey));
+			boolean fileSizeChanged = fs == null || (prevFileSize != null && fs < prevFileSize);
+			boolean hasNewConfig = reconfigDecoder.get() != null;
+			log.trace("change: {} || {} || {}", fileKeyChanged, fileSizeChanged, hasNewConfig);
 			if (fileKeyChanged || fileSizeChanged) {
 				log.debug("old fk = {}", fileKey);
 				log.debug("new fk = {}", fk);
@@ -112,6 +121,10 @@ public class LogFileReader implements Runnable {
 				byteBuffer.clear();
 				lineDivider.reset();
 				log.debug("list cleared");
+				if (hasNewConfig) {
+					LineDecoderCfg newDecoder = reconfigDecoder.getAndSet(null);
+					lineDecoderFull.reconfig(newDecoder);
+				}
 			}
 			prevFileSize = fs;
 		}
@@ -126,7 +139,7 @@ public class LogFileReader implements Runnable {
 		} else {
 			try {
 				fc.close();
-			} catch(IOException e) {
+			} catch (IOException e) {
 				log.error("cannot close file", e);
 			}
 			fileKey = null;
@@ -156,8 +169,7 @@ public class LogFileReader implements Runnable {
 
 	private BasicFileAttributes readAttributes() {
 		try {
-			return Files.readAttributes(path
-			 , BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
+			return Files.readAttributes(path, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
 		} catch (IOException e) {
 			return null;
 		}
