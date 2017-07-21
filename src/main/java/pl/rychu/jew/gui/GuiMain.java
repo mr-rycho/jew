@@ -5,6 +5,10 @@ import org.slf4j.LoggerFactory;
 import pl.rychu.jew.gui.hi.HiConfigProviderPer;
 import pl.rychu.jew.gui.panels.InfoPanel;
 import pl.rychu.jew.gui.panels.StatusPanel;
+import pl.rychu.jew.gui.pars.ParsConfig;
+import pl.rychu.jew.gui.pars.ParsConfigEntry;
+import pl.rychu.jew.gui.pars.ParsConfigProvider;
+import pl.rychu.jew.gui.pars.ParsConfigProviderPer;
 import pl.rychu.jew.linedec.LineDecoderCfg;
 import pl.rychu.jew.logaccess.LogAccess;
 import pl.rychu.jew.logaccess.LogAccessFile;
@@ -19,7 +23,7 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.util.HashMap;
 import java.util.Map;
-
+import java.util.regex.Pattern;
 
 
 public class GuiMain {
@@ -27,15 +31,23 @@ public class GuiMain {
 	private static final Logger log = LoggerFactory.getLogger(GuiMain.class);
 
 	public static void runGuiAsynchronously(String filename
-	 , boolean isWindows, LineDecoderCfg lineDecoderCfg, String initFilter) {
+	 , boolean isWindows, String initFilter) {
 		SwingUtilities.invokeLater(() -> {
-			JFrame mainFrame = createFrame(filename, isWindows, lineDecoderCfg, initFilter);
+			JFrame mainFrame = createFrame(filename, isWindows, initFilter);
 			mainFrame.setVisible(true);
 		});
 	}
 
 	private static JFrame createFrame(String filename
-	 , boolean isWindows, LineDecoderCfg lineDecoderCfg, String initFilter) {
+	 , boolean isWindows, String initFilter) {
+		ParsConfigProvider parsConfigProvider = new ParsConfigProviderPer();
+		ParsConfig parsConfig = parsConfigProvider.get();
+		ParsConfigEntry pc = parsConfig.size() == 0 ? createDefaultParsConfigEntry() : parsConfig
+		 .get(0);
+		LineDecoderCfg lineDecoderCfg = new LineDecoderCfg(Pattern.compile(pc.getPattern()), pc
+		 .getGroupTime(), pc.getGroupLevel(), pc.getGroupClass(), pc.getGroupThread(), pc
+		 .getGroupMessage());
+
 		final LogAccess logAccess = LogAccessFile.create(filename
 		 , isWindows, lineDecoderCfg);
 
@@ -93,6 +105,15 @@ public class GuiMain {
 		setKeysAndActions(scrollPane, actions);
 
 		return mainFrame;
+	}
+
+	private static ParsConfigEntry createDefaultParsConfigEntry() {
+		String regexThread1 = "[^()]+";
+		String regexThread2 = "[^()]*" + "\\(" + "[^)]*" + "\\)" + "[^()]*";
+		String lineDecoderPattern = "^([-+:, 0-9]+)" + "[ \\t]+" + "([A-Z]+)" + "[ \\t]+" + "\\[" + ""
+		 + "([^]]+)\\]" + "[ \\t]+" + "\\(" + "(" + regexThread1 + "|" + regexThread2 + ")" + "\\)" +
+		 "[" + " \\t]+" + "(.*)$";
+		return new ParsConfigEntry("wildfly", lineDecoderPattern, 1, 2, 3, 4, 5);
 	}
 
 	private static Image loadImage() {

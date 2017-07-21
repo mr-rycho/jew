@@ -4,16 +4,10 @@ import org.apache.commons.cli.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.rychu.jew.gui.GuiMain;
-import pl.rychu.jew.gui.pars.ParsConfig;
-import pl.rychu.jew.gui.pars.ParsConfigEntry;
-import pl.rychu.jew.gui.pars.ParsConfigProvider;
-import pl.rychu.jew.gui.pars.ParsConfigProviderPer;
-import pl.rychu.jew.linedec.LineDecoderCfg;
 
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Pattern;
 
 
 public class CmdLineMain {
@@ -42,31 +36,13 @@ public class CmdLineMain {
 				checkFile(filename);
 				boolean isWindows = isWindows(cmdline);
 				log.debug("working operating system: {}", isWindows ? "windows" : "linux");
-				ParsConfigProvider parsConfigProvider = new ParsConfigProviderPer();
-				ParsConfig parsConfig = parsConfigProvider.get();
-				ParsConfigEntry pc = parsConfig.size() == 0 ? createDefaultParsConfigEntry() : parsConfig
-				 .get(0);
-				LineDecoderCfg lineDecoderCfg = new LineDecoderCfg(Pattern.compile(pc.getPattern()), pc
-				 .getGroupTime(), pc.getGroupLevel(), pc.getGroupClass(), pc.getGroupThread(), pc
-				 .getGroupMessage());
 				String initFilter = cmdline.getOptionValue("filter");
-				GuiMain.runGuiAsynchronously(filename, isWindows, lineDecoderCfg, initFilter);
+				GuiMain.runGuiAsynchronously(filename, isWindows, initFilter);
 			} catch (Exception e) {
 				System.err.println("error: " + e.getMessage());
 				log.error("error parsing commandline", e);
 			}
 		}
-	}
-
-	// ----------
-
-	private static ParsConfigEntry createDefaultParsConfigEntry() {
-		String regexThread1 = "[^()]+";
-		String regexThread2 = "[^()]*" + "\\(" + "[^)]*" + "\\)" + "[^()]*";
-		String lineDecoderPattern = "^([-+:, 0-9]+)" + "[ \\t]+" + "([A-Z]+)" + "[ \\t]+" + "\\[" + ""
-		 + "([^]]+)\\]" + "[ \\t]+" + "\\(" + "(" + regexThread1 + "|" + regexThread2 + ")" + "\\)" +
-		 "[" + " \\t]+" + "(.*)$";
-		return new ParsConfigEntry("wildfly", lineDecoderPattern, 1, 2, 3, 4, 5);
 	}
 
 	// -------------------
