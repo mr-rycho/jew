@@ -40,8 +40,7 @@ public class GuiMain {
 	 , boolean isWindows, String initFilter) {
 		ParsConfigProvider parsConfigProvider = new ParsConfigProviderPer();
 		ParsConfig parsConfig = parsConfigProvider.get();
-		ParsConfigEntry pc = parsConfig.size() == 0 ? createDefaultParsConfigEntry() : parsConfig
-		 .get(0);
+		ParsConfigEntry pc = parsConfig.get(0);
 		LineDecoderCfg lineDecoderCfg = new LineDecoderCfg(Pattern.compile(pc.getPattern()), pc
 		 .getGroupTime(), pc.getGroupLevel(), pc.getGroupClass(), pc.getGroupThread(), pc
 		 .getGroupMessage());
@@ -115,15 +114,6 @@ public class GuiMain {
 		setKeysAndActions(scrollPane, actions);
 
 		return mainFrame;
-	}
-
-	private static ParsConfigEntry createDefaultParsConfigEntry() {
-		String regexThread1 = "[^()]+";
-		String regexThread2 = "[^()]*" + "\\(" + "[^)]*" + "\\)" + "[^()]*";
-		String lineDecoderPattern = "^([-+:, 0-9]+)" + "[ \\t]+" + "([A-Z]+)" + "[ \\t]+" + "\\[" + ""
-		 + "([^]]+)\\]" + "[ \\t]+" + "\\(" + "(" + regexThread1 + "|" + regexThread2 + ")" + "\\)" +
-		 "[" + " \\t]+" + "(.*)$";
-		return new ParsConfigEntry("wildfly", lineDecoderPattern, 1, 2, 3, 4, 5);
 	}
 
 	private static Image loadImage() {
