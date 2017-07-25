@@ -3,7 +3,13 @@ package pl.rychu.jew.gui.pars;
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created on 21.07.2017.
@@ -12,10 +18,14 @@ public class ParsDialog extends JDialog {
 
 	private static final long serialVersionUID = -3576162258828903040L;
 
+	private static final String ACTION_KEY_GLOB_ENTER = "jew.pars.enter";
+	private static final String ACTION_KEY_GLOB_ESC = "jew.pars.esc";
+
 	private final ParsConfigChangeListener lsn;
 	private final ParsConfig origParsConfig;
 	private final DefaultListModel<ParsConfigEntry> model;
 	private final JList<ParsConfigEntry> jList;
+	private final JButton dupNewButton;
 
 	// ----------
 
@@ -34,13 +44,75 @@ public class ParsDialog extends JDialog {
 		jList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		jList.setFixedCellHeight(14);
 		jList.setCellRenderer(new CellRenderer());
-		cp.add(new JScrollPane(jList), BorderLayout.CENTER);
+		jList.setPreferredSize(new Dimension(0, 60));
+		cp.add(new JScrollPane(jList), BorderLayout.NORTH);
 
+		createActions((JComponent) cp);
+		ActionMap am = ((JComponent) cp).getActionMap();
 
-		// TODO uncomment
-		// setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+		ParsEditPanel parsEditPanel = new ParsEditPanel();
+		JPanel editButtonsPanel = new JPanel();
+		editButtonsPanel.setPreferredSize(new Dimension(0, 40));
+		editButtonsPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
+
+		JPanel windowButtonsPanel = new JPanel();
+		windowButtonsPanel.setPreferredSize(new Dimension(0, 40));
+		windowButtonsPanel.setLayout(new FlowLayout(FlowLayout.RIGHT, 5, 5));
+
+		JPanel buttonsPanel = new JPanel();
+		buttonsPanel.setLayout(new BorderLayout());
+		buttonsPanel.add(editButtonsPanel, BorderLayout.NORTH);
+		buttonsPanel.add(windowButtonsPanel, BorderLayout.SOUTH);
+
+		cp.add(parsEditPanel, BorderLayout.CENTER);
+		cp.add(buttonsPanel, BorderLayout.SOUTH);
+
+		dupNewButton = new JButton("duplicate");
+		dupNewButton.addActionListener(new ListActionDupNew());
+		editButtonsPanel.add(dupNewButton);
+		updateDupNewButton();
+		JButton removeButton = new JButton("remove");
+		removeButton.addActionListener(new ListActionRemove());
+		editButtonsPanel.add(removeButton);
+		JButton moveUpButton = new JButton("up");
+		moveUpButton.addActionListener(new ListActionMove(-1));
+		editButtonsPanel.add(moveUpButton);
+		JButton moveDownButton = new JButton("down");
+		moveDownButton.addActionListener(new ListActionMove(1));
+		editButtonsPanel.add(moveDownButton);
+		JButton undoButton = new JButton("undo");
+		undoButton.addActionListener(new Undoer());
+		editButtonsPanel.add(undoButton);
+
+		JButton closeButton = new JButton("cancel");
+		closeButton.setAction(am.get(ACTION_KEY_GLOB_ESC));
+		closeButton.setText("cancel");
+		windowButtonsPanel.add(closeButton);
+		JButton applyButton = new JButton("apply");
+		applyButton.addActionListener(new DialogApplier());
+		windowButtonsPanel.add(applyButton);
+		final JButton acceptButton = new JButton("OK");
+		acceptButton.setAction(am.get(ACTION_KEY_GLOB_ENTER));
+		acceptButton.setText("OK");
+		windowButtonsPanel.add(acceptButton);
+
+		jList.addListSelectionListener(new SelectionToConfig(parsEditPanel));
+		// parsEditPanel.addHiEntryChangeListener(new ConfigToSelection(configPanel));
+
+		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+
+		createKeyBindings((JComponent) cp);
 
 		setVisible(true);
+	}
+
+	private ParsConfig listToParsConfig() {
+		int size = model.size();
+		List<ParsConfigEntry> entries = new ArrayList<>(size);
+		for (int i = 0; i < size; i++) {
+			entries.add(model.get(i));
+		}
+		return new ParsConfig(entries);
 	}
 
 	private static DefaultListModel<ParsConfigEntry> createModel(ParsConfig parsConfig) {
@@ -57,6 +129,180 @@ public class ParsDialog extends JDialog {
 		}
 	}
 
+	private void updateDupNewButton() {
+		dupNewButton.setText(model.isEmpty() ? "new" : "duplicate");
+	}
+
+	// =======================
+
+	private void createActions(JComponent jp) {
+		final ActionMap actionMap = new ActionMap();
+		final ActionMap oldActionMap = jp.getActionMap();
+		actionMap.setParent(oldActionMap);
+		jp.setActionMap(actionMap);
+
+		actionMap.put(ACTION_KEY_GLOB_ENTER, new AbstractAction(ACTION_KEY_GLOB_ENTER) {
+			private static final long serialVersionUID = 6718276366669100156L;
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				new DialogAccepter().actionPerformed(e);
+			}
+		});
+
+		actionMap.put(ACTION_KEY_GLOB_ESC, new AbstractAction(ACTION_KEY_GLOB_ESC) {
+			private static final long serialVersionUID = -3740814541749273051L;
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				new DialogCloser().actionPerformed(e);
+			}
+		});
+	}
+
+	private void createKeyBindings(JComponent jp) {
+		final InputMap inputMap = new InputMap();
+		final InputMap oldInputMap = jp.getInputMap();
+		inputMap.setParent(oldInputMap);
+		jp.setInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, inputMap);
+
+		inputMap.put(KeyStroke.getKeyStroke("pressed ENTER"), ACTION_KEY_GLOB_ENTER);
+		inputMap.put(KeyStroke.getKeyStroke("pressed ESCAPE"), ACTION_KEY_GLOB_ESC);
+	}
+
+
+	// =======================
+
+	private class ListActionDupNew implements ActionListener {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			if (model.isEmpty()) {
+				model.add(0, new ParsConfigEntry("", "", 1, 2, 3, 4, 5));
+				jList.setSelectedIndex(0);
+			} else {
+				int index = jList.getMinSelectionIndex();
+				if (index >= 0) {
+					model.add(index + 1, model.get(index));
+				}
+			}
+			updateDupNewButton();
+		}
+	}
+
+	private class ListActionMove implements ActionListener {
+		private final int offset;
+
+		private ListActionMove(int offset) {
+			if (offset != 1 && offset != -1) {
+				throw new IllegalArgumentException("bad offset: " + offset);
+			}
+			this.offset = offset;
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			if (!model.isEmpty()) {
+				int size = model.size();
+				int index = jList.getMinSelectionIndex();
+				if (index >= 0) {
+					if ((offset > 0 && index + 1 < size) || (offset < 0 && index > 0)) {
+						int targetIndex = index + offset;
+						model.add(targetIndex, model.remove(index));
+						jList.getSelectionModel().addSelectionInterval(targetIndex, targetIndex);
+					}
+				}
+			}
+		}
+	}
+
+	private class ListActionRemove implements ActionListener {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			int index = jList.getMinSelectionIndex();
+			if (index >= 0) {
+				model.remove(index);
+			}
+			updateDupNewButton();
+		}
+	}
+
+	private class DialogCloser implements ActionListener {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			setVisible(false);
+		}
+	}
+
+	private class DialogAccepter implements ActionListener {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			if (lsn != null) {
+				lsn.parsConfigChanged(listToParsConfig());
+			}
+			setVisible(false);
+		}
+	}
+
+	private class DialogApplier implements ActionListener {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			if (lsn != null) {
+				lsn.parsConfigChanged(listToParsConfig());
+			}
+		}
+	}
+
+	private class Undoer implements ActionListener {
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			fillModel(model, origParsConfig);
+			updateDupNewButton();
+		}
+	}
+
+	// =======================
+
+	private class SelectionToConfig implements ListSelectionListener {
+		private final ParsEditPanel parsEditPanel;
+
+		private SelectionToConfig(ParsEditPanel parsEditPanel) {
+			this.parsEditPanel = parsEditPanel;
+		}
+
+		@Override
+		public void valueChanged(ListSelectionEvent e) {
+			int minSelIndex = jList.getMinSelectionIndex();
+			if (minSelIndex < 0) {
+				parsEditPanel.clear();
+			} else {
+				parsEditPanel.put(jList.getModel().getElementAt(minSelIndex));
+			}
+		}
+	}
+
+	// =======================
+
+	private class ConfigToSelection implements ParsEntryChangeListener {
+		private final ParsEditPanel parsEditPanel;
+
+		private ConfigToSelection(ParsEditPanel parsEditPanel) {
+			this.parsEditPanel = parsEditPanel;
+		}
+
+		@Override
+		public void parsEntryChanged(boolean fromInside) {
+			if (fromInside) {
+				int index = jList.getMinSelectionIndex();
+				if (index >= 0) {
+					DefaultListModel<ParsConfigEntry> model = (DefaultListModel<ParsConfigEntry>) jList
+					 .getModel();
+					ParsConfigEntry parsConfigEntry = parsEditPanel.get();
+					model.set(index, parsConfigEntry);
+				}
+			}
+		}
+	}
+
 	// =======================
 
 	private static class CellRenderer extends DefaultListCellRenderer {
@@ -67,20 +313,20 @@ public class ParsDialog extends JDialog {
 		private static final Border SEL_BORDER_NO_FOCUS = new LineBorder(Color.LIGHT_GRAY, 1);
 
 		@Override
-		public Component getListCellRendererComponent(JList<?> list,  Object value
-		 ,  int index, final boolean isSelected,  boolean cellHasFocus) {
+		public Component getListCellRendererComponent(JList<?> list, Object value, int index,
+		 final boolean isSelected, boolean cellHasFocus) {
 			return getListCellRendererComponentSuper(list, value, index, isSelected, cellHasFocus);
 		}
 
-		Component getListCellRendererComponentSuper(JList<?> list, Object valueObj,
-		 int index, boolean isSelected, boolean cellHasFocus) {
+		Component getListCellRendererComponentSuper(JList<?> list, Object valueObj, int index,
+		 boolean isSelected, boolean cellHasFocus) {
 
-			 ParsConfigEntry value = (ParsConfigEntry)valueObj;
+			ParsConfigEntry value = (ParsConfigEntry) valueObj;
 
 			setComponentOrientation(list.getComponentOrientation());
 
 			setIcon(null);
-			setText(value.getName()+" : "+value.getPattern());
+			setText(value.getName() + " : " + value.getPattern());
 
 			setEnabled(list.isEnabled());
 			setFont(list.getFont());
