@@ -10,6 +10,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * Created on 21.07.2017.
@@ -26,6 +29,8 @@ public class ParsDialog extends JDialog {
 	private final DefaultListModel<ParsConfigEntry> model;
 	private final JList<ParsConfigEntry> jList;
 	private final JButton dupNewButton;
+	private final ParsEditPanel parsEditPanel;
+	private final JLabel parsResultLabel;
 	private final String theLine;
 
 	// ----------
@@ -54,8 +59,8 @@ public class ParsDialog extends JDialog {
 		{
 			JLabel label = new JLabel(currentLine);
 			parsedPanel.add(label, BorderLayout.NORTH);
-			JLabel l2 = new JLabel("tu bendzie sparsowane");
-			parsedPanel.add(l2, BorderLayout.SOUTH);
+			parsResultLabel = new JLabel("tu bendzie sparsowane");
+			parsedPanel.add(parsResultLabel, BorderLayout.SOUTH);
 		}
 		JPanel topPanel = new JPanel();
 		topPanel.setLayout(new BorderLayout());
@@ -65,7 +70,7 @@ public class ParsDialog extends JDialog {
 		createActions((JComponent) cp);
 		ActionMap am = ((JComponent) cp).getActionMap();
 
-		ParsEditPanel parsEditPanel = new ParsEditPanel();
+		parsEditPanel = new ParsEditPanel();
 		JPanel editButtonsPanel = new JPanel();
 		editButtonsPanel.setPreferredSize(new Dimension(0, 40));
 		editButtonsPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
@@ -118,6 +123,8 @@ public class ParsDialog extends JDialog {
 		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
 		createKeyBindings((JComponent) cp);
+
+		parseLine();
 
 		setVisible(true);
 	}
@@ -186,6 +193,32 @@ public class ParsDialog extends JDialog {
 		inputMap.put(KeyStroke.getKeyStroke("pressed ESCAPE"), ACTION_KEY_GLOB_ESC);
 	}
 
+	private void parseLine() {
+		parsResultLabel.setText(parseTheLine());
+	}
+
+	private String parseTheLine() {
+		if (theLine==null || theLine.isEmpty()) {
+			return "[line is empty]";
+		}
+		ParsConfigEntry pce = parsEditPanel.get();
+		try {
+			Pattern pattern = pce.getCompiledPattern();
+			Matcher matcher = pattern.matcher(theLine);
+			if (!matcher.matches()) {
+				return "[no match]";
+			} else {
+				if (pce.getGroupThread() <= 0) {
+					return "[thread group not assigned]";
+				} else {
+					return "thread: "+matcher.group(pce.getGroupThread());
+				}
+			}
+		} catch (PatternSyntaxException e) {
+			return e.getMessage();
+		}
+
+	}
 
 	// =======================
 
@@ -293,6 +326,7 @@ public class ParsDialog extends JDialog {
 			} else {
 				parsEditPanel.put(jList.getModel().getElementAt(minSelIndex));
 			}
+			parseLine();
 		}
 	}
 
