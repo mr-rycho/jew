@@ -41,7 +41,8 @@ public class GuiMain {
 		ParsConfigProvider parsConfigProvider = new ParsConfigProviderPer();
 		ParsConfig parsConfig = parsConfigProvider.get();
 		ParsConfigEntry pc = parsConfig.get(0);
-		LineDecoderCfg lineDecoderCfg = new LineDecoderCfg(Pattern.compile(pc.getPattern()), pc
+		Pattern pattern = pc.getCompiledPatternOrNull();
+		LineDecoderCfg lineDecoderCfg = pattern == null ? null : new LineDecoderCfg(pattern, pc
 		 .getGroupTime(), pc.getGroupLevel(), pc.getGroupClass(), pc.getGroupThread(), pc
 		 .getGroupMessage());
 

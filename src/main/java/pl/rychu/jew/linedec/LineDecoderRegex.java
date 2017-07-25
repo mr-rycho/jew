@@ -26,6 +26,10 @@ public class LineDecoderRegex implements LineDecoder {
 			return null;
 		}
 
+		if (lineDecoderCfg == null || lineDecoderCfg.getPattern() == null) {
+			return null;
+		}
+
 		Matcher matcher = lineDecoderCfg.getPattern().matcher(line);
 
 		if (!matcher.matches()) {

@@ -1,5 +1,8 @@
 package pl.rychu.jew.gui.pars;
 
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+
 /**
  * Created on 18.07.2017.
  */
@@ -30,6 +33,18 @@ public class ParsConfigEntry {
 
 	public String getPattern() {
 		return pattern;
+	}
+
+	public Pattern getCompiledPattern() {
+		return Pattern.compile(pattern.replace("\n", ""));
+	}
+
+	public Pattern getCompiledPatternOrNull() {
+		try {
+			return Pattern.compile(pattern.replace("\n", ""));
+		} catch (PatternSyntaxException e) {
+			return null;
+		}
 	}
 
 	public int getGroupTime() {
