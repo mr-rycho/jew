@@ -669,6 +669,11 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		return model.getRootIndex(view);
 	}
 
+	public String getCurrentLineContent() {
+		int sel = getSelectedIndex();
+		return sel < 0 ? null : getModel().getElementAt(sel).getFullText();
+	}
+
 	private long getCurrentLineFilePos(int view) {
 		final ListModelLog model = (ListModelLog)getModel();
 		final LogLine logLine = model.getIndexElementAt(view);

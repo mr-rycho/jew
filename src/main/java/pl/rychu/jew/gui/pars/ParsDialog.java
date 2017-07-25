@@ -26,14 +26,17 @@ public class ParsDialog extends JDialog {
 	private final DefaultListModel<ParsConfigEntry> model;
 	private final JList<ParsConfigEntry> jList;
 	private final JButton dupNewButton;
+	private final String theLine;
 
 	// ----------
 
-	public ParsDialog(JFrame fr, ParsConfig parsConfig, ParsConfigChangeListener lsn) {
+	public ParsDialog(JFrame fr, ParsConfig parsConfig, String currentLine,
+	 ParsConfigChangeListener lsn) {
 		super(fr, "Parse Dialog", true);
 
 		this.lsn = lsn;
-		origParsConfig = ParsConfig.clone(parsConfig);
+		this.origParsConfig = ParsConfig.clone(parsConfig);
+		this.theLine = currentLine;
 
 		setSize(450, 400);
 		Container cp = getContentPane();
@@ -45,7 +48,19 @@ public class ParsDialog extends JDialog {
 		jList.setFixedCellHeight(14);
 		jList.setCellRenderer(new CellRenderer());
 		jList.setPreferredSize(new Dimension(0, 60));
-		cp.add(new JScrollPane(jList), BorderLayout.NORTH);
+
+		JPanel parsedPanel = new JPanel();
+		parsedPanel.setLayout(new BorderLayout());
+		{
+			JLabel label = new JLabel(currentLine);
+			parsedPanel.add(label, BorderLayout.NORTH);
+			JLabel l2 = new JLabel("tu bendzie sparsowane");
+			parsedPanel.add(l2, BorderLayout.SOUTH);
+		}
+		JPanel topPanel = new JPanel();
+		topPanel.setLayout(new BorderLayout());
+		topPanel.add(new JScrollPane(jList), BorderLayout.NORTH);
+		topPanel.add(parsedPanel, BorderLayout.SOUTH);
 
 		createActions((JComponent) cp);
 		ActionMap am = ((JComponent) cp).getActionMap();
@@ -64,6 +79,7 @@ public class ParsDialog extends JDialog {
 		buttonsPanel.add(editButtonsPanel, BorderLayout.NORTH);
 		buttonsPanel.add(windowButtonsPanel, BorderLayout.SOUTH);
 
+		cp.add(topPanel, BorderLayout.NORTH);
 		cp.add(parsEditPanel, BorderLayout.CENTER);
 		cp.add(buttonsPanel, BorderLayout.SOUTH);
 

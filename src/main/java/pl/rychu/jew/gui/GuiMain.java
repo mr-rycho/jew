@@ -104,8 +104,9 @@ public class GuiMain {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					ParsConfig pc = parsConfigProvider.get();
+					String currentLine = logViewPanel.getCurrentLineContent();
 					ParsDialog dialog = new ParsDialog((JFrame) logViewPanel.getTopLevelAncestor(), pc,
-					 null);
+					 currentLine, null);
 					// execution continues here after closing the dialog
 					dialog.dispose();
 				}
