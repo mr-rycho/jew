@@ -26,7 +26,7 @@ public class ParsEditPanel extends JPanel {
 	// ----------
 
 	public ParsEditPanel() {
-		setLayout(new BorderLayout());
+		setLayout(new BorderLayout(5, 5));
 
 		nameField = new JTextField(20);
 

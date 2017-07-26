@@ -43,9 +43,9 @@ public class ParsDialog extends JDialog {
 		this.origParsConfig = ParsConfig.clone(parsConfig);
 		this.theLine = currentLine;
 
-		setSize(450, 400);
+		setSize(700, 400);
 		Container cp = getContentPane();
-		cp.setLayout(new BorderLayout());
+		cp.setLayout(new BorderLayout(5, 5));
 
 		model = createModel(parsConfig);
 		jList = new JList<>(model);
@@ -63,7 +63,7 @@ public class ParsDialog extends JDialog {
 			parsedPanel.add(parsResultLabel, BorderLayout.SOUTH);
 		}
 		JPanel topPanel = new JPanel();
-		topPanel.setLayout(new BorderLayout());
+		topPanel.setLayout(new BorderLayout(5, 5));
 		topPanel.add(new JScrollPane(jList), BorderLayout.NORTH);
 		topPanel.add(parsedPanel, BorderLayout.SOUTH);
 
@@ -198,7 +198,7 @@ public class ParsDialog extends JDialog {
 	}
 
 	private String parseTheLine() {
-		if (theLine==null || theLine.isEmpty()) {
+		if (theLine == null || theLine.isEmpty()) {
 			return "[line is empty]";
 		}
 		ParsConfigEntry pce = parsEditPanel.get();
@@ -211,7 +211,7 @@ public class ParsDialog extends JDialog {
 				if (pce.getGroupThread() <= 0) {
 					return "[thread group not assigned]";
 				} else {
-					return "thread: "+matcher.group(pce.getGroupThread());
+					return "thread: " + matcher.group(pce.getGroupThread());
 				}
 			}
 		} catch (PatternSyntaxException e) {
