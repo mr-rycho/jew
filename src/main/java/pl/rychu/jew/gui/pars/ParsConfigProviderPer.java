@@ -1,6 +1,6 @@
 package pl.rychu.jew.gui.pars;
 
-import java.util.Arrays;
+import java.util.Collections;
 
 public class ParsConfigProviderPer implements ParsConfigProvider {
 
@@ -38,12 +38,18 @@ public class ParsConfigProviderPer implements ParsConfigProvider {
 	private static ParsConfig createDefaultParsConfig() {
 		String regexThread1 = "[^()]+";
 		String regexThread2 = "[^()]*" + "\\(" + "[^)]*" + "\\)" + "[^()]*";
-		String lineDecoderPattern = "^([-+:, 0-9]+)" + "[ \\t]+" + "([A-Z]+)" + "[ \\t]+" + "\\[" + ""
-		 + "([^]]+)\\]" + "[ \\t]+" + "\\(" + "(" + regexThread1 + "|" + regexThread2 + ")" + "\\)" +
-		 "[" + " \\t]+" + "(.*)$";
-		ParsConfigEntry pcWildfly = new ParsConfigEntry("wildfly", lineDecoderPattern, 1, 2, 3, 4, 5);
+		String regexThread = "\\(" + "(" + regexThread1 + "|" + regexThread2 + ")" + "\\)";
+		//noinspection StringBufferReplaceableByString
+		StringBuilder pb = new StringBuilder();
+		pb.append("^([-+:, 0-9]+)").append("\n");
+		pb.append("[ \\t]+").append("([A-Z]+)").append("\n");
+		pb.append("[ \\t]+").append("\\[([^]]+)\\]").append("\n");
+		pb.append("[ \\t]+").append(regexThread).append("\n");
+		pb.append("[ \\t]+").append("(.*)$");
 
-		return new ParsConfig(Arrays.asList(pcWildfly));
+		ParsConfigEntry pcWildfly = new ParsConfigEntry("wildfly", pb.toString(), 1, 2, 3, 4, 5);
+
+		return new ParsConfig(Collections.singletonList(pcWildfly));
 	}
 
 }
