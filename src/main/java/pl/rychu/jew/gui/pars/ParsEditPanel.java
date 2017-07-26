@@ -31,6 +31,7 @@ public class ParsEditPanel extends JPanel {
 		nameField = new JTextField(20);
 
 		regexArea = new JTextArea(20, 5);
+		regexArea.setBorder(nameField.getBorder());
 
 		add(nameField, BorderLayout.NORTH);
 		add(regexArea, BorderLayout.CENTER);
