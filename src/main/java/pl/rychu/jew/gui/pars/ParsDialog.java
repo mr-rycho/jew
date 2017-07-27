@@ -118,7 +118,7 @@ public class ParsDialog extends JDialog {
 		windowButtonsPanel.add(acceptButton);
 
 		jList.addListSelectionListener(new SelectionToConfig(parsEditPanel));
-		// parsEditPanel.addHiEntryChangeListener(new ConfigToSelection(configPanel));
+		parsEditPanel.addParsEntryChangeListener(new ConfigToSelection(parsEditPanel));
 
 		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
@@ -350,6 +350,7 @@ public class ParsDialog extends JDialog {
 					model.set(index, parsConfigEntry);
 				}
 			}
+			parseLine();
 		}
 	}
 

@@ -4,6 +4,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -49,6 +51,15 @@ public class ParsEditPanel extends JPanel {
 		add(nameField, BorderLayout.NORTH);
 		add(regexArea, BorderLayout.CENTER);
 		add(groupsPanel, BorderLayout.SOUTH);
+
+		TextChangeListener textChangeListener = new TextChangeListener();
+		nameField.getDocument().addDocumentListener(textChangeListener);
+		regexArea.getDocument().addDocumentListener(textChangeListener);
+		groupTimeField.getDocument().addDocumentListener(textChangeListener);
+		groupLevelField.getDocument().addDocumentListener(textChangeListener);
+		groupClassField.getDocument().addDocumentListener(textChangeListener);
+		groupThreadField.getDocument().addDocumentListener(textChangeListener);
+		groupMessageField.getDocument().addDocumentListener(textChangeListener);
 	}
 
 	private static JTextField createAndAddTextFieldWithLabel(String labelStr, JPanel targetPanel) {
@@ -117,6 +128,18 @@ public class ParsEditPanel extends JPanel {
 		}
 	}
 
+	// ----------
+
+	void addParsEntryChangeListener(ParsEntryChangeListener lsn) {
+		listeners.add(lsn);
+	}
+
+	private void conditionallyNotifyParsEntryChangeFromInside() {
+		if (textChangeEventsCanGoOutside) {
+			notifyParsEntryChangeFromInside();
+		}
+	}
+
 	private void notifyParsEntryChangeFromInside() {
 		notifyParsEntryChange(true);
 	}
@@ -132,6 +155,25 @@ public class ParsEditPanel extends JPanel {
 			} catch (Exception e) {
 				log.error("error calling listener", e);
 			}
+		}
+	}
+
+	// ==========
+
+	private class TextChangeListener implements DocumentListener {
+		@Override
+		public void insertUpdate(DocumentEvent e) {
+			conditionallyNotifyParsEntryChangeFromInside();
+		}
+
+		@Override
+		public void removeUpdate(DocumentEvent e) {
+			conditionallyNotifyParsEntryChangeFromInside();
+		}
+
+		@Override
+		public void changedUpdate(DocumentEvent e) {
+			conditionallyNotifyParsEntryChangeFromInside();
 		}
 	}
 
