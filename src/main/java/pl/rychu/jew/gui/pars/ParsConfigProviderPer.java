@@ -1,6 +1,7 @@
 package pl.rychu.jew.gui.pars;
 
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ParsConfigProviderPer implements ParsConfigProvider {
 
@@ -36,20 +37,35 @@ public class ParsConfigProviderPer implements ParsConfigProvider {
 	}
 
 	private static ParsConfig createDefaultParsConfig() {
-		String regexThread1 = "[^()]+";
-		String regexThread2 = "[^()]*" + "\\(" + "[^)]*" + "\\)" + "[^()]*";
-		String regexThread = "\\(" + "(" + regexThread1 + "|" + regexThread2 + ")" + "\\)";
-		//noinspection StringBufferReplaceableByString
-		StringBuilder pb = new StringBuilder();
-		pb.append("^([-+:, 0-9]+)").append("\n");
-		pb.append("[ \\t]+").append("([A-Z]+)").append("\n");
-		pb.append("[ \\t]+").append("\\[([^]]+)\\]").append("\n");
-		pb.append("[ \\t]+").append(regexThread).append("\n");
-		pb.append("[ \\t]+").append("(.*)$");
+		List<ParsConfigEntry> entries = new ArrayList<>();
 
-		ParsConfigEntry pcWildfly = new ParsConfigEntry("wildfly", pb.toString(), 1, 2, 3, 4, 5);
+		{
+			String regexThread1 = "[^()]+";
+			String regexThread2 = "[^()]*" + "\\(" + "[^)]*" + "\\)" + "[^()]*";
+			String regexThread = "\\(" + "(" + regexThread1 + "|" + regexThread2 + ")" + "\\)";
+			//noinspection StringBufferReplaceableByString
+			StringBuilder pb = new StringBuilder();
+			pb.append("^([-+:, 0-9]+)").append("\n");
+			pb.append("[ \\t]+").append("([A-Z]+)").append("\n");
+			pb.append("[ \\t]+").append("\\[([^]]+)\\]").append("\n");
+			pb.append("[ \\t]+").append(regexThread).append("\n");
+			pb.append("[ \\t]+").append("(.*)$");
 
-		return new ParsConfig(Collections.singletonList(pcWildfly));
+			entries.add(new ParsConfigEntry("wildfly", pb.toString(), 1, 2, 3, 4, 5));
+		}
+		{
+			//noinspection StringBufferReplaceableByString
+			StringBuilder pb = new StringBuilder();
+			pb.append("^([-:., 0-9]+)").append("\n");
+			pb.append("[ \\t]+").append("([A-Z]+)").append("\n");
+			pb.append("[ \\t]+").append("\\[([^]]+)\\]").append("\n");
+			pb.append("[ \\t]+").append("([^ :]+):[0-9]+:").append("\n");
+			pb.append("[ \\t]+").append("(.*)$");
+
+			entries.add(new ParsConfigEntry("glassfish", pb.toString(), 1, 2, 3, 4, 5));
+		}
+
+		return new ParsConfig(entries);
 	}
 
 }
