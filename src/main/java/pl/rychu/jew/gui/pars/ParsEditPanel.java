@@ -20,6 +20,9 @@ public class ParsEditPanel extends JPanel {
 	private final JTextArea regexArea;
 	private final JTextField groupTimeField;
 	private final JTextField groupLevelField;
+	private final JTextField groupClassField;
+	private final JTextField groupThreadField;
+	private final JTextField groupMessageField;
 
 	private Collection<ParsEntryChangeListener> listeners = new CopyOnWriteArrayList<>();
 
@@ -39,7 +42,9 @@ public class ParsEditPanel extends JPanel {
 		groupsPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
 		groupTimeField = createAndAddTextFieldWithLabel("time", groupsPanel);
 		groupLevelField = createAndAddTextFieldWithLabel("level", groupsPanel);
-		groupsPanel.add(groupLevelField);
+		groupClassField = createAndAddTextFieldWithLabel("class", groupsPanel);
+		groupThreadField = createAndAddTextFieldWithLabel("thread", groupsPanel);
+		groupMessageField = createAndAddTextFieldWithLabel("message", groupsPanel);
 
 		add(nameField, BorderLayout.NORTH);
 		add(regexArea, BorderLayout.CENTER);
@@ -66,7 +71,9 @@ public class ParsEditPanel extends JPanel {
 			regexArea.setText("");
 			groupTimeField.setText("");
 			groupLevelField.setText("");
-			// TODO fields
+			groupClassField.setText("");
+			groupThreadField.setText("");
+			groupMessageField.setText("");
 
 			notifyParsEntryChangeFromOutside();
 		} finally {
@@ -81,7 +88,9 @@ public class ParsEditPanel extends JPanel {
 			regexArea.setText(parsConfigEntry.getPattern());
 			groupTimeField.setText("" + parsConfigEntry.getGroupTime());
 			groupLevelField.setText("" + parsConfigEntry.getGroupLevel());
-			// TODO fields
+			groupClassField.setText("" + parsConfigEntry.getGroupClass());
+			groupThreadField.setText("" + parsConfigEntry.getGroupThread());
+			groupMessageField.setText("" + parsConfigEntry.getGroupMessage());
 		} finally {
 			textChangeEventsCanGoOutside = true;
 		}
@@ -92,7 +101,11 @@ public class ParsEditPanel extends JPanel {
 		String regex = regexArea.getText();
 		int groupTime = parseInt(groupTimeField);
 		int groupLevel = parseInt(groupLevelField);
-		return new ParsConfigEntry(name, regex, groupTime, groupLevel, 3, 4, 5);
+		int groupClass = parseInt(groupClassField);
+		int groupThread = parseInt(groupThreadField);
+		int groupMessage = parseInt(groupMessageField);
+		return new ParsConfigEntry(name, regex, groupTime, groupLevel, groupClass, groupThread,
+		 groupMessage);
 	}
 
 	private static int parseInt(JTextField textField) {
