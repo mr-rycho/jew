@@ -104,10 +104,11 @@ public class GuiMain {
 				private static final long serialVersionUID = -8360999122789471879L;
 				@Override
 				public void actionPerformed(ActionEvent e) {
+					ParsConfigChangeListener lsn = parsConfigProvider::put;
 					ParsConfig pc = parsConfigProvider.get();
 					String currentLine = logViewPanel.getCurrentLineContent();
 					ParsDialog dialog = new ParsDialog((JFrame) logViewPanel.getTopLevelAncestor(), pc,
-					 currentLine, null);
+					 currentLine, lsn);
 					// execution continues here after closing the dialog
 					dialog.dispose();
 				}
