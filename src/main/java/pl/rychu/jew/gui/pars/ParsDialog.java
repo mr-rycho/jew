@@ -25,6 +25,7 @@ public class ParsDialog extends JDialog {
 	private static final String ACTION_KEY_GLOB_ESC = "jew.pars.esc";
 
 	private final ParsConfigSaveListener saveLsn;
+	private final PickForParseListener pfpLsn;
 	private final ParsConfig origParsConfig;
 	private final DefaultListModel<ParsConfigEntry> model;
 	private final JList<ParsConfigEntry> jList;
@@ -36,10 +37,11 @@ public class ParsDialog extends JDialog {
 	// ----------
 
 	public ParsDialog(JFrame fr, ParsConfig parsConfig, String currentLine,
-	 ParsConfigSaveListener saveLsn) {
+	 ParsConfigSaveListener saveLsn, PickForParseListener pfpLsn) {
 		super(fr, "Parse Dialog", true);
 
 		this.saveLsn = saveLsn;
+		this.pfpLsn = pfpLsn;
 		this.origParsConfig = ParsConfig.clone(parsConfig);
 		this.theLine = currentLine;
 
@@ -110,12 +112,20 @@ public class ParsDialog extends JDialog {
 		cancelButton.setText("cancel");
 		windowButtonsPanel.add(cancelButton);
 		JButton applyButton = new JButton("apply");
-		applyButton.addActionListener(e -> notifyParsConfigSave(listToParsConfig()));
+		applyButton.addActionListener(e -> notifyParsEntryPicked());
 		windowButtonsPanel.add(applyButton);
-		final JButton acceptButton = new JButton("OK");
-		acceptButton.setAction(am.get(ACTION_KEY_GLOB_ENTER));
-		acceptButton.setText("OK");
-		windowButtonsPanel.add(acceptButton);
+		JButton pickButton = new JButton("Pick");
+		pickButton.addActionListener(e -> {
+			notifyParsEntryPicked();
+			setVisible(false);
+		});
+		windowButtonsPanel.add(pickButton);
+		JButton saveButton = new JButton("Save");
+		saveButton.addActionListener(e -> notifyParsConfigSave(listToParsConfig()));
+		windowButtonsPanel.add(saveButton);
+		JButton saveAndPickButton = new JButton("Save & Pick");
+		saveAndPickButton.setAction(am.get(ACTION_KEY_GLOB_ENTER));
+		windowButtonsPanel.add(saveAndPickButton);
 
 		jList.addListSelectionListener(new SelectionToConfig(parsEditPanel));
 		parsEditPanel.addParsEntryChangeListener(new ConfigToSelection(parsEditPanel));
@@ -169,7 +179,9 @@ public class ParsDialog extends JDialog {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				new DialogAccepter().actionPerformed(e);
+				notifyParsConfigSave(listToParsConfig());
+				notifyParsEntryPicked();
+				setVisible(false);
 			}
 		});
 
@@ -178,7 +190,7 @@ public class ParsDialog extends JDialog {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				new DialogCloser().actionPerformed(e);
+				setVisible(false);
 			}
 		});
 	}
@@ -222,6 +234,19 @@ public class ParsDialog extends JDialog {
 	private void notifyParsConfigSave(ParsConfig pc) {
 		if (saveLsn != null) {
 			saveLsn.savingParsConfig(pc);
+		}
+	}
+
+	private void notifyParsEntryPicked() {
+		int index = jList.getMinSelectionIndex();
+		if (index >= 0) {
+			notifyParsEntryPicked(model.get(index));
+		}
+	}
+
+	private void notifyParsEntryPicked(ParsConfigEntry pce) {
+		if (pfpLsn != null) {
+			pfpLsn.parsEntryPicked(pce);
 		}
 	}
 
@@ -277,21 +302,6 @@ public class ParsDialog extends JDialog {
 				model.remove(index);
 			}
 			updateDupNewButton();
-		}
-	}
-
-	private class DialogCloser implements ActionListener {
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			setVisible(false);
-		}
-	}
-
-	private class DialogAccepter implements ActionListener {
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			notifyParsConfigSave(listToParsConfig());
-			setVisible(false);
 		}
 	}
 

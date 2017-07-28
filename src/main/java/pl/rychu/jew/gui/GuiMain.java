@@ -40,11 +40,8 @@ public class GuiMain {
 	 , boolean isWindows, String initFilter) {
 		ParsConfigProvider parsConfigProvider = new ParsConfigProviderPer();
 		ParsConfig parsConfig = parsConfigProvider.get();
-		ParsConfigEntry pc = parsConfig.get(0);
-		Pattern pattern = pc.getCompiledPatternOrNull();
-		LineDecoderCfg lineDecoderCfg = pattern == null ? null : new LineDecoderCfg(pattern, pc
-		 .getGroupTime(), pc.getGroupLevel(), pc.getGroupClass(), pc.getGroupThread(), pc
-		 .getGroupMessage());
+		ParsConfigEntry pce = parsConfig.get(0);
+		LineDecoderCfg lineDecoderCfg = cfgParsConfig(pce);
 
 		final LogAccess logAccess = LogAccessFile.create(filename
 		 , isWindows, lineDecoderCfg);
@@ -107,7 +104,7 @@ public class GuiMain {
 					ParsConfig pc = parsConfigProvider.get();
 					String currentLine = logViewPanel.getCurrentLineContent();
 					ParsDialog dialog = new ParsDialog((JFrame) logViewPanel.getTopLevelAncestor(), pc,
-					 currentLine, parsConfigProvider::put);
+					 currentLine, parsConfigProvider::put, pce -> logAccess.reconfig(cfgParsConfig(pce)));
 					// execution continues here after closing the dialog
 					dialog.dispose();
 				}
@@ -156,6 +153,12 @@ public class GuiMain {
 			actionMap.put(key, action);
 			inputMap.put(keyStroke, key);
 		});
+	}
+
+	private static LineDecoderCfg cfgParsConfig(ParsConfigEntry pce) {
+		Pattern pattern = pce.getCompiledPatternOrNull();
+		return pattern == null ? null : new LineDecoderCfg(pattern, pce.getGroupTime(), pce
+		 .getGroupLevel(), pce.getGroupClass(), pce.getGroupThread(), pce.getGroupMessage());
 	}
 
 	// ==============
