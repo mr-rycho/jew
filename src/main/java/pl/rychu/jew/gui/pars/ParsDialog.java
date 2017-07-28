@@ -105,12 +105,12 @@ public class ParsDialog extends JDialog {
 		undoButton.addActionListener(new Undoer());
 		editButtonsPanel.add(undoButton);
 
-		JButton closeButton = new JButton("cancel");
-		closeButton.setAction(am.get(ACTION_KEY_GLOB_ESC));
-		closeButton.setText("cancel");
-		windowButtonsPanel.add(closeButton);
+		JButton cancelButton = new JButton("cancel");
+		cancelButton.setAction(am.get(ACTION_KEY_GLOB_ESC));
+		cancelButton.setText("cancel");
+		windowButtonsPanel.add(cancelButton);
 		JButton applyButton = new JButton("apply");
-		applyButton.addActionListener(new DialogApplier());
+		applyButton.addActionListener(e -> notifyParsConfigSave(listToParsConfig()));
 		windowButtonsPanel.add(applyButton);
 		final JButton acceptButton = new JButton("OK");
 		acceptButton.setAction(am.get(ACTION_KEY_GLOB_ENTER));
@@ -217,7 +217,12 @@ public class ParsDialog extends JDialog {
 		} catch (PatternSyntaxException e) {
 			return e.getMessage();
 		}
+	}
 
+	private void notifyParsConfigSave(ParsConfig pc) {
+		if (lsn != null) {
+			lsn.parsConfigChanged(pc);
+		}
 	}
 
 	// =======================
@@ -285,19 +290,8 @@ public class ParsDialog extends JDialog {
 	private class DialogAccepter implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			if (lsn != null) {
-				lsn.parsConfigChanged(listToParsConfig());
-			}
+			notifyParsConfigSave(listToParsConfig());
 			setVisible(false);
-		}
-	}
-
-	private class DialogApplier implements ActionListener {
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			if (lsn != null) {
-				lsn.parsConfigChanged(listToParsConfig());
-			}
 		}
 	}
 
