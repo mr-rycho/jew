@@ -125,6 +125,7 @@ public class ParsDialog extends JDialog {
 		windowButtonsPanel.add(saveButton);
 		JButton saveAndPickButton = new JButton("Save & Pick");
 		saveAndPickButton.setAction(am.get(ACTION_KEY_GLOB_ENTER));
+		saveAndPickButton.setText("Save & Pick");
 		windowButtonsPanel.add(saveAndPickButton);
 
 		jList.addListSelectionListener(new SelectionToConfig(parsEditPanel));
