@@ -24,7 +24,7 @@ public class ParsDialog extends JDialog {
 	private static final String ACTION_KEY_GLOB_ENTER = "jew.pars.enter";
 	private static final String ACTION_KEY_GLOB_ESC = "jew.pars.esc";
 
-	private final ParsConfigSaveListener lsn;
+	private final ParsConfigSaveListener saveLsn;
 	private final ParsConfig origParsConfig;
 	private final DefaultListModel<ParsConfigEntry> model;
 	private final JList<ParsConfigEntry> jList;
@@ -36,10 +36,10 @@ public class ParsDialog extends JDialog {
 	// ----------
 
 	public ParsDialog(JFrame fr, ParsConfig parsConfig, String currentLine,
-	 ParsConfigSaveListener lsn) {
+	 ParsConfigSaveListener saveLsn) {
 		super(fr, "Parse Dialog", true);
 
-		this.lsn = lsn;
+		this.saveLsn = saveLsn;
 		this.origParsConfig = ParsConfig.clone(parsConfig);
 		this.theLine = currentLine;
 
@@ -220,8 +220,8 @@ public class ParsDialog extends JDialog {
 	}
 
 	private void notifyParsConfigSave(ParsConfig pc) {
-		if (lsn != null) {
-			lsn.savingParsConfig(pc);
+		if (saveLsn != null) {
+			saveLsn.savingParsConfig(pc);
 		}
 	}
 
