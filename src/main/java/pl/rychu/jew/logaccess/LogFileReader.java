@@ -114,7 +114,7 @@ public class LogFileReader implements Runnable {
 			boolean fileSizeChanged = fs == null || (prevFileSize != null && fs < prevFileSize);
 			boolean hasNewConfig = reconfigDecoder.get() != null;
 			log.trace("change: {} || {} || {}", fileKeyChanged, fileSizeChanged, hasNewConfig);
-			if (fileKeyChanged || fileSizeChanged) {
+			if (fileKeyChanged || fileSizeChanged || hasNewConfig) {
 				log.debug("old fk = {}", fileKey);
 				log.debug("new fk = {}", fk);
 				closeFileChannel();
