@@ -203,6 +203,7 @@ public class ParsDialog extends JDialog {
 		jp.setInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT, inputMap);
 
 		inputMap.put(KeyStroke.getKeyStroke("pressed ENTER"), ACTION_KEY_GLOB_ENTER);
+		inputMap.put(KeyStroke.getKeyStroke("ctrl pressed ENTER"), ACTION_KEY_GLOB_ENTER);
 		inputMap.put(KeyStroke.getKeyStroke("pressed ESCAPE"), ACTION_KEY_GLOB_ESC);
 	}
 
