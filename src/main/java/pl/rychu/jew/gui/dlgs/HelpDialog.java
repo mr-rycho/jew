@@ -116,6 +116,7 @@ public class HelpDialog extends JDialog {
 		 , "ctrl+t - mark thread for thread list filter"
 		 , "ctrl+sh+t - activate thread list filter"
 		 , "shift+t - activate indenting by thread name"
+		 , "ctrl+sh+p - open parse dialog"
 		 , "shift+c - toggle classname collapse"
 		 , "ctrl+s - save filtered lines to file"
 		 , "ctrl+c - copy filtered lines to clipboard"
