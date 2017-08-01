@@ -27,6 +27,7 @@ public class LogViewPanelCellRenderer extends DefaultListCellRenderer {
 	private static final long serialVersionUID = 7313136726313412175L;
 
 	private static final Border SEL_BORDER = new DashedToo(Color.BLACK);
+	private static final Border SEL_BORDER_LITE = new DashedToo(Color.LIGHT_GRAY);
 
 	private static final ClassVisuType[] VISU_TYPES = ClassVisuType.values();
 
@@ -149,10 +150,7 @@ public class LogViewPanelCellRenderer extends DefaultListCellRenderer {
 		setEnabled(list.isEnabled());
 		setFont(list.getFont());
 
-		Border border = noFocusBorder;
-		if (cellHasFocus && isSelected) {
-			border = SEL_BORDER;
-		}
+		Border border = cellHasFocus ? SEL_BORDER : (isSelected ? SEL_BORDER_LITE : noFocusBorder);
 		setBorder(border);
 
 		if (!listeners.isEmpty()) {
@@ -264,7 +262,23 @@ public class LogViewPanelCellRenderer extends DefaultListCellRenderer {
 			}
 			g.setColor(oldColor);
 		}
+	}
 
+	private static class DashedLite extends LineBorder {
+		public DashedLite(Color color)  {
+			super(color, 1);
+		}
+
+		public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+			Color oldColor = g.getColor();
+
+			g.setColor(lineColor);
+			for (int vx = x; vx < x+width; vx+=2) {
+				g.fillRect(vx, y, 1, 1);
+				g.fillRect(vx, y+height-1, 1, 1);
+			}
+			g.setColor(oldColor);
+		}
 	}
 
 	// ==================
