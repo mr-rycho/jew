@@ -222,14 +222,34 @@ public class ParsDialog extends JDialog {
 			if (!matcher.matches()) {
 				return "[no match]";
 			} else {
-				if (pce.getGroupThread() <= 0) {
-					return "[thread group not assigned]";
-				} else {
-					return "thread: " + matcher.group(pce.getGroupThread());
-				}
+				StringBuilder sb = new StringBuilder();
+				appendGroup(sb, matcher, pce.getGroupThread(), "thread");
+				sb.append(", ");
+				appendGroup(sb, matcher, pce.getGroupTime(), "time");
+				sb.append(", ");
+				appendGroup(sb, matcher, pce.getGroupLevel(), "level");
+				sb.append(", ");
+				appendGroup(sb, matcher, pce.getGroupClass(), "class");
+				return sb.toString();
 			}
 		} catch (PatternSyntaxException e) {
 			return e.getMessage();
+		}
+	}
+
+	private void appendGroup(StringBuilder sb, Matcher matcher, int group, String title) {
+		sb.append(title).append(": ");
+		if (group <= 0) {
+			sb.append("[n/a]");
+		} else {
+			String val = matcher.group(group);
+			if (val == null) {
+				sb.append("[null]");
+			} else if (val.isEmpty()) {
+				sb.append("[empty]");
+			} else {
+				sb.append("\"").append(val).append("\"");
+			}
 		}
 	}
 
