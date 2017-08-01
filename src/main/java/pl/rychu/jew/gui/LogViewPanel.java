@@ -1,19 +1,30 @@
 package pl.rychu.jew.gui;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import pl.rychu.jew.filter.*;
+import pl.rychu.jew.gui.dlgs.FilterRegexDialog;
+import pl.rychu.jew.gui.dlgs.HelpDialog;
+import pl.rychu.jew.gui.dlgs.SearchDialog;
+import pl.rychu.jew.gui.hi.HiConfig;
+import pl.rychu.jew.gui.hi.HiConfigChangeListener;
+import pl.rychu.jew.gui.hi.HiConfigProvider;
+import pl.rychu.jew.gui.hi.HiDialog;
+import pl.rychu.jew.gui.panels.MessageConsumer;
+import pl.rychu.jew.logline.LogLine;
+import pl.rychu.jew.logline.LogLine.LogLineType;
+import pl.rychu.jew.logline.LogLineFull;
+
+import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.text.Position.Bias;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
-import java.awt.event.ActionEvent;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Writer;
+import java.awt.event.*;
+import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -21,41 +32,10 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Pattern;
 
-import javax.swing.AbstractAction;
-import javax.swing.ActionMap;
-import javax.swing.InputMap;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JList;
-import javax.swing.JOptionPane;
-import javax.swing.KeyStroke;
-import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.text.Position.Bias;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import pl.rychu.jew.filter.*;
-import pl.rychu.jew.gui.dlgs.FilterRegexDialog;
-import pl.rychu.jew.gui.dlgs.HelpDialog;
-import pl.rychu.jew.gui.hi.HiConfig;
-import pl.rychu.jew.gui.hi.HiConfigChangeListener;
-import pl.rychu.jew.gui.hi.HiConfigProvider;
-import pl.rychu.jew.gui.hi.HiDialog;
-import pl.rychu.jew.gui.dlgs.SearchDialog;
-import pl.rychu.jew.gui.panels.MessageConsumer;
-import pl.rychu.jew.logline.LogLine;
-import pl.rychu.jew.logline.LogLine.LogLineType;
-import pl.rychu.jew.logline.LogLineFull;
-
 
 
 public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListener
- , KeyListener, MouseWheelListener, ListSelectionListener, CellRenderedListener {
+ , KeyListener, MouseWheelListener, ListSelectionListener, CellRenderedListener, ViewResizeListener {
 
 	private static final long serialVersionUID = -6731368974272464443L;
 
@@ -1332,6 +1312,13 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		}
 
 		return result;
+	}
+
+	@Override
+	public void componentResized(ComponentEvent e) {
+		if (isTail()) {
+			tail(getModel().getSize());
+		}
 	}
 
 }

@@ -14,6 +14,8 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.InputEvent;
 import java.io.IOException;
 import java.io.InputStream;
@@ -76,6 +78,7 @@ public class GuiMain {
 		final JScrollPane scrollPane = new JScrollPane(logViewPanel);
 		scrollPane.setPreferredSize(new Dimension(900, 600));
 		scrollPane.getVerticalScrollBar().putClientProperty("JScrollBar.fastWheelScrolling", true);
+		scrollPane.addComponentListener(new ComponentLsn(logViewPanel));
 		mainFrame.add(scrollPane, BorderLayout.CENTER);
 
 		mainFrame.pack();
@@ -232,6 +235,28 @@ public class GuiMain {
 			int index = Math.max(fullPath.lastIndexOf('/'), fullPath.lastIndexOf('\\'));
 			return index>=0 ? fullPath.substring(index+1) : fullPath;
 		}
+	}
+
+	private static class ComponentLsn implements ComponentListener {
+		private final ViewResizeListener viewResizeListener;
+
+		private ComponentLsn(ViewResizeListener viewResizeListener) {
+			this.viewResizeListener = viewResizeListener;
+		}
+
+		@Override
+		public void componentResized(ComponentEvent e) {
+			viewResizeListener.componentResized(e);
+		}
+
+		@Override
+		public void componentMoved(ComponentEvent e) {}
+
+		@Override
+		public void componentShown(ComponentEvent e) {}
+
+		@Override
+		public void componentHidden(ComponentEvent e) {}
 	}
 
 }
