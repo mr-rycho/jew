@@ -45,7 +45,7 @@ public class ParsDialog extends JDialog {
 		this.origParsConfig = ParsConfig.clone(parsConfig);
 		this.theLine = currentLine;
 
-		setSize(700, 450);
+		setSize(800, 450);
 		Container cp = getContentPane();
 		cp.setLayout(new BorderLayout(5, 5));
 
