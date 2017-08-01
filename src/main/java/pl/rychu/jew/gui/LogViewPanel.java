@@ -480,6 +480,10 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 
 	// ---------
 
+	private void sendMessage(String text, Object... args) {
+		sendMessage(String.format(text, args));
+	}
+
 	private void sendMessage(String text) {
 		if (messageConsumer != null) {
 			messageConsumer.enqueueMessage(text);
@@ -492,7 +496,8 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		if (ps != null) {
 			boolean found = new SearchDelegate().search(ps, getView());
 			if (!found) {
-				sendMessage("\""+ps.getText()+"\" not found");
+				sendMessage("\"%s\" not found (looking %s)", ps.getText(), ps.isDownSearch() ? "down" :
+				 "up");
 			} else {
 				offTail();
 			}
