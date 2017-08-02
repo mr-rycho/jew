@@ -73,6 +73,9 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 
 	private static final String ACTION_KEY_HELP_DIALOG = "jew.help.dialog";
 
+	private static final String ACTION_KEY_PREFIX_BOOKMARK_TOGGLE = "jew.bookmark.toggle";
+	private static final String ACTION_KEY_PREFIX_BOOKMARK_GOTO = "jew.bookmark.goto";
+
 	private boolean tail;
 
 	private String filterThread;
@@ -86,6 +89,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 	private long maxLineFilter = Long.MAX_VALUE;
 	private FilterRegexDialog filterRegexDialog;
 
+	private final Map<Integer, Long> bookmarks = new HashMap<>(20);
 	private HiConfig hiConfig;
 	private HiConfigProvider hiConfigProvider;
 
@@ -416,6 +420,11 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 				// execution continues here after closing the dialog
 			}
 		});
+
+		for (int bkIndex = 0; bkIndex < 10; bkIndex++) {
+			String actionName = ACTION_KEY_PREFIX_BOOKMARK_TOGGLE + "." + bkIndex;
+			actionMap.put(actionName, new ActionBookmarkToggle(actionName, bkIndex));
+		}
 	}
 
 	private static void createKeyBindings(final LogViewPanel logViewPanel) {
@@ -456,6 +465,13 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_COMMA, InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK)
 		 , ACTION_KEY_CAUSE_PREV);
 		inputMap.put(KeyStroke.getKeyStroke("pressed F1"), ACTION_KEY_HELP_DIALOG);
+
+		for (int bkIndex = 0; bkIndex < 10; bkIndex++) {
+			String actionName = ACTION_KEY_PREFIX_BOOKMARK_TOGGLE + "." + bkIndex;
+			KeyStroke keyStroke = KeyStroke.getKeyStroke('0' + bkIndex, InputEvent.CTRL_MASK |
+			 InputEvent.SHIFT_MASK);
+			inputMap.put(keyStroke, actionName);
+		}
 	}
 
 	// -----
@@ -741,6 +757,24 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 			return selectedIndex;
 		}
 		return getFirstVisibleIndex();
+	}
+
+	// -----
+
+	private void toggleBookmark(int bkIndex) {
+		int selectedIndex = getSelectedIndex();
+		if (selectedIndex < 0) {
+			return;
+		}
+		long rootLine = getRootLine(selectedIndex);
+		Long prevBookmark = bookmarks.get(bkIndex);
+		if (prevBookmark != null && prevBookmark.longValue() == rootLine) {
+			bookmarks.remove(bkIndex);
+			log.debug("remove bk {} ({})", bkIndex, rootLine);
+		} else {
+			bookmarks.put(bkIndex, rootLine);
+			log.debug("put bk {} ({})", bkIndex, rootLine);
+		}
 	}
 
 	// -----
@@ -1323,6 +1357,28 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 	public void componentResized(ComponentEvent e) {
 		if (isTail()) {
 			tail(getModel().getSize());
+		}
+	}
+
+	// ===============
+
+	private static class ActionBookmarkToggle extends AbstractAction {
+		private static final long serialVersionUID = -1564374309766249373L;
+
+		private final int bookmarkIndex;
+
+		public ActionBookmarkToggle(String name, int bookmarkIndex) {
+			super(name);
+			this.bookmarkIndex = bookmarkIndex;
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			Object sourceObj = e.getSource();
+			if (sourceObj instanceof LogViewPanel) {
+				LogViewPanel logViewPanel = (LogViewPanel) sourceObj;
+				logViewPanel.toggleBookmark(bookmarkIndex);
+			}
 		}
 	}
 
