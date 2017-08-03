@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-
 public class GrowingListLong {
 
 	private final int arraySizePower;
@@ -66,15 +65,38 @@ public class GrowingListLong {
 
 	// ----------
 
-	public long get(final long index) {
-		final int listIndex = (int)(index >> arraySizePower);
-		final int arrayIndex = (int)(index & arrayOffMask);
+	public long get(long index) {
+		int listIndex = (int) (index >> arraySizePower);
+		int arrayIndex = (int) (index & arrayOffMask);
 
 		return listOfArrays.get(listIndex)[arrayIndex];
 	}
 
 	public long size() {
-		return ((long)arraySize) * currentListIndex + currentArrayIndex;
+		return ((long) arraySize) * currentListIndex + currentArrayIndex;
+	}
+
+	public long binarySearch(long key) {
+		return binarySearch(0, size(), key);
+	}
+
+	private long binarySearch(long fromIndex, long toIndex, long key) {
+		long low = fromIndex;
+		long high = toIndex - 1;
+
+		while (low <= high) {
+			long mid = (low + high) >>> 1;
+			long midVal = get(mid);
+
+			if (midVal < key) {
+				low = mid + 1;
+			} else if (midVal > key) {
+				high = mid - 1;
+			} else {
+				return mid; // key found
+			}
+		}
+		return -(low + 1);  // key not found.
 	}
 
 }
