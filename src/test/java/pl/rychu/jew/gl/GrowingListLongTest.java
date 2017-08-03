@@ -38,4 +38,39 @@ public class GrowingListLongTest {
 		return Arrays.asList(1, 2, 3, 4, 10, 15, 16, 17, 18, 19, 31, 32, 33, 159, 160, 161);
 	}
 
+	// ----------
+
+	@Test
+	public void shouldBeEmptyAfterCreation() {
+		// given
+
+		// when
+		GrowingListLong list = new GrowingListLong(16);
+
+		// then
+		assertThat(list.isEmpty()).isTrue();
+		assertThat(list.size()).isEqualTo(0);
+	}
+
+	@Test
+	@Parameters
+	public void shouldBeEmptyAfterClear(int prefill) {
+		// given
+		GrowingListLong list = new GrowingListLong(16);
+		for (int i = 0; i < prefill; i++) {
+			list.add(i * 10);
+		}
+
+		// when
+		list.clear();
+
+		// then
+		assertThat(list.isEmpty()).isTrue();
+		assertThat(list.size()).isEqualTo(0);
+	}
+
+	protected List<Integer> parametersForShouldBeEmptyAfterClear() {
+		return Arrays.asList(1, 2, 3, 4, 10, 15, 16, 17, 18, 19, 31, 32, 33, 159, 160, 161);
+	}
+
 }

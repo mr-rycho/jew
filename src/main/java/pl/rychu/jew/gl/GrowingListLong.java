@@ -72,6 +72,10 @@ public class GrowingListLong {
 		return listOfArrays.get(listIndex)[arrayIndex];
 	}
 
+	public boolean isEmpty() {
+		return currentListIndex == 0 && currentArrayIndex == 0;
+	}
+
 	public long size() {
 		return ((long) arraySize) * currentListIndex + currentArrayIndex;
 	}
