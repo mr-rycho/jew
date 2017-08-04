@@ -790,10 +790,16 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 
 	private void gotoBookmark(int bkIndex) {
 		Long bookmark = bookmarks.get(bkIndex);
+		log.debug("bookmark {}: {}", bkIndex, bookmark);
 		if (bookmark != null) {
 			long viewLine = getViewLine(bookmark);
+			log.debug("bookmark {}: {} -> {}", bkIndex, bookmark, viewLine);
 			if (viewLine >= 0) {
-				gotoLine((int)viewLine);
+				gotoLine((int) viewLine);
+			} else {
+				sendMessage("line %d is not visible", bookmark + 1);
+				long insIndex = -viewLine - 1;
+				gotoLine((int) insIndex);
 			}
 		}
 	}
