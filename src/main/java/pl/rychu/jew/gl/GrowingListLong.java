@@ -103,4 +103,27 @@ public class GrowingListLong {
 		return -(low + 1);  // key not found.
 	}
 
+	public long binarySearchInv(long key) {
+		return binarySearchInv(0, size(), key);
+	}
+
+	private long binarySearchInv(long fromIndex, long toIndex, long key) {
+		long low = fromIndex;
+		long high = toIndex - 1;
+
+		while (low <= high) {
+			long mid = (low + high) >>> 1;
+			long midVal = get(mid);
+
+			if (midVal > key) {
+				low = mid + 1;
+			} else if (midVal < key) {
+				high = mid - 1;
+			} else {
+				return mid; // key found
+			}
+		}
+		return -(low + 1);  // key not found.
+	}
+
 }
