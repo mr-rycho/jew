@@ -848,6 +848,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		prevSize = 0;
 		if (sourceReset) {
 			resetView();
+			resetBookmarks();
 		}
 	}
 
@@ -870,6 +871,10 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		setFixedCellWidth(600);
 		resetFilterSilent();
 		createAndSetFilterChain();
+	}
+
+	private void resetBookmarks() {
+		bookmarks.clear();
 	}
 
 	// ----
