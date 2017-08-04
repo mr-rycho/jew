@@ -137,6 +137,10 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 		}
 	}
 
+	public long getViewIndex(long rootIndex) {
+		return mapper.getInv(rootIndex);
+	}
+
 	public LogLine getIndexElementAt(final int index) {
 		final long logAccessIndex = getRootIndex(index);
 		try {

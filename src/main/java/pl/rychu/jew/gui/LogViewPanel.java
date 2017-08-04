@@ -424,6 +424,9 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		for (int bkIndex = 0; bkIndex < 10; bkIndex++) {
 			String actionName = ACTION_KEY_PREFIX_BOOKMARK_TOGGLE + "." + bkIndex;
 			actionMap.put(actionName, new ActionBookmarkToggle(actionName, bkIndex));
+
+			String actionGoto = ACTION_KEY_PREFIX_BOOKMARK_GOTO + "." + bkIndex;
+			actionMap.put(actionGoto, new ActionBookmarkGoto(actionGoto, bkIndex));
 		}
 	}
 
@@ -471,6 +474,10 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 			KeyStroke keyStroke = KeyStroke.getKeyStroke('0' + bkIndex, InputEvent.CTRL_MASK |
 			 InputEvent.SHIFT_MASK);
 			inputMap.put(keyStroke, actionName);
+
+			String actionGoto = ACTION_KEY_PREFIX_BOOKMARK_GOTO + "." + bkIndex;
+			KeyStroke keyStrokeGoto = KeyStroke.getKeyStroke('0' + bkIndex, InputEvent.CTRL_MASK);
+			inputMap.put(keyStrokeGoto, actionGoto);
 		}
 	}
 
@@ -670,6 +677,10 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		return model.getRootIndex(view);
 	}
 
+	private long getViewLine(long rootIndex) {
+		return ((ListModelLog) getModel()).getViewIndex(rootIndex);
+	}
+
 	public String getCurrentLineContent() {
 		int sel = getSelectedIndex();
 		return sel < 0 ? null : getModel().getElementAt(sel).getFullText();
@@ -777,6 +788,16 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		}
 	}
 
+	private void gotoBookmark(int bkIndex) {
+		Long bookmark = bookmarks.get(bkIndex);
+		if (bookmark != null) {
+			long viewLine = getViewLine(bookmark);
+			if (viewLine >= 0) {
+				gotoLine((int)viewLine);
+			}
+		}
+	}
+
 	// -----
 
 	public void setHiConfigProvider(HiConfigProvider hiConfigProvider) {
@@ -857,8 +878,12 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		final int index = maxIndex + linesToScroll;
 		log.trace("{} + {} -> {}", lastVisibleIndex, linesToScroll, index);
 
+		scrollToAndCheck(index);
+	}
+
+	private void scrollToAndCheck(int index) {
 		for (int retry=0; retry<5; retry++) {
-			final boolean mustRetry = scrollToAndCheck(index);
+			final boolean mustRetry = scrollToAndCheckInt(index);
 			if (!mustRetry) {
 				break;
 			} else {
@@ -867,7 +892,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		}
 	}
 
-	private boolean scrollToAndCheck(final int index) {
+	private boolean scrollToAndCheckInt(final int index) {
 		ensureIndexIsVisible(index);
 
 		final int newFirstVisibleIndex = getFirstVisibleIndex();
@@ -885,6 +910,10 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		ensureIndexIsVisible(size - 1);
 	}
 
+	private void gotoLine(int index) {
+		setSelectedIndex(index);
+		scrollToAndCheck(index);
+	}
 	// ----
 
 	private int getLastWholeVisibleIndex() {
@@ -1378,6 +1407,24 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 			if (sourceObj instanceof LogViewPanel) {
 				LogViewPanel logViewPanel = (LogViewPanel) sourceObj;
 				logViewPanel.toggleBookmark(bookmarkIndex);
+			}
+		}
+	}
+
+	private static class ActionBookmarkGoto extends AbstractAction {
+		private final int bookmarkIndex;
+
+		public ActionBookmarkGoto(String name, int bookmarkIndex) {
+			super(name);
+			this.bookmarkIndex = bookmarkIndex;
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			Object sourceObj = e.getSource();
+			if (sourceObj instanceof LogViewPanel) {
+				LogViewPanel logViewPanel = (LogViewPanel) sourceObj;
+				logViewPanel.gotoBookmark(bookmarkIndex);
 			}
 		}
 	}
