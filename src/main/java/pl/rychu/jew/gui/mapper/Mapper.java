@@ -3,7 +3,6 @@ package pl.rychu.jew.gui.mapper;
 import pl.rychu.jew.gl.GrowingListLong;
 
 
-
 public class Mapper {
 
 	private final GrowingListLong backwardList;
@@ -38,6 +37,21 @@ public class Mapper {
 		} else {
 			return forwardList.get(index);
 		}
+	}
+
+	public long getInv(long root) {
+		long bs = backwardList.size();
+		if (!forwardList.isEmpty() && root >= forwardList.get(0)) {
+			long index = forwardList.binarySearch(root);
+			// -(-i-1+bs)-1 = i+1-bs-1 = i-bs
+			return index >= 0 ? index + bs : index - bs;
+		}
+		if (bs != 0 && root <= backwardList.get(0)) {
+			long index = backwardList.binarySearchInv(root);
+			// -(bs-1-(-i-1))-2 = -(bs-1+i+1)-2 = -(bs+i)-2 = -bs - i - 2
+			return index >= 0 ? bs - 1 - index : -bs - index - 2;
+		}
+		return -bs - 1;
 	}
 
 	public void clear() {
