@@ -1,25 +1,19 @@
 package pl.rychu.jew.gui;
 
-import java.awt.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.Icon;
-import javax.swing.JList;
-import javax.swing.border.Border;
-import javax.swing.border.LineBorder;
-
 import pl.rychu.jew.gui.hi.HiConfig;
 import pl.rychu.jew.gui.hi.HiConfigEntry;
 import pl.rychu.jew.logline.LogLine;
 import pl.rychu.jew.logline.LogLineFull;
+
+import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.LineBorder;
+import java.awt.*;
+import java.util.*;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 
@@ -58,7 +52,7 @@ public class LogViewPanelCellRenderer extends DefaultListCellRenderer {
 
 	// ----------
 
-	public void setHiConfig(final HiConfig hiConfig) {
+	void setHiConfig(final HiConfig hiConfig) {
 		hiConfigEntries.clear();
 		final int len = hiConfig.size();
 		for (int i=0; i<len; i++) {
@@ -77,19 +71,19 @@ public class LogViewPanelCellRenderer extends DefaultListCellRenderer {
 
 	// ----------
 
-	public void toggleClassVisuType() {
+	void toggleClassVisuType() {
 		final int oldOrd = classVisuType!=null ? classVisuType.ordinal() : -1;
 		final int newOrd = (oldOrd+1) % VISU_TYPES.length;
 		setClassVisuType(VISU_TYPES[newOrd]);
 	}
 
-	public void setClassVisuType(final ClassVisuType classVisuType) {
+	private void setClassVisuType(final ClassVisuType classVisuType) {
 		this.classVisuType = classVisuType;
 	}
 
 	// ----------
 
-	public void toggleThreadOffsetMode() {
+	void toggleThreadOffsetMode() {
 		setThreadOffsetMode(!threadOffsetMode);
 	}
 
@@ -227,8 +221,7 @@ public class LogViewPanelCellRenderer extends DefaultListCellRenderer {
 		private final Color colorB;
 		private final Color colorF;
 
-		public HiConfigEntryGui(final Pattern pattern
-		 , final Color colorB, final Color colorF) {
+		HiConfigEntryGui(final Pattern pattern, final Color colorB, final Color colorF) {
 			super();
 			this.pattern = pattern;
 			this.colorB = colorB;
@@ -247,7 +240,7 @@ public class LogViewPanelCellRenderer extends DefaultListCellRenderer {
 	}
 
 	private static class DashedToo extends LineBorder {
-		public DashedToo(Color color)  {
+		DashedToo(Color color)  {
 			super(color, 1);
 		}
 
@@ -264,26 +257,9 @@ public class LogViewPanelCellRenderer extends DefaultListCellRenderer {
 		}
 	}
 
-	private static class DashedLite extends LineBorder {
-		public DashedLite(Color color)  {
-			super(color, 1);
-		}
-
-		public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
-			Color oldColor = g.getColor();
-
-			g.setColor(lineColor);
-			for (int vx = x; vx < x+width; vx+=2) {
-				g.fillRect(vx, y, 1, 1);
-				g.fillRect(vx, y+height-1, 1, 1);
-			}
-			g.setColor(oldColor);
-		}
-	}
-
 	// ==================
 
-	private static enum ClassVisuType {
+	private enum ClassVisuType {
 		NORMAL
 
 		, HIDDEN {
@@ -334,7 +310,7 @@ public class LogViewPanelCellRenderer extends DefaultListCellRenderer {
 			return width;
 		}
 
-		public void setIconWidth(int width) {
+		void setIconWidth(int width) {
 			this.width = width;
 		}
 
