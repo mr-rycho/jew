@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
+import java.util.stream.Collectors;
 
 
 public class LogViewPanelCellRenderer extends DefaultListCellRenderer {
@@ -33,7 +33,10 @@ public class LogViewPanelCellRenderer extends DefaultListCellRenderer {
 
 	private final FakeIcon fakeIcon = new FakeIcon();
 
+	private String overlayToPaint = null;
+
 	private final Map<String, Integer> threadOffsetMap = new HashMap<>();
+	private BookmarkStorage.BookmarkStorageView bookmarkStorageView;
 
 	private final List<CellRenderedListener> listeners
 	 = new CopyOnWriteArrayList<>();
@@ -69,6 +72,10 @@ public class LogViewPanelCellRenderer extends DefaultListCellRenderer {
 		}
 	}
 
+	public void setBookmarkStorageView(BookmarkStorage.BookmarkStorageView bookmarkStorageView) {
+		this.bookmarkStorageView = bookmarkStorageView;
+	}
+
 	// ----------
 
 	void toggleClassVisuType() {
@@ -93,6 +100,22 @@ public class LogViewPanelCellRenderer extends DefaultListCellRenderer {
 
 	// ----------
 
+
+	@Override
+	protected void paintComponent(Graphics g) {
+		super.paintComponent(g);
+		if (overlayToPaint != null) {
+			int stringWidth = g.getFontMetrics().stringWidth(overlayToPaint);
+			Color oldColor = g.getColor();
+			g.setColor(Color.GREEN);
+			g.fillRect(0, 0, stringWidth+6, 14);
+			g.setColor(Color.BLACK);
+			g.drawRect(0, 0, stringWidth+5, 13);
+			g.drawString(overlayToPaint, 3, 12);
+			g.setColor(oldColor);
+		}
+	}
+
 	@Override
   public Component getListCellRendererComponent(final JList<?> list
    , final Object value, final int index, final boolean isSelected
@@ -104,8 +127,11 @@ public class LogViewPanelCellRenderer extends DefaultListCellRenderer {
 		int hash = getThreadHash(threadName);
 		int offset = threadOffsetMode ? hash & 0xff : -1;
 		final String logLineStr = getRenderedString(logLineFull);
-		return getListCellRendererComponentSuper(list, fullText, logLineStr
-		 , isSelected, cellHasFocus, offset);
+		List<Integer> bookmarks = bookmarkStorageView.getOffsetToBookmark().get(logLine.getFilePos());
+		overlayToPaint = bookmarks == null || bookmarks.isEmpty() ? null : bookmarks.stream().map
+		 (Objects::toString).collect(Collectors.joining(", "));
+		return getListCellRendererComponentSuper(list, fullText, logLineStr, isSelected, cellHasFocus,
+		 offset);
 	}
 
 	private Component getListCellRendererComponentSuper(final JList<?> list

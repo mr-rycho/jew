@@ -89,7 +89,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 	private long maxLineFilter = Long.MAX_VALUE;
 	private FilterRegexDialog filterRegexDialog;
 
-	private final Map<Integer, Long> bookmarks = new HashMap<>(20);
+	private final BookmarkStorage bookmarks = new BookmarkStorage();
 	private HiConfig hiConfig;
 	private HiConfigProvider hiConfigProvider;
 
@@ -113,6 +113,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		LogViewPanelCellRenderer cellRenderer = new LogViewPanelCellRenderer();
 		result.setCellRenderer(cellRenderer);
 		cellRenderer.addCellRenderedListener(result);
+		cellRenderer.setBookmarkStorageView(result.getBookmarkStorageView());
 		result.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
 		applyInitFilter(result, initFilter);
@@ -783,8 +784,9 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 			bookmarks.remove(bkIndex);
 			log.debug("remove bk {} ({})", bkIndex, rootLine);
 		} else {
-			bookmarks.put(bkIndex, rootLine);
-			log.debug("put bk {} ({})", bkIndex, rootLine);
+			long filePos = getCurrentLineFilePos(selectedIndex);
+			bookmarks.put(bkIndex, rootLine, filePos);
+			log.debug("put bk {} ({} / {})", bkIndex, rootLine,filePos);
 		}
 	}
 
@@ -802,6 +804,10 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 				gotoLine((int) insIndex);
 			}
 		}
+	}
+
+	public BookmarkStorage.BookmarkStorageView getBookmarkStorageView() {
+		return bookmarks.getView();
 	}
 
 	// -----
