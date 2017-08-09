@@ -788,6 +788,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 			bookmarks.put(bkIndex, rootLine, filePos);
 			log.debug("put bk {} ({} / {})", bkIndex, rootLine,filePos);
 		}
+		repaint();
 	}
 
 	private void gotoBookmark(int bkIndex) {
