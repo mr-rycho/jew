@@ -238,15 +238,15 @@ public class GuiMain {
 	}
 
 	private static class ComponentLsn implements ComponentListener {
-		private final ViewResizeListener viewResizeListener;
+		private final ViewportListener viewportListener;
 
-		private ComponentLsn(ViewResizeListener viewResizeListener) {
-			this.viewResizeListener = viewResizeListener;
+		private ComponentLsn(ViewportListener viewportListener) {
+			this.viewportListener = viewportListener;
 		}
 
 		@Override
 		public void componentResized(ComponentEvent e) {
-			viewResizeListener.viewportResized(e);
+			viewportListener.viewportResized(e);
 		}
 
 		@Override

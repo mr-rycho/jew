@@ -35,7 +35,7 @@ import java.util.regex.Pattern;
 
 
 public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListener
- , KeyListener, MouseWheelListener, ListSelectionListener, CellRenderedListener, ViewResizeListener {
+ , KeyListener, MouseWheelListener, ListSelectionListener, CellRenderedListener, ViewportListener {
 
 	private static final long serialVersionUID = -6731368974272464443L;
 

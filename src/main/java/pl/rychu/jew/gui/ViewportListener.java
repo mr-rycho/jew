@@ -5,7 +5,7 @@ import java.awt.event.ComponentEvent;
 /**
  * Created on 01.08.2017.
  */
-public interface ViewResizeListener {
+public interface ViewportListener {
 
 	void viewportResized(ComponentEvent e);
 
