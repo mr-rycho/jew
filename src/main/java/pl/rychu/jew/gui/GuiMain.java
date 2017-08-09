@@ -13,10 +13,7 @@ import pl.rychu.jew.logaccess.LogAccessFile;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
-import java.awt.event.InputEvent;
+import java.awt.event.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDate;
@@ -78,7 +75,9 @@ public class GuiMain {
 		final JScrollPane scrollPane = new JScrollPane(logViewPanel);
 		scrollPane.setPreferredSize(new Dimension(900, 600));
 		scrollPane.getVerticalScrollBar().putClientProperty("JScrollBar.fastWheelScrolling", true);
-		scrollPane.addComponentListener(new ComponentLsn(logViewPanel));
+		scrollPane.getViewport().addComponentListener(new ComponentLsn(logViewPanel));
+		scrollPane.getHorizontalScrollBar().addAdjustmentListener(e -> logViewPanel
+		 .viewportHorizontalMove(e.getValue()));
 		mainFrame.add(scrollPane, BorderLayout.CENTER);
 
 		mainFrame.pack();

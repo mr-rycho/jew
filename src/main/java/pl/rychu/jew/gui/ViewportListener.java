@@ -9,4 +9,6 @@ public interface ViewportListener {
 
 	void viewportResized(ComponentEvent e);
 
+	void viewportHorizontalMove(int x);
+
 }

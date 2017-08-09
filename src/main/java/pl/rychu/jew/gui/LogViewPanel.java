@@ -1405,6 +1405,19 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		if (isTail()) {
 			tail(getModel().getSize());
 		}
+		Container parentContainer = getParent();
+		if (parentContainer instanceof JViewport) {
+			JViewport parent = (JViewport) parentContainer;
+			int viewportWidth = parent.getWidth();
+			((LogViewPanelCellRenderer) getCellRenderer()).setParentWidth(viewportWidth);
+		} else {
+			log.debug("parent is not JViewport, it is {}", parentContainer);
+		}
+	}
+
+	@Override
+	public void viewportHorizontalMove(int x) {
+		((LogViewPanelCellRenderer) getCellRenderer()).setParentOffset(x);
 	}
 
 	// ===============

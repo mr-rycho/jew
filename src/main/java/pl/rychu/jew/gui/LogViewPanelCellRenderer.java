@@ -28,6 +28,8 @@ public class LogViewPanelCellRenderer extends DefaultListCellRenderer {
 	private ClassVisuType classVisuType = ClassVisuType.NORMAL;
 
 	private boolean threadOffsetMode = false;
+	private int parentWidth = 600;
+	private int parentOffset = 0;
 
 	private final List<HiConfigEntryGui> hiConfigEntries = new ArrayList<>();
 
@@ -76,6 +78,14 @@ public class LogViewPanelCellRenderer extends DefaultListCellRenderer {
 		this.bookmarkStorageView = bookmarkStorageView;
 	}
 
+	public void setParentWidth(int parentWidth) {
+		this.parentWidth = parentWidth;
+	}
+
+	public void setParentOffset(int parentOffset) {
+		this.parentOffset = parentOffset;
+	}
+
 	// ----------
 
 	void toggleClassVisuType() {
@@ -106,12 +116,13 @@ public class LogViewPanelCellRenderer extends DefaultListCellRenderer {
 		super.paintComponent(g);
 		if (overlayToPaint != null) {
 			int stringWidth = g.getFontMetrics().stringWidth(overlayToPaint);
+			int x = parentWidth + parentOffset - 3 - 6 - stringWidth;
 			Color oldColor = g.getColor();
 			g.setColor(Color.GREEN);
-			g.fillRect(0, 0, stringWidth+6, 14);
+			g.fillRect(x, 0, stringWidth + 6, 14);
 			g.setColor(Color.BLACK);
-			g.drawRect(0, 0, stringWidth+5, 13);
-			g.drawString(overlayToPaint, 3, 12);
+			g.drawRect(x, 0, stringWidth + 5, 13);
+			g.drawString(overlayToPaint, x + 3, 12);
 			g.setColor(oldColor);
 		}
 	}
