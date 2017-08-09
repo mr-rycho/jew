@@ -30,6 +30,7 @@ public class LogViewPanelCellRenderer extends DefaultListCellRenderer {
 	private boolean threadOffsetMode = false;
 	private int parentWidth = 600;
 	private int parentOffset = 0;
+	private Font bookmarkFont = null;
 
 	private final List<HiConfigEntryGui> hiConfigEntries = new ArrayList<>();
 
@@ -106,11 +107,15 @@ public class LogViewPanelCellRenderer extends DefaultListCellRenderer {
 
 	// ----------
 
-
 	@Override
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		if (overlayToPaint != null) {
+			Font oldFont = g.getFont();
+			if (bookmarkFont == null) {
+				bookmarkFont = new Font(oldFont.getName(), oldFont.getStyle(), oldFont.getSize() * 3 / 4);
+			}
+			g.setFont(bookmarkFont);
 			int stringWidth = g.getFontMetrics().stringWidth(overlayToPaint);
 			int x = parentWidth + parentOffset - 3 - 6 - stringWidth;
 			Color oldColor = g.getColor();
@@ -120,6 +125,7 @@ public class LogViewPanelCellRenderer extends DefaultListCellRenderer {
 			g.drawRect(x, 0, stringWidth + 5, 13);
 			g.drawString(overlayToPaint, x + 3, 12);
 			g.setColor(oldColor);
+			g.setFont(oldFont);
 		}
 	}
 
