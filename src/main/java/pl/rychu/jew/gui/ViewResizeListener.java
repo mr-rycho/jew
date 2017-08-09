@@ -7,6 +7,6 @@ import java.awt.event.ComponentEvent;
  */
 public interface ViewResizeListener {
 
-	void componentResized(ComponentEvent e);
+	void viewportResized(ComponentEvent e);
 
 }

@@ -246,7 +246,7 @@ public class GuiMain {
 
 		@Override
 		public void componentResized(ComponentEvent e) {
-			viewResizeListener.componentResized(e);
+			viewResizeListener.viewportResized(e);
 		}
 
 		@Override

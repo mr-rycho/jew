@@ -1401,7 +1401,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 	}
 
 	@Override
-	public void componentResized(ComponentEvent e) {
+	public void viewportResized(ComponentEvent e) {
 		if (isTail()) {
 			tail(getModel().getSize());
 		}
