@@ -47,12 +47,8 @@ public class LogViewPanelCellRenderer extends DefaultListCellRenderer {
 
 	// ----------
 
-	public void addCellRenderedListener(final CellRenderedListener listener) {
+	void addCellRenderedListener(final CellRenderedListener listener) {
 		listeners.add(listener);
-	}
-
-	public void removeCellRenderedListener(final CellRenderedListener listener) {
-		listeners.remove(listener);
 	}
 
 	// ----------
@@ -74,15 +70,15 @@ public class LogViewPanelCellRenderer extends DefaultListCellRenderer {
 		}
 	}
 
-	public void setBookmarkStorageView(BookmarkStorage.BookmarkStorageView bookmarkStorageView) {
+	void setBookmarkStorageView(BookmarkStorage.BookmarkStorageView bookmarkStorageView) {
 		this.bookmarkStorageView = bookmarkStorageView;
 	}
 
-	public void setParentWidth(int parentWidth) {
+	void setParentWidth(int parentWidth) {
 		this.parentWidth = parentWidth;
 	}
 
-	public void setParentOffset(int parentOffset) {
+	void setParentOffset(int parentOffset) {
 		this.parentOffset = parentOffset;
 	}
 
@@ -145,17 +141,14 @@ public class LogViewPanelCellRenderer extends DefaultListCellRenderer {
 		 offset);
 	}
 
-	private Component getListCellRendererComponentSuper(final JList<?> list
-	 , final String fullText, final String displayedText
-	 , final boolean isSelected, final boolean cellHasFocus, int xOffset) {
+	private Component getListCellRendererComponentSuper(JList<?> list, String fullText,
+	 String displayedText, boolean isSelected, boolean cellHasFocus, int xOffset) {
 		setComponentOrientation(list.getComponentOrientation());
 
 		Color bg = null;
 		Color fg = null;
 
-		final int len = hiConfigEntries.size();
-		for (int i=0; i<len; i++) {
-			final LogViewPanelCellRenderer.HiConfigEntryGui entry = hiConfigEntries.get(i);
+		for (final HiConfigEntryGui entry : hiConfigEntries) {
 			final Pattern pattern = entry.getPattern();
 			final Matcher matcher = pattern.matcher(fullText);
 			if (matcher.find()) {
@@ -277,6 +270,8 @@ public class LogViewPanelCellRenderer extends DefaultListCellRenderer {
 	}
 
 	private static class DashedToo extends LineBorder {
+		private static final long serialVersionUID = 2816580155760767943L;
+
 		DashedToo(Color color)  {
 			super(color, 1);
 		}

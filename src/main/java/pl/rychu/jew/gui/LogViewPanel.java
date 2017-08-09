@@ -484,16 +484,12 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 
 	// -----
 
-	public void setMessageConsumer(MessageConsumer mc) {
+	void setMessageConsumer(MessageConsumer mc) {
 		this.messageConsumer = mc;
 	}
 
 	public void addPanelModelChangeListener(final PanelModelChangeListener listener) {
 		listeners.add(listener);
-	}
-
-	public void removePanelModelChangeListener(final PanelModelChangeListener listener) {
-		listeners.remove(listener);
 	}
 
 	private void notifyPanelModelChangeListeners() {
@@ -596,7 +592,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		}
 	}
 
-	protected void toggleThreadInList() {
+	private void toggleThreadInList() {
 		String threadName = getCurrentThreadName();
 		if (threadName != null) {
 			toggleThreadInList(threadName);
@@ -682,7 +678,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		return ((ListModelLog) getModel()).getViewIndex(rootIndex);
 	}
 
-	public String getCurrentLineContent() {
+	String getCurrentLineContent() {
 		int sel = getSelectedIndex();
 		return sel < 0 ? null : getModel().getElementAt(sel).getFullText();
 	}
@@ -756,7 +752,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		throw new IllegalStateException("unsupported: "+mode);
 	}
 
-	protected void setFilterChain(LogLineFilterChain filterChain) {
+	private void setFilterChain(LogLineFilterChain filterChain) {
 		ListModelLog model = (ListModelLog)getModel();
 		int view = getView();
 		long rootIndex = model.getRootIndex(view);
@@ -807,13 +803,13 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		}
 	}
 
-	public BookmarkStorage.BookmarkStorageView getBookmarkStorageView() {
+	private BookmarkStorage.BookmarkStorageView getBookmarkStorageView() {
 		return bookmarks.getView();
 	}
 
 	// -----
 
-	public void setHiConfigProvider(HiConfigProvider hiConfigProvider) {
+	void setHiConfigProvider(HiConfigProvider hiConfigProvider) {
 		this.hiConfigProvider = hiConfigProvider;
 		setHiConfig(hiConfigProvider.get());
 	}
@@ -1031,7 +1027,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 		return STACKTRACE_SHOW_MODES[newOrd];
 	}
 
-	private static enum StacktraceShowMode {
+	private enum StacktraceShowMode {
 		SHOW, COLLAPSE, SHORT
 	};
 
@@ -1235,13 +1231,9 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 
 		private void saveToFile() {
 			String filename = pickFilename();
-			if (filename == null) {
-				return;
-			} else {
+			if (filename != null) {
 				prevFilename = filename;
-				if (!canWriteTo(filename)) {
-					return;
-				} else {
+				if (canWriteTo(filename)) {
 					ListModelLog model = (ListModelLog)getModel();
 					saveToFile(model, filename);
 				}
@@ -1427,7 +1419,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 
 		private final int bookmarkIndex;
 
-		public ActionBookmarkToggle(String name, int bookmarkIndex) {
+		ActionBookmarkToggle(String name, int bookmarkIndex) {
 			super(name);
 			this.bookmarkIndex = bookmarkIndex;
 		}
@@ -1443,9 +1435,11 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 	}
 
 	private static class ActionBookmarkGoto extends AbstractAction {
+		private static final long serialVersionUID = 3070623425114050690L;
+
 		private final int bookmarkIndex;
 
-		public ActionBookmarkGoto(String name, int bookmarkIndex) {
+		ActionBookmarkGoto(String name, int bookmarkIndex) {
 			super(name);
 			this.bookmarkIndex = bookmarkIndex;
 		}

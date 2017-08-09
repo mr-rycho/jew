@@ -202,7 +202,7 @@ public class GuiMain {
 			computeAndSetTitle();
 		}
 
-		public void toggleTitleMode() {
+		void toggleTitleMode() {
 			mode = (mode + 1) % 10;
 			computeAndSetTitle();
 		}
