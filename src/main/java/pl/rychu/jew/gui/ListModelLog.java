@@ -28,7 +28,6 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 	private int logAccessVersion;
 
 	private final Mapper mapper = Mapper.create(65536);
-	private long sourceSize = 0L;
 
 	private final List<CyclicModelListener> listeners
 	 = new CopyOnWriteArrayList<>();
@@ -58,27 +57,19 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 		return result;
 	}
 
-	public void addCyclicModelListener(final CyclicModelListener lsn) {
+	void addCyclicModelListener(final CyclicModelListener lsn) {
 		listeners.add(lsn);
 	}
 
-	public void removeCyclicModelListener(final CyclicModelListener lsn) {
-		listeners.remove(lsn);
-	}
-
-	public void addPanelModelChangeListener(final PanelModelChangeListener listener) {
+	void addPanelModelChangeListener(final PanelModelChangeListener listener) {
 		pmcLsns.add(listener);
-	}
-
-	public void removePanelModelChangeListener(final PanelModelChangeListener listener) {
-		pmcLsns.remove(listener);
 	}
 
 	public LogLineFilterChain getFilterChain() {
 		return filterChain;
 	}
 
-	public void setFiltering(long startIndex, LogLineFilterChain filterChain) {
+	void setFiltering(long startIndex, LogLineFilterChain filterChain) {
 		stopModNotifierAndWait();
 
 		this.filterChain = filterChain;
@@ -87,13 +78,9 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 			lsn.modelChanged();
 		}
 
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				clear(logAccessVersion, false);
-
-				setupModNotifierAndStart(startIndex, filterChain);
-			}
+		SwingUtilities.invokeLater(() -> {
+			clear(logAccessVersion, false);
+			setupModNotifierAndStart(startIndex, filterChain);
 		});
 	}
 
@@ -124,10 +111,6 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 		return (int)(mapper.sizeB() + mapper.sizeF());
 	}
 
-	public long getSourceSize() {
-		return sourceSize;
-	}
-
 	public long getRootIndex(final long index) {
 		if (index>=0 && index<mapper.size()) {
 			final long indexWithOffset = index - mapper.sizeB();
@@ -137,11 +120,11 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 		}
 	}
 
-	public long getViewIndex(long rootIndex) {
+	long getViewIndex(long rootIndex) {
 		return mapper.getInv(rootIndex);
 	}
 
-	public LogLine getIndexElementAt(final int index) {
+	LogLine getIndexElementAt(final int index) {
 		final long logAccessIndex = getRootIndex(index);
 		try {
 			return logAccess.get(logAccessIndex, logAccessVersion);
@@ -183,7 +166,7 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 		log.debug("reset end");
 	}
 
-	public void addF(final long[] values, final int length) {
+	void addF(final long[] values, final int length) {
 		if (length==0) return;
 
 		final int oldSize = (int)mapper.size();
@@ -197,7 +180,7 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 		}
 	}
 
-	public void addB(final long[] values, final int length) {
+	void addB(final long[] values, final int length) {
 		if (length==0) return;
 
 		for (int i=0; i<length; i++) {
@@ -209,8 +192,7 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 		}
 	}
 
-	public void setSourceSize(final long size) {
-		this.sourceSize = size;
+	void setSourceSize(long size) {
 		for (final CyclicModelListener listener: listeners) {
 			listener.sourceChanged(size);
 		}
