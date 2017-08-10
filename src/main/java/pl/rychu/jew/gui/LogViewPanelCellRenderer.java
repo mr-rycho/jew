@@ -117,13 +117,21 @@ public class LogViewPanelCellRenderer extends DefaultListCellRenderer {
 			}
 			g.setFont(bookmarkFont);
 			int stringWidth = g.getFontMetrics().stringWidth(overlayToPaint);
-			int x = parentWidth + parentOffset - 3 - 6 - stringWidth;
+			int xMargin = 3;
+			int xPadding = 3;
+			int yMargin = 1;
+			int x = parentWidth + parentOffset - xMargin - 2 * xPadding - stringWidth;
 			int h = getHeight();
 			Color oldColor = g.getColor();
 			g.setColor(Color.GREEN);
-			g.fillRect(x, 1, stringWidth + 6, h - 2);
+			int rw = stringWidth + 2 * xPadding;
+			int rh = h - 2 * yMargin;
+			g.fillRect(x + 1, yMargin + 1, rw - 2, rh - 2);
 			g.setColor(Color.BLACK);
-			g.drawRect(x, 1, stringWidth + 5, h - 3);
+			g.drawLine(x + 1, yMargin, x + rw - 2, yMargin);
+			g.drawLine(x + 1, h - yMargin - 1, x + rw - 2, h - yMargin - 1);
+			g.drawLine(x, yMargin + 1, x, h - yMargin - 1 - 1);
+			g.drawLine(x + rw - 1, yMargin + 1, x + rw - 1, h - yMargin - 1 - 1);
 			g.drawString(overlayToPaint, x + 3, h - 4);
 			g.setColor(oldColor);
 			g.setFont(oldFont);
