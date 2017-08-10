@@ -29,7 +29,7 @@ public class HelpDialog extends JDialog {
 
 		setLayout(new BorderLayout());
 
-		setSize(500, 450);
+		setSize(500, 500);
 
 		Container cp = getContentPane();
 
@@ -123,6 +123,8 @@ public class HelpDialog extends JDialog {
 		 , "ctrl+sh+c - copy current line to clipboard"
 		 , "ctrl+sh+,/. - navigate through exception causes"
 		 , "shift+i - toggle window title"
+		 , "ctrl+sh+[0-9] - toggle bookmark"
+		 , "ctrl+[0-9] - goto bookmark"
 		 , ""
 		 , "wheel+ctrl - speed x 10"
 		 , "wheel+ctrl+shift - speed x 100"
