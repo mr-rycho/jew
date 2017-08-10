@@ -4,6 +4,7 @@ import pl.rychu.jew.gui.hi.HiConfig;
 import pl.rychu.jew.gui.hi.HiConfigEntry;
 import pl.rychu.jew.logline.LogLine;
 import pl.rychu.jew.logline.LogLineFull;
+import pl.rychu.jew.util.ParamUtil;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -31,6 +32,7 @@ public class LogViewPanelCellRenderer extends DefaultListCellRenderer {
 	private int parentWidth = 600;
 	private int parentOffset = 0;
 	private Font bookmarkFont = null;
+	private boolean noCrappyBookmarkSign = false;
 
 	private final List<HiConfigEntryGui> hiConfigEntries = new ArrayList<>();
 
@@ -45,6 +47,12 @@ public class LogViewPanelCellRenderer extends DefaultListCellRenderer {
 	 = new CopyOnWriteArrayList<>();
 
 	private static final Random RND = new Random();
+
+	// ----------
+
+	public LogViewPanelCellRenderer() {
+		noCrappyBookmarkSign = ParamUtil.getBooleanProperty("noCrappyBookmarkSign", false);
+	}
 
 	// ----------
 
@@ -120,7 +128,8 @@ public class LogViewPanelCellRenderer extends DefaultListCellRenderer {
 			int xMargin = 3;
 			int xPadding = 3;
 			int yMargin = 1;
-			int x = parentWidth + parentOffset - xMargin - 2 * xPadding - stringWidth;
+			int x = noCrappyBookmarkSign ? 0 : parentWidth + parentOffset - xMargin - 2 * xPadding -
+			 stringWidth;
 			int h = getHeight();
 			Color oldColor = g.getColor();
 			g.setColor(Color.GREEN);
