@@ -32,8 +32,8 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 	private final List<CyclicModelListener> listeners
 	 = new CopyOnWriteArrayList<>();
 
-	private ModNotifier modNotifier;
-	private Thread modNotifierThread;
+	private ModelPopulator modelPopulator;
+	private Thread modelPopulatorThread;
 
 	private final ModelFacade facade = new ModelFacade(this);
 
@@ -77,24 +77,24 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 	}
 
 	private void stopModNotifierAndWait() {
-		if (modNotifierThread != null) {
-			modNotifier.stopRunning();
+		if (modelPopulatorThread != null) {
+			modelPopulator.stopRunning();
 			try {
-				modNotifierThread.join();
+				modelPopulatorThread.join();
 			} catch (InterruptedException e) {
 				log.error("Interrupted", e);
 				return;
 			}
-			modNotifierThread = null;
-			modNotifier = null;
+			modelPopulatorThread = null;
+			modelPopulator = null;
 		}
 	}
 
 	private void setupModNotifierAndStart(long startIndex, LogLineFilterChain filterChain) {
-		modNotifier = new ModNotifier(logAccess, logAccessVersion
+		modelPopulator = new ModelPopulator(logAccess, logAccessVersion
 		 , startIndex, filterChain, facade);
-		modNotifierThread = new Thread(modNotifier, "mod-notifier-thread");
-		modNotifierThread.start();
+		modelPopulatorThread = new Thread(modelPopulator, "mod-notifier-thread");
+		modelPopulatorThread.start();
 	}
 	// -----------
 

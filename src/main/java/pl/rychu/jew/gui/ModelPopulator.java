@@ -11,8 +11,8 @@ import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
-public class ModNotifier implements Runnable {
-	private final Logger log = LoggerFactory.getLogger(ModNotifier.class);
+public class ModelPopulator implements Runnable {
+	private final Logger log = LoggerFactory.getLogger(ModelPopulator.class);
 
 	private final LogAccess logAccess;
 	private int logAccessVersion;
@@ -29,7 +29,7 @@ public class ModNotifier implements Runnable {
 
 	// -------
 
-	ModNotifier(LogAccess logAccess, int logAccessVersion
+	ModelPopulator(LogAccess logAccess, int logAccessVersion
 	 , long startIndex, LogLineFilterChain filterChain, ModelFacade modelFacade) {
 		this.logAccess = logAccess;
 		this.logAccessVersion = logAccessVersion;
