@@ -149,9 +149,7 @@ public class InfoPanel extends JPanel implements CyclicModelListener
 	}
 
 	@Override
-	public void modelChanged() {
-		ListModelLog model = (ListModelLog)logViewPanel.getModel();
-		LogLineFilterChain filterChain = model.getFilterChain();
+	public void modelChanged(LogLineFilterChain filterChain) {
 		setModelProps(filterChain.toString());
 	}
 

@@ -37,8 +37,6 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 
 	private final ModelFacade facade = new ModelFacade(this);
 
-	private LogLineFilterChain filterChain;
-
 	private final List<PanelModelChangeListener> pmcLsns
 	 = new CopyOnWriteArrayList<>();
 
@@ -65,17 +63,11 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 		pmcLsns.add(listener);
 	}
 
-	public LogLineFilterChain getFilterChain() {
-		return filterChain;
-	}
-
 	void setFiltering(long startIndex, LogLineFilterChain filterChain) {
 		stopModNotifierAndWait();
 
-		this.filterChain = filterChain;
-
 		for (final PanelModelChangeListener lsn: pmcLsns) {
-			lsn.modelChanged();
+			lsn.modelChanged(filterChain);
 		}
 
 		SwingUtilities.invokeLater(() -> {
