@@ -7,8 +7,7 @@ import pl.rychu.jew.filter.LogLineFilterChain;
 import pl.rychu.jew.gl.BadVersionException;
 import pl.rychu.jew.logaccess.LogAccess;
 
-import java.nio.ByteBuffer;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 
 public class ModelPopulator implements Runnable {
@@ -23,35 +22,35 @@ public class ModelPopulator implements Runnable {
 
 	private final ModelFacade modelFacade;
 
-	private final LogLineFilterChain filterChain;
+	private LogLineFilterChain filterChain;
 
-	private final AtomicBoolean continueRunning = new AtomicBoolean(true);
+	private final AtomicReference<ModelPopulatorReconfig> modelPopulatorReconfig = new AtomicReference<>(null);
 
 	// -------
 
-	ModelPopulator(LogAccess logAccess, int logAccessVersion
-	 , long startIndex, LogLineFilterChain filterChain, ModelFacade modelFacade) {
+	private ModelPopulator(LogAccess logAccess, ModelFacade modelFacade) {
 		this.logAccess = logAccess;
-		this.logAccessVersion = logAccessVersion;
-		this.prevMaxIndexF = startIndex;
-		this.prevMinIndexB = startIndex;
-		this.filterChain = filterChain;
+		this.logAccessVersion = -1;
+		this.prevMaxIndexF = 0;
+		this.prevMinIndexB = 0;
+		this.filterChain = new LogLineFilterChain();
 		this.modelFacade = modelFacade;
 	}
 
-	// -------
+	public static ModelPopulator createAndStart(LogAccess logAccess, ModelFacade modelFacade) {
+		ModelPopulator modelPopulator = new ModelPopulator(logAccess, modelFacade);
 
-	/**
-	 * This method is used instead of {@link Thread#interrupt()} because the latter when invoked during {@link java.nio.channels.FileChannel#read(ByteBuffer, long)} closes the channel (!).
-	 */
-	public void stopRunning() {
-		continueRunning.set(false);
+		new Thread(modelPopulator, "mod-notifier-thread").start();
+
+		return modelPopulator;
 	}
+
+	// -------
 
 	@Override
 	public void run() {
 		log.debug("running");
-		while (continueRunning.get()) {
+		while (true) {
 			try {
 				process();
 			} catch (RuntimeException e) {
@@ -62,20 +61,27 @@ public class ModelPopulator implements Runnable {
 			}
 
 			try {
-				Thread.sleep(250);
-			} catch (InterruptedException e) {
-				break;
-			}
+				Thread.sleep(125);
+			} catch (InterruptedException ignored) {}
 		}
-
-		log.debug("quitting gracefully");
 	}
 
 	private void process() throws BadVersionException {
-		final int version = logAccess.getVersion();
+		if (modelPopulatorReconfig.get() != null) {
+			ModelPopulatorReconfig reconfig = modelPopulatorReconfig.getAndSet(null);
+			log.debug("schedule reconfig: {}", reconfig);
+			modelFacade.clearSoft(logAccessVersion);
+			boolean verEqual = logAccessVersion == reconfig.getSourceVersion();
+			prevMaxIndexF = verEqual ? reconfig.getStartIndex() : 0;
+			prevMinIndexB = verEqual ? reconfig.getStartIndex() : 0;
+			filterChain = reconfig.getFilterChain();
+			log.debug("populator reset {} / {}", prevMaxIndexF, filterChain);
+		}
+
+		int version = logAccess.getVersion();
 		if (version != logAccessVersion) {
 			log.debug("schedule reset; {} != {}", version, logAccessVersion);
-			modelFacade.clear(version);
+			modelFacade.clearHard(version);
 			prevMaxIndexF = 0;
 			prevMinIndexB = 0;
 			logAccessVersion = version;
@@ -91,7 +97,7 @@ public class ModelPopulator implements Runnable {
 				break;
 			}
 
-			if (!continueRunning.get()) {
+			if (modelPopulatorReconfig.get() != null) {
 				break;
 			}
 
@@ -138,6 +144,43 @@ public class ModelPopulator implements Runnable {
 				}
 				prevMinIndexB -= maxSize;
 			}
+		}
+	}
+
+	public void reconfig(LogLineFilterChain filterChain, long startIndex,
+	 int sourceVersion) {
+		modelPopulatorReconfig.set(new ModelPopulatorReconfig(filterChain, startIndex, sourceVersion));
+	}
+
+	// ============
+
+	public static class ModelPopulatorReconfig {
+		private final LogLineFilterChain filterChain;
+		private final long startIndex;
+		private final int sourceVersion;
+
+		ModelPopulatorReconfig(LogLineFilterChain filterChain, long startIndex, int sourceVersion) {
+			this.filterChain = filterChain;
+			this.startIndex = startIndex;
+			this.sourceVersion = sourceVersion;
+		}
+
+		LogLineFilterChain getFilterChain() {
+			return filterChain;
+		}
+
+		long getStartIndex() {
+			return startIndex;
+		}
+
+		int getSourceVersion() {
+			return sourceVersion;
+		}
+
+		@Override
+		public String toString() {
+			return "ModelPopulatorReconfig{ver=" + sourceVersion + "; startIndex=" + startIndex + "; " +
+			 "filter=" + filterChain + "}";
 		}
 	}
 

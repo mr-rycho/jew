@@ -49,7 +49,10 @@ public class GuiMain {
 
 		mainFrame.setLayout(new BorderLayout());
 
-		final ListModelLog model = ListModelLog.create(logAccess);
+		ListModelLog model = ListModelLog.create(logAccess);
+		ModelFacade facade = new ModelFacade(model);
+		ModelPopulator modelPopulator = ModelPopulator.createAndStart(logAccess, facade);
+		model.setModelPopulator(modelPopulator);
 
 		final LogViewPanel logViewPanel = LogViewPanel.create(model, initFilter);
 		logViewPanel.setHiConfigProvider(new HiConfigProviderPer());

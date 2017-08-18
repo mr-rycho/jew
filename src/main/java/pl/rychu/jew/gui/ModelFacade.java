@@ -1,48 +1,36 @@
 package pl.rychu.jew.gui;
 
-import javax.swing.SwingUtilities;
-
+import javax.swing.*;
 
 
 public class ModelFacade {
 
 	private final ListModelLog model;
 
-	public ModelFacade(final ListModelLog listModelLog) {
+	ModelFacade(ListModelLog listModelLog) {
 		this.model = listModelLog;
 	}
 
 	// -------
 
-	public void clear(final int version) {
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				model.clear(version, true);
-			}
-		});
+	public void clearHard(int version) {
+		SwingUtilities.invokeLater(() -> model.clear(version, true));
 	}
 
-	public void addF(final long[] values, final int length) {
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				model.addF(values, length);
-			}
-		});
+	public void clearSoft(int version) {
+		SwingUtilities.invokeLater(() -> model.clear(version, false));
 	}
 
-	public void addB(final long[] values, final int length) {
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				model.addB(values, length);
-			}
-		});
+	void addF(long[] values, int length) {
+		SwingUtilities.invokeLater(() -> model.addF(values, length));
 	}
 
-	public void setSourceSize(final long sourceSize) {
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				model.setSourceSize(sourceSize);
-			}
-		});
+	void addB(long[] values, int length) {
+		SwingUtilities.invokeLater(() -> model.addB(values, length));
 	}
+
+	void setSourceSize(long sourceSize) {
+		SwingUtilities.invokeLater(() -> model.setSourceSize(sourceSize));
+	}
+
 }

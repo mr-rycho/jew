@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.swing.AbstractListModel;
-import javax.swing.SwingUtilities;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,9 +32,6 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 	 = new CopyOnWriteArrayList<>();
 
 	private ModelPopulator modelPopulator;
-	private Thread modelPopulatorThread;
-
-	private final ModelFacade facade = new ModelFacade(this);
 
 	private final List<PanelModelChangeListener> pmcLsns
 	 = new CopyOnWriteArrayList<>();
@@ -48,11 +44,7 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 	}
 
 	public static ListModelLog create(final LogAccess logAccess) {
-		final ListModelLog result = new ListModelLog(logAccess);
-
-		result.setFiltering(0L, new LogLineFilterChain());
-
-		return result;
+		return new ListModelLog(logAccess);
 	}
 
 	void addCyclicModelListener(final CyclicModelListener lsn) {
@@ -63,39 +55,19 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 		pmcLsns.add(listener);
 	}
 
-	void setFiltering(long startIndex, LogLineFilterChain filterChain) {
-		stopModNotifierAndWait();
+	public void setModelPopulator(ModelPopulator modelPopulator) {
+		this.modelPopulator = modelPopulator;
+	}
 
+	// TODO move this to populator or to separate FilterManager class
+	void setFiltering(long startIndex, LogLineFilterChain filterChain) {
 		for (final PanelModelChangeListener lsn: pmcLsns) {
 			lsn.modelChanged(filterChain);
 		}
 
-		SwingUtilities.invokeLater(() -> {
-			clear(logAccessVersion, false);
-			setupModNotifierAndStart(startIndex, filterChain);
-		});
+		modelPopulator.reconfig(filterChain, startIndex, logAccessVersion);
 	}
 
-	private void stopModNotifierAndWait() {
-		if (modelPopulatorThread != null) {
-			modelPopulator.stopRunning();
-			try {
-				modelPopulatorThread.join();
-			} catch (InterruptedException e) {
-				log.error("Interrupted", e);
-				return;
-			}
-			modelPopulatorThread = null;
-			modelPopulator = null;
-		}
-	}
-
-	private void setupModNotifierAndStart(long startIndex, LogLineFilterChain filterChain) {
-		modelPopulator = new ModelPopulator(logAccess, logAccessVersion
-		 , startIndex, filterChain, facade);
-		modelPopulatorThread = new Thread(modelPopulator, "mod-notifier-thread");
-		modelPopulatorThread.start();
-	}
 	// -----------
 
 	@Override
@@ -148,7 +120,7 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 	// -------------
 
 	public void clear(final int newSourceVer, final boolean sourceReset) {
-		log.debug("reset start; new version is {} (new={})", newSourceVer, sourceReset);
+		log.debug("reset start; version {} => {} ;new source={}", logAccessVersion, newSourceVer, sourceReset);
 		mapper.clear();
 		fireIntervalRemoved(this, 0, Integer.MAX_VALUE>>1);
 		for (final CyclicModelListener listener: listeners) {
