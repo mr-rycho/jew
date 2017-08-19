@@ -24,7 +24,8 @@ public class ModelPopulator implements Runnable {
 
 	private LogLineFilterChain filterChain;
 
-	private final AtomicReference<ModelPopulatorReconfig> modelPopulatorReconfig = new AtomicReference<>(null);
+	private final AtomicReference<ModelPopulatorReconfig> modelPopulatorReconfig = new
+	 AtomicReference<>(null);
 
 	// -------
 
@@ -62,7 +63,8 @@ public class ModelPopulator implements Runnable {
 
 			try {
 				Thread.sleep(125);
-			} catch (InterruptedException ignored) {}
+			} catch (InterruptedException ignored) {
+			}
 		}
 	}
 
@@ -76,6 +78,9 @@ public class ModelPopulator implements Runnable {
 			prevMinIndexB = verEqual ? reconfig.getStartIndex() : 0;
 			filterChain = reconfig.getFilterChain();
 			log.debug("populator reset {} / {}", prevMaxIndexF, filterChain);
+			return; // JEW-112 - probably there must be a "break" in EDT after each clear to allow
+			// list/model schedule another event that will be executed before another listt addition is
+			// executed
 		}
 
 		int version = logAccess.getVersion();
@@ -93,7 +98,8 @@ public class ModelPopulator implements Runnable {
 			final long maxIndexF = logAccess.size(version);
 			final long minIndexB = 0;
 
-			if (maxIndexF==prevMaxIndexF && minIndexB==prevMinIndexB && maxIndexF==prevMaxIndexLabel) {
+			if (maxIndexF == prevMaxIndexF && minIndexB == prevMinIndexB && maxIndexF ==
+			 prevMaxIndexLabel) {
 				break;
 			}
 
@@ -107,14 +113,13 @@ public class ModelPopulator implements Runnable {
 			}
 
 			if (maxIndexF != prevMaxIndexF) {
-				final long maxF = Math.min(maxIndexF, prevMaxIndexF+maxSlice);
-				final int maxSize = (int)(maxF - prevMaxIndexF);
+				final long maxF = Math.min(maxIndexF, prevMaxIndexF + maxSlice);
+				final int maxSize = (int) (maxF - prevMaxIndexF);
 				final long[] slice = new long[maxSize];
 				int indexSlice = 0;
-				for (long index=prevMaxIndexF; index<maxF; index++) {
-					boolean applies = filterChain.apply(logAccess.get(index, version))
-					 && (!filterChain.needsFullLine()
-					 || filterChain.apply(logAccess.getFull(index, version)));
+				for (long index = prevMaxIndexF; index < maxF; index++) {
+					boolean applies = filterChain.apply(logAccess.get(index, version)) && (!filterChain
+					 .needsFullLine() || filterChain.apply(logAccess.getFull(index, version)));
 					if (applies) {
 						slice[indexSlice++] = index;
 					}
@@ -127,14 +132,13 @@ public class ModelPopulator implements Runnable {
 			}
 
 			if (minIndexB != prevMinIndexB) {
-				final long minB = Math.max(minIndexB, prevMinIndexB-maxSlice);
-				final int maxSize = (int)(prevMinIndexB - minB);
+				final long minB = Math.max(minIndexB, prevMinIndexB - maxSlice);
+				final int maxSize = (int) (prevMinIndexB - minB);
 				final long[] slice = new long[maxSize];
 				int indexSlice = 0;
-				for (long index=prevMinIndexB-1; index>=minB; index--) {
-					boolean applies = filterChain.apply(logAccess.get(index, version))
-					 && (!filterChain.needsFullLine() ||
-					 filterChain.apply(logAccess.getFull(index, version)));
+				for (long index = prevMinIndexB - 1; index >= minB; index--) {
+					boolean applies = filterChain.apply(logAccess.get(index, version)) && (!filterChain
+					 .needsFullLine() || filterChain.apply(logAccess.getFull(index, version)));
 					if (applies) {
 						slice[indexSlice++] = index;
 					}
@@ -147,8 +151,7 @@ public class ModelPopulator implements Runnable {
 		}
 	}
 
-	public void reconfig(LogLineFilterChain filterChain, long startIndex,
-	 int sourceVersion) {
+	public void reconfig(LogLineFilterChain filterChain, long startIndex, int sourceVersion) {
 		modelPopulatorReconfig.set(new ModelPopulatorReconfig(filterChain, startIndex, sourceVersion));
 	}
 
