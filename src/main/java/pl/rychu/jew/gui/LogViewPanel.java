@@ -800,6 +800,7 @@ public class LogViewPanel extends JList<LogLineFull> implements CyclicModelListe
 				long insIndex = -viewLine - 1;
 				gotoLine((int) insIndex);
 			}
+			setTail(false);
 		}
 	}
 
