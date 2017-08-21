@@ -16,6 +16,7 @@ public class ModelPopulator implements Runnable {
 	private final LogAccess logAccess;
 	private int logAccessVersion;
 
+	private long prevRootIndex = 0L;
 	private long prevMaxIndexF;
 	private long prevMinIndexB;
 	private long prevMaxIndexLabel;
@@ -74,8 +75,18 @@ public class ModelPopulator implements Runnable {
 			log.debug("schedule reconfig: {}", reconfig);
 			modelFacade.clearSoft(logAccessVersion);
 			boolean verEqual = logAccessVersion == reconfig.getSourceVersion();
-			prevMaxIndexF = verEqual ? reconfig.getStartIndex() : 0;
-			prevMinIndexB = verEqual ? reconfig.getStartIndex() : 0;
+			long rootIndex = reconfig.getStartIndex();
+			if (verEqual) {
+				if (rootIndex < 0) {
+					rootIndex = prevRootIndex;
+				} else {
+					prevRootIndex = rootIndex;
+				}
+			} else {
+				rootIndex = 0;
+			}
+			prevMaxIndexF = rootIndex;
+			prevMinIndexB = rootIndex;
 			filterChain = reconfig.getFilterChain();
 			log.debug("populator reset {} / {}", prevMaxIndexF, filterChain);
 			return; // JEW-112 - probably there must be a "break" in EDT after each clear to allow

@@ -80,7 +80,7 @@ public class ListModelLog extends AbstractListModel<LogLineFull> {
 			final long indexWithOffset = index - mapper.sizeB();
 			return mapper.get(indexWithOffset);
 		} else {
-			return 0L;
+			return -1L;
 		}
 	}
 
