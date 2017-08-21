@@ -125,7 +125,7 @@ public class LogViewPanelCellRenderer extends DefaultListCellRenderer {
 			}
 			g.setFont(bookmarkFont);
 			int stringWidth = g.getFontMetrics().stringWidth(overlayToPaint);
-			int xMargin = 3;
+			int xMargin = 6;
 			int xPadding = 3;
 			int yMargin = 1;
 			int x = noCrappyBookmarkSign ? 0 : parentWidth + parentOffset - xMargin - 2 * xPadding -
