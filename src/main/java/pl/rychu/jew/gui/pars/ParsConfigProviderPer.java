@@ -64,6 +64,17 @@ public class ParsConfigProviderPer implements ParsConfigProvider {
 
 			entries.add(new ParsConfigEntry("glassfish", pb.toString(), 1, 2, 3, 4, 5));
 		}
+		{
+			StringBuilder pb = new StringBuilder();
+			pb.append("^([-0-9a-zA-Z]+ [0-9:.]+)").append("\n");
+			pb.append("[ \\t]+").append("([^ \\t]+)").append("\n");
+			pb.append("[ \\t]+").append("\\[([^]]+)\\]").append("\n");
+			pb.append("[ \\t]+").append("([^ \\t]+)").append("\n");
+			pb.append("[ \\t]+").append("(.*)").append("\n");
+			pb.append("$").append("\n");
+
+			entries.add(new ParsConfigEntry("catalina", pb.toString(), 1, 2, 4, 3, 5));
+		}
 
 		return new ParsConfig(entries);
 	}
