@@ -39,6 +39,8 @@ public class ParsEditPanel extends JPanel {
 
 		regexArea = new JTextArea(20, 5);
 		regexArea.setBorder(nameField.getBorder());
+		Font font = regexArea.getFont();
+		regexArea.setFont(new Font(Font.MONOSPACED, font.getStyle() | Font.BOLD, font.getSize()));
 
 		JPanel groupsPanel = new JPanel();
 		groupsPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
