@@ -239,7 +239,7 @@ public class ParsDialog extends JDialog {
 
 	private void appendGroup(StringBuilder sb, Matcher matcher, int group, String title) {
 		sb.append(title).append(": ");
-		if (group <= 0) {
+		if (group <= 0 || group > matcher.groupCount()) {
 			sb.append("[n/a]");
 		} else {
 			String val = matcher.group(group);
