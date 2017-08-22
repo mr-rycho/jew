@@ -158,7 +158,8 @@ public class LogViewPanelCellRenderer extends DefaultListCellRenderer {
 		int hash = getThreadHash(threadName);
 		int offset = threadOffsetMode ? hash & 0xff : -1;
 		final String logLineStr = getRenderedString(logLineFull);
-		List<Integer> bookmarks = bookmarkStorageView.getOffsetToBookmark().get(logLine.getFilePos());
+		List<Integer> bookmarks = logLine != null ? bookmarkStorageView.getOffsetToBookmark().get(logLine.getFilePos())
+		 : Collections.emptyList();
 		overlayToPaint = bookmarks == null || bookmarks.isEmpty() ? null : bookmarks.stream().map
 		 (Objects::toString).collect(Collectors.joining(", "));
 		return getListCellRendererComponentSuper(list, fullText, logLineStr, isSelected, cellHasFocus,
