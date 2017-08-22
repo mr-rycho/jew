@@ -39,13 +39,12 @@ public class LogFileReader implements Runnable {
 	// --------
 
 	public LogFileReader(LogAccessFile logAccessFile, String pathStr, GrowingListVer<LogLine> index,
-	 boolean isWindows, LineDecoderCfg lineDecoderCfg, LogAccessCache logReaderCache) {
+	 boolean isWindows, String encoding, LineDecoderCfg lineDecoderCfg,
+	 LogAccessCache logReaderCache) {
 		this.logAccessFile = logAccessFile;
 		this.path = FileSystems.getDefault().getPath(pathStr);
 		this.lineDecoderFull = new LineDecoderFull(lineDecoderCfg);
 		LinePosSink indexer = new Indexer(lineDecoderFull, index, logReaderCache);
-		String encoding = isWindows ? "windows-1250" : "UTF-8";
-		log.debug("isWindows={};  encoding={}", isWindows, encoding);
 		LineByteSink lineByteSink = new LineByteSinkDecoder(indexer, encoding);
 		this.lineDivider = new LineDividerUtf8(lineByteSink);
 		this.isWindows = isWindows;

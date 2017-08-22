@@ -15,7 +15,7 @@ import pl.rychu.jew.logline.LogLineFull;
 
 
 
-public class LineReaderDecoder {
+class LineReaderDecoder {
 
 	private static final Logger log = LoggerFactory.getLogger(LineReaderDecoder.class);
 
@@ -23,8 +23,8 @@ public class LineReaderDecoder {
 	private CharBuffer charBuffer = CharBuffer.allocate(1000);
 	private final CharsetDecoder decoder;
 
-	public LineReaderDecoder() {
-		final Charset charset = Charset.forName("UTF-8"); // TODO change
+	LineReaderDecoder(String encoding) {
+		Charset charset = Charset.forName(encoding);
 		decoder = charset.newDecoder();
 		decoder.onMalformedInput(CodingErrorAction.REPLACE);
 		decoder.onUnmappableCharacter(CodingErrorAction.REPLACE);

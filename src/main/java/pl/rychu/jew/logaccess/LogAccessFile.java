@@ -18,6 +18,8 @@ public class LogAccessFile implements LogAccess {
 
 	private static final Logger log = LoggerFactory.getLogger(LogAccessFile.class);
 
+	private final String encoding;
+
 	private final GrowingListVer<LogLine> index = GrowingListVerLocked.create(65536);
 
 	private volatile FileChannel fileChannel;
@@ -36,15 +38,19 @@ public class LogAccessFile implements LogAccess {
 
 	// ------------------
 
-	private LogAccessFile() {
+	private LogAccessFile(String encoding) {
+		this.encoding = encoding;
 	}
 
 	public static LogAccess create(final String pathStr, boolean isWindows,
 	 LineDecoderCfg lineDecoderCfg) {
-		final LogAccessFile result = new LogAccessFile();
+		String encoding = isWindows ? "windows-1250" : "UTF-8";
+		log.debug("isWindows={};  encoding={}", isWindows, encoding);
+
+		LogAccessFile result = new LogAccessFile(encoding);
 
 		LogFileReader logFileReader = new LogFileReader(result, pathStr, result.index, isWindows,
-		 lineDecoderCfg, result.logReaderCache);
+		 encoding, lineDecoderCfg, result.logReaderCache);
 
 		result.logFileReader = logFileReader;
 
@@ -123,8 +129,8 @@ public class LogAccessFile implements LogAccess {
 
 		LineReaderDecoder lineReadDec = readerPool.poll();
 		if (lineReadDec == null) {
-			log.debug("allocate decoder");
-			lineReadDec = new LineReaderDecoder();
+			log.debug("allocate decoder ({})", encoding);
+			lineReadDec = new LineReaderDecoder(encoding);
 		}
 		try {
 			LogLineFull result = lineReadDec.readFull(fc, logLine);
