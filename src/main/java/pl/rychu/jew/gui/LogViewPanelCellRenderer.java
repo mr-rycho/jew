@@ -153,8 +153,8 @@ public class LogViewPanelCellRenderer extends DefaultListCellRenderer {
    , final boolean cellHasFocus) {
 		final LogLineFull logLineFull = (LogLineFull)value;
 		final String fullText = getFullString(logLineFull);
-		LogLine logLine = logLineFull.getLogLine();
-		String threadName = logLine.getThreadName();
+		LogLine logLine = logLineFull != null ? logLineFull.getLogLine() : null;
+		String threadName = logLine != null ? logLine.getThreadName() : "n/a";
 		int hash = getThreadHash(threadName);
 		int offset = threadOffsetMode ? hash & 0xff : -1;
 		final String logLineStr = getRenderedString(logLineFull);
